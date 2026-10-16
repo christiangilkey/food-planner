@@ -1,3 +1,4 @@
+import type { IconName } from '../components/Icon'
 import type { Domain, Evidence, NutrientKey, Sex } from '../types'
 import type { SourceId } from './sources'
 
@@ -33,15 +34,15 @@ export interface NutrientInfo {
   notFoodAlone?: boolean
 }
 
-export const DOMAINS: { id: Domain; label: string; icon: string; blurb: string }[] = [
-  { id: 'memory', label: 'Memory', icon: '🧠', blurb: 'Learning, recall, brain fog' },
-  { id: 'focus', label: 'Focus & thinking', icon: '🎯', blurb: 'Attention, processing speed, critical thinking' },
-  { id: 'mood', label: 'Mood & emotions', icon: '💛', blurb: 'Low mood, anxiety, irritability, emotional regulation' },
-  { id: 'immunity', label: 'Immunity', icon: '🛡️', blurb: 'Getting sick, recovery, wound healing' },
-  { id: 'energy', label: 'Energy', icon: '⚡', blurb: 'Fatigue, stamina, cold intolerance' },
-  { id: 'sleep', label: 'Sleep', icon: '🌙', blurb: 'Falling and staying asleep, restless legs' },
-  { id: 'bones', label: 'Bones & muscles', icon: '🦴', blurb: 'Bone density, cramps, strength' },
-  { id: 'heart', label: 'Heart & blood pressure', icon: '❤️', blurb: 'Blood pressure, cholesterol, rhythm' },
+export const DOMAINS: { id: Domain; label: string; icon: IconName; blurb: string }[] = [
+  { id: 'memory', label: 'Memory', icon: 'brain', blurb: 'Learning, recall, brain fog' },
+  { id: 'focus', label: 'Focus & thinking', icon: 'target', blurb: 'Attention, processing speed, critical thinking' },
+  { id: 'mood', label: 'Mood & emotions', icon: 'cloudSun', blurb: 'Low mood, anxiety, irritability, emotional regulation' },
+  { id: 'immunity', label: 'Immunity', icon: 'shield', blurb: 'Getting sick, recovery, wound healing' },
+  { id: 'energy', label: 'Energy', icon: 'zap', blurb: 'Fatigue, stamina, cold intolerance' },
+  { id: 'sleep', label: 'Sleep', icon: 'moon', blurb: 'Falling and staying asleep, restless legs' },
+  { id: 'bones', label: 'Bones & muscles', icon: 'bone', blurb: 'Bone density, cramps, strength' },
+  { id: 'heart', label: 'Heart & blood pressure', icon: 'heartPulse', blurb: 'Blood pressure, cholesterol, rhythm' },
 ]
 
 /** Targets are US Dietary Reference Intakes (RDA or AI) for adults; `ironOverride` lets menopause staging set iron directly. */
@@ -137,7 +138,7 @@ export const NUTRIENTS: NutrientInfo[] = [
     ],
     absorption: [
       { text: 'Best food sources are pumpkin seeds, chia, almonds, beans, whole grains and dark chocolate.', evidence: 'strong', sources: ['ods_magnesium'] },
-      { text: 'High-dose supplements can cause diarrhea, and people with kidney disease should not take them without medical advice.', evidence: 'strong', sources: ['ods_magnesium'] },
+      { text: 'Supplements above 350 mg a day (the upper limit) can cause diarrhea, and very high doses cause toxicity. The kidneys clear magnesium, so with kidney disease take supplements only on medical advice.', evidence: 'strong', sources: ['ods_magnesium', 'kdoqi'] },
     ],
   },
   {

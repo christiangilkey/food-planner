@@ -10,9 +10,12 @@ import { DAYS } from '../lib/plan-utils'
 import { analyzeRotation, type RuleStatus } from '../lib/rotation'
 import { weeklyTips, type BioTip, type TipCategory } from '../lib/tips'
 import type { AppState, Domain } from '../types'
+import { Icon } from './Icon'
+import { RecipeLink } from './RecipeViewer'
+import { SupplementsView } from './SupplementsView'
 import { Bar, Chip, Cite, EvidenceChip, Sourced } from './ui'
 
-type Section = 'brain' | 'conditions' | 'rotation' | 'biohacks' | 'sources'
+type Section = 'brain' | 'conditions' | 'rotation' | 'biohacks' | 'supplements' | 'sources'
 
 const fmt = (n: number, unit: string) => `${n >= 100 ? Math.round(n) : n >= 10 ? n.toFixed(0) : n.toFixed(1)} ${unit}`
 
@@ -32,10 +35,11 @@ export function HealthView({ state }: { state: AppState }) {
     ...(hasConditions ? [['conditions', 'Conditions'] as [Section, string]] : []),
     ['rotation', 'Rotation'],
     ['biohacks', 'Biohacks'],
+    ['supplements', 'Supplements & peptides'],
     ['sources', 'Sources'],
   ]
 
-  if (!analysis.daysPlanned && section !== 'sources') {
+  if (!analysis.daysPlanned && section !== 'sources' && section !== 'supplements') {
     return (
       <section className="card">
         <h1>Health</h1>
@@ -55,6 +59,7 @@ export function HealthView({ state }: { state: AppState }) {
       {section === 'conditions' && <Conditions state={state} a={analysis} rules={rotation.rules} />}
       {section === 'rotation' && <Rotation rules={rotation.rules} plants={rotation.plants} proteinGroups={rotation.proteinGroups.length} />}
       {section === 'biohacks' && <Biohacks tips={tips} />}
+      {section === 'supplements' && <SupplementsView state={state} reports={analysis.reports} />}
       {section === 'sources' && <Sources />}
       <p className="muted small disclaimer">
         Estimates from typical food values, not a diagnosis or medical advice. Absorption, medications and health conditions change what you actually need. If something keeps showing up low or you have symptoms, ask your doctor about a blood test (for example ferritin, vitamin D or B12) before starting high-dose supplements.
@@ -93,7 +98,7 @@ function BrainBody({ state, a }: { state: AppState; a: WeekAnalysis }) {
             const s = domainStatus(d.id, a.reports)
             return (
               <button key={d.id} className={`domain status-${s.status} ${focus === d.id ? 'on' : ''}`} onClick={() => setFocus(focus === d.id ? null : d.id)} aria-pressed={focus === d.id}>
-                <span className="domain-icon" aria-hidden>{d.icon}</span>
+                <span className="domain-icon"><Icon name={d.icon} size={22} /></span>
                 <span className="domain-label">{d.label}</span>
                 <span className="domain-status">{s.status === 'ok' ? 'Covered' : s.status === 'risk' ? 'At risk' : 'Watch'}</span>
                 {s.nutrients.length > 0 && (
@@ -142,13 +147,13 @@ function NutrientRow({ r, focus, defaultOpen }: { r: NutrientReport; focus: Doma
           <strong>{r.info.label}</strong>
           <span className="muted small">{fmt(r.perDay, r.info.unit)} of {fmt(r.target, r.info.unit)} · {Math.round(r.pct * 100)}%</span>
         </span>
-        <span aria-hidden>{open ? '▾' : '▸'}</span>
+        <Icon name={open ? 'chevronDown' : 'chevronRight'} />
       </button>
       <Bar value={r.perDay} max={r.target} tone={tone} label={r.info.label} />
       <div className="chips">
         {r.info.effects.map((e) => {
           const d = DOMAINS.find((x) => x.id === e.domain)!
-          return <span key={e.domain} className="chip tone-muted" title={e.what}>{d.icon} {d.label}</span>
+          return <span key={e.domain} className="chip tone-muted with-icon" title={e.what}><Icon name={d.icon} size={13} /> {d.label}</span>
         })}
       </div>
       {open && (
@@ -165,7 +170,7 @@ function NutrientRow({ r, focus, defaultOpen }: { r: NutrientReport; focus: Doma
               const d = DOMAINS.find((x) => x.id === e.domain)!
               return (
                 <li key={e.domain}>
-                  <span className="effect-head"><strong>{d.icon} {d.label}</strong> <Sourced evidence={e.evidence} ids={e.sources} /></span>
+                  <span className="effect-head"><strong className="with-icon"><Icon name={d.icon} size={16} /> {d.label}</strong> <Sourced evidence={e.evidence} ids={e.sources} /></span>
                   <span className="small">{e.what}</span>
                 </li>
               )
@@ -202,7 +207,7 @@ function NutrientRow({ r, focus, defaultOpen }: { r: NutrientReport; focus: Doma
                   <ul className="fix-list">
                     {r.recipes.map((x) => (
                       <li key={x.recipe.id}>
-                        <span>{x.recipe.name}</span>
+                        <RecipeLink id={x.recipe.id} />
                         <span className="muted small">{fmt(x.perServing, r.info.unit)} per serving</span>
                       </li>
                     ))}
@@ -233,7 +238,7 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
       <section className={`card ${violations.length ? 'banner' : 'hero'}`}>
         <h1>Your conditions</h1>
         {violations.length === 0 ? (
-          <p className="good-text">✓ This week’s plan is within every limit set by your conditions.</p>
+          <p className="good-text with-icon"><Icon name="check" /> This week’s plan is within every limit set by your conditions.</p>
         ) : (
           <>
             <p className="warn-text">This week breaks {violations.length} rule{violations.length > 1 ? 's' : ''}. Make a new week on the Plan tab.</p>
@@ -257,7 +262,7 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
         const removed = c.avoid.flatMap((entry) => entry.foods.filter((f) => avoided.get(f)?.some((x) => x.condition.id === c.id && x.entry === entry)).map((f) => ({ f, entry })))
         return (
           <section key={c.id} className="card">
-            <h2>{c.icon} {c.label}</h2>
+            <h2 className="with-icon"><Icon name={c.icon} /> {c.label}</h2>
             <p className="small muted">{c.blurb}</p>
 
             {reasons.filter((r) => r.condition.id === c.id).length > 0 && (
@@ -284,7 +289,7 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
               <div key={s.rule.id} className="claim">
                 <div className="summary-label">
                   <span>{s.rule.label}</span>
-                  <span className={s.status === 'met' ? 'good-text' : 'warn-text'}>{s.servings.toFixed(1)} / {s.rule.min ?? s.rule.max} a week {s.status === 'met' ? '✓' : ''}</span>
+                  <span className={s.status === 'met' ? 'good-text' : 'warn-text'}>{s.servings.toFixed(1)} / {s.rule.min ?? s.rule.max} a week {s.status === 'met' && <Icon name="check" size={14} />}</span>
                 </div>
                 <span className="small">{s.rule.why}</span> <Sourced evidence={s.rule.evidence} ids={s.rule.sources} convention={s.rule.convention} />
               </div>
@@ -330,7 +335,7 @@ function Rotation({ rules, plants, proteinGroups }: { rules: RuleStatus[]; plant
       {sorted.map((s) => <RuleRow key={s.rule.id} s={s} />)}
 
       <section className="card">
-        <div className="row-between"><h2>🌱 Plant variety</h2><span className="muted small">{plants.length} / {PLANT_TARGET}</span></div>
+        <div className="row-between"><h2 className="with-icon"><Icon name="sprout" /> Plant variety</h2><span className="muted small">{plants.length} / {PLANT_TARGET}</span></div>
         <Bar value={plants.length} max={PLANT_TARGET} tone={plants.length >= PLANT_TARGET ? 'good' : 'warn'} label="Plant variety" />
         <div className="chips">{plants.map((pl) => <span key={pl} className="chip tone-muted">{pl}</span>)}</div>
         <p className="small">
@@ -352,10 +357,10 @@ function RuleRow({ s }: { s: RuleStatus }) {
           <strong>{s.rule.label}</strong>
           <span className="muted small">
             {s.servings.toFixed(1)} servings this week · {target}
-            {s.status === 'met' ? ' ✓' : s.status === 'over' ? ' · over' : ' · short'}
+            {s.status === 'met' ? ' · met' : s.status === 'over' ? ' · over' : ' · short'}
           </span>
         </span>
-        <span aria-hidden>{open ? '▾' : '▸'}</span>
+        <Icon name={open ? 'chevronDown' : 'chevronRight'} />
       </button>
       <Bar value={s.servings} max={s.min ?? s.max ?? 1} tone={tone} label={s.rule.label} />
       <div className="day-dots" aria-label="Days eaten">
@@ -372,7 +377,7 @@ function RuleRow({ s }: { s: RuleStatus }) {
             <div className="chips">
               {s.rule.domains.map((id) => {
                 const d = DOMAINS.find((x) => x.id === id)!
-                return <Chip key={id} tone="muted">{d.icon} {d.label}</Chip>
+                return <Chip key={id} tone="muted"><Icon name={d.icon} size={13} /> {d.label}</Chip>
               })}
             </div>
           )}
@@ -462,7 +467,7 @@ function Sources() {
             <ul className="source-list">
               {list.map((x) => (
                 <li key={x.url + x.label}>
-                  <a href={x.url} target="_blank" rel="noopener noreferrer">{x.title} ↗</a>
+                  <a href={x.url} target="_blank" rel="noopener noreferrer" className="ext">{x.title}</a>
                   <span className="muted small">{x.where}, {x.year}</span>
                 </li>
               ))}

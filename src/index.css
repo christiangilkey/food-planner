@@ -17,7 +17,9 @@
   --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.04);
   --radius: 14px;
   color-scheme: light;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.005em;
   font-size: 16px;
   line-height: 1.45;
   color: var(--text);
@@ -48,7 +50,9 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); min-height: 100dvh; }
+/* Always reserve the scrollbar's space so short and long pages have the same width (no sideways jump). */
+html { scrollbar-gutter: stable; overflow-y: scroll; }
+body { margin: 0; background: var(--bg); min-height: 100dvh; -webkit-font-smoothing: antialiased; }
 h1, h2, h3 { margin: 0 0 0.35em; line-height: 1.2; }
 h1 { font-size: 1.35rem; }
 h2 { font-size: 1.1rem; }
@@ -70,9 +74,13 @@ button, input, select { font: inherit; color: inherit; }
   padding: 10px 16px; background: color-mix(in srgb, var(--bg) 88%, transparent);
   backdrop-filter: blur(8px); border-bottom: 1px solid var(--border);
 }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
-.logo { font-size: 1.3rem; }
-.logo.big { font-size: 2.6rem; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.wordmark { font-weight: 750; font-size: 1.08rem; letter-spacing: -0.03em; }
+.wordmark.big { font-size: 1.9rem; margin: 10px 0 4px; }
+.logo-mark { display: block; flex-shrink: 0; border-radius: 25%; box-shadow: 0 1px 2px rgb(0 0 0 / 0.12); }
+.icon-svg { flex-shrink: 0; vertical-align: -0.15em; }
+.with-icon { display: inline-flex; align-items: center; gap: 6px; }
+h1, h2, h3 { letter-spacing: -0.02em; }
 .content { padding: 12px 16px; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
 
@@ -86,9 +94,12 @@ button, input, select { font: inherit; color: inherit; }
   flex: 1; max-width: 144px; display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 8px 4px 10px; border: 0; background: none; color: var(--muted); font-size: 0.75rem; cursor: pointer;
 }
-.tabbar button span:first-child { font-size: 1.25rem; filter: grayscale(0.6); opacity: 0.8; }
-.tabbar button.active { color: var(--accent); font-weight: 600; }
-.tabbar button.active span:first-child { filter: none; opacity: 1; }
+.tabbar button .icon-svg { width: 22px; height: 22px; }
+.tabbar button span { line-height: 1.2; }
+/* Same weight active or not, so labels never change width. */
+.tabbar button.active { color: var(--accent); }
+.tab-indicator { position: absolute; top: 0; left: 28%; right: 28%; height: 3px; border-radius: 0 0 3px 3px; background: var(--accent); }
+.tabbar button { position: relative; font-weight: 600; }
 
 .card {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
@@ -368,7 +379,11 @@ input, select {
   font-size: 0.72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; text-decoration: none;
   border: 1px solid var(--border); color: var(--accent); background: var(--surface); white-space: nowrap;
 }
-.cite a::after { content: ' ↗'; font-size: 0.65rem; }
+.cite a::after, a.ext::after {
+  content: ''; display: inline-block; width: 0.7em; height: 0.7em; margin-left: 3px; background: currentColor; vertical-align: 0.05em;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M8 7h9v9'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M8 7h9v9'/%3E%3C/svg%3E") center / contain no-repeat;
+}
 .cite a:hover { border-color: var(--accent); background: var(--accent-soft); }
 .convention {
   font-size: 0.72rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; color: var(--muted);
@@ -392,3 +407,65 @@ input, select {
 .trigger { border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; background: var(--surface); font-size: 0.82rem; font-weight: 600; }
 .trigger.avoided { border-color: var(--bad); color: var(--bad); background: var(--bad-soft); }
 .carbs { font-weight: 700; color: var(--accent); }
+
+/* ── Recipe links ───────────────────────────────── */
+.recipe-link {
+  background: none; border: 0; padding: 0; font: inherit; color: var(--accent); text-align: left;
+  text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; cursor: pointer;
+}
+.recipe-link:hover { text-decoration-thickness: 2px; }
+.recipe-link.meal-name { display: block; margin: 2px 0; font-size: 1.08rem; font-weight: 700; color: var(--text); text-decoration-color: var(--border); }
+.recipe-link.meal-name:hover { color: var(--accent); }
+.recipe-link.option { width: 100%; display: flex; flex-direction: column; gap: 2px; text-decoration: none; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; }
+.recipe-link.option:hover { border-color: var(--accent); }
+.option-row { display: flex; gap: 6px; align-items: stretch; }
+.option-row .option { flex: 1; }
+.recipe-link.details-btn { flex-shrink: 0; align-self: stretch; display: grid; place-items: center; padding: 0 12px; border: 1px solid var(--border); border-radius: 12px; text-decoration: none; font-size: 0.85rem; font-weight: 600; background: var(--surface); }
+.recipe-link.details-btn:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+/* ── Supplements ────────────────────────────────── */
+.not-for-you { margin: 8px 0; padding: 8px 10px; border-radius: 10px; background: var(--bad-soft); color: var(--bad); font-size: 0.88rem; }
+.goal-chip { border: 1px solid var(--border); cursor: pointer; padding: 4px 10px; font-size: 0.82rem; }
+.check-grid.wide { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.check-grid.wide .check-card span { display: block; }
+.section-tabs { overflow-x: auto; scrollbar-width: none; }
+.section-tabs::-webkit-scrollbar { display: none; }
+.section-tabs button { flex: 0 0 auto; }
+
+/* ── Icon polish ────────────────────────────────── */
+.icon { color: var(--muted); }
+.icon:hover { color: var(--text); }
+.water-drop { color: var(--accent); display: inline-flex; }
+.t-icon { display: grid; place-items: center; color: var(--muted); padding-top: 1px; }
+.timeline li.kind-meal .t-icon, .timeline li.kind-meds .t-icon { color: var(--accent); }
+.timeline li.kind-water .t-icon { color: #3b82c4; }
+.domain-icon { color: var(--muted); display: inline-flex; }
+.domain.status-risk .domain-icon { color: var(--bad); }
+.domain.status-watch .domain-icon { color: var(--warn); }
+.domain.status-ok .domain-icon { color: var(--good); }
+.condition-card strong .icon-svg, h2.with-icon .icon-svg { color: var(--accent); }
+.meal-tip .tip-icon { color: var(--warn); }
+.chip { gap: 4px; }
+.store-pick { display: inline-flex; align-items: center; gap: 4px; }
+.store-pick .icon-svg { color: var(--warn); fill: currentColor; }
+.trigger { display: inline-flex; align-items: center; gap: 4px; }
+.onboarding-head .logo-mark { margin: 0 auto; }
+.nutrient-head .icon-svg, .disclosure .icon-svg { color: var(--muted); }
+.setup-steps { list-style: decimal; }
+.setup-steps code { font-size: 0.82em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; word-break: break-all; }
+
+/* ── Motion ─────────────────────────────────────── */
+/* Pages slide sideways during swipes; never show a horizontal scrollbar for it. */
+body { overflow-x: clip; }
+.content { overflow-x: clip; }
+button { transition: transform 0.12s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+button:active:not(:disabled) { transform: scale(0.97); }
+.tabbar button:active { transform: none; }
+.tabbar button:active .icon-svg { transform: scale(0.9); }
+.tabbar .icon-svg { transition: transform 0.12s ease; }
+.shop-row { transition: opacity 0.2s ease; }
+.shop-row.done { opacity: 0.55; }
+.card { transition: border-color 0.2s ease; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

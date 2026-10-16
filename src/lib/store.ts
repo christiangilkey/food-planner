@@ -32,6 +32,7 @@ export function defaultState(): AppState {
       maoi: false,
       toleratedTriggers: [],
       optInTriggers: [],
+      meds: { bloodThinner: false, ssri: false, thyroid: false, diabetesMeds: false, bpMeds: false, pregnant: false },
     },
     equipment: ['stove', 'skillet', 'pot', 'oven', 'sheetpan', 'microwave'],
     pantry: [],
@@ -40,6 +41,7 @@ export function defaultState(): AppState {
     preferredStore: null,
     plan: emptyPlan(),
     checked: {},
+    googleClientId: '',
     setupDone: false,
   }
 }
@@ -50,7 +52,7 @@ function load(): AppState {
     if (!raw) return defaultState()
     const parsed = JSON.parse(raw) as Partial<AppState>
     const base = defaultState()
-    const profile = { ...base.profile, ...parsed.profile }
+    const profile = { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile?.meds } }
     // Saves from before health conditions existed: carry the old ADHD switch over.
     if (!parsed.profile?.conditions) profile.conditions = parsed.profile?.adhd === false ? [] : ['adhd']
     return { ...base, ...parsed, profile }
@@ -82,5 +84,5 @@ export function importState(json: string): AppState {
   const parsed = JSON.parse(json) as Partial<AppState>
   const base = defaultState()
   if (!parsed.profile || !Array.isArray(parsed.plan)) throw new Error('That file is not a Food Planner backup.')
-  return { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile } }
+  return { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile.meds } } }
 }

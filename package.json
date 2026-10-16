@@ -12,6 +12,9 @@
     "deploy": "npm test && npm run build && node scripts/deploy.mjs"
   },
   "dependencies": {
+    "@fontsource-variable/plus-jakarta-sans": "^5.2.6",
+    "lucide-react": "^0.511.0",
+    "motion": "^12.23.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },

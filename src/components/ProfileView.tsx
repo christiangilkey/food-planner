@@ -3,6 +3,7 @@ import { FOODS } from '../data/foods'
 import { computeTargets } from '../lib/energy'
 import { defaultState, exportState, importState } from '../lib/store'
 import { ConditionFields } from './ConditionFields'
+import { MedFields } from './MedFields'
 import { BodyFields, LifestyleFields } from './ProfileFields'
 import { Cite, type ViewProps } from './ui'
 
@@ -63,6 +64,12 @@ export function ProfileView(props: ViewProps) {
         <h2>Health conditions</h2>
         <ConditionFields {...props} />
         <p className="muted small">After changing conditions, make a new week on the Plan tab.</p>
+      </section>
+
+      <section className="card">
+        <h2>Medications & pregnancy</h2>
+        <p className="muted small">Used only to screen supplements, peptides and foods for interactions. Stored on this device only.</p>
+        <MedFields {...props} />
       </section>
 
       <section className="card">

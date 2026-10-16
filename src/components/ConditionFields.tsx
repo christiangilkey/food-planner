@@ -1,6 +1,7 @@
 import { CONDITIONS, MENOPAUSE_SOURCES, MENOPAUSE_STAGES } from '../data/conditions'
 import { FOOD_BY_ID } from '../data/foods'
 import type { ConditionId, Profile } from '../types'
+import { Icon } from './Icon'
 import { Cite, Sourced, type ViewProps } from './ui'
 
 /** Health-condition toggles plus each condition's own options (stage, MAOI, trigger foods). */
@@ -29,7 +30,7 @@ export function ConditionFields({ state, update }: ViewProps) {
             <div key={c.id} className={`condition-card ${on ? 'on' : ''}`}>
               <input type="checkbox" id={`cond-${c.id}`} checked={on} onChange={() => toggle(c.id)} />
               <label htmlFor={`cond-${c.id}`}>
-                <strong>{c.icon} {c.label}</strong>
+                <strong className="with-icon"><Icon name={c.icon} /> {c.label}</strong>
                 <small>{c.blurb}</small>
               </label>
             </div>
@@ -70,7 +71,7 @@ export function ConditionFields({ state, update }: ViewProps) {
           .map((a, i) => (
             <div key={`${c.id}-${i}`} className="field">
               <span>
-                {c.icon} {c.label}: {a.optIn ? 'tap the foods that trigger you' : 'tap any trigger you tolerate to allow it back'}
+                <span className="with-icon"><Icon name={c.icon} /> {c.label}</span>: {a.optIn ? 'tap the foods that trigger you' : 'tap any trigger you tolerate to allow it back'}
               </span>
               <p className="small">{a.reason.text} <Sourced evidence={a.reason.evidence} ids={a.reason.sources} /></p>
               <div className="trigger-list">
@@ -79,7 +80,7 @@ export function ConditionFields({ state, update }: ViewProps) {
                   return (
                     <button key={f} type="button" className={`trigger ${avoided ? 'avoided' : ''}`} aria-pressed={avoided}
                       onClick={() => toggleIn(a.optIn ? 'optInTriggers' : 'toleratedTriggers', f)}>
-                      {avoided ? '✕ ' : '✓ '}{FOOD_BY_ID[f]?.name ?? f}
+                      <Icon name={avoided ? 'x' : 'check'} size={14} /> {FOOD_BY_ID[f]?.name ?? f}
                     </button>
                   )
                 })}

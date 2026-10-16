@@ -1,5 +1,7 @@
+import { motion } from 'motion/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { SOURCES, type SourceId } from '../data/sources'
+import { Icon } from './Icon'
 import type { AppState, Evidence } from '../types'
 import type { Update } from '../lib/store'
 
@@ -38,15 +40,18 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
     return () => window.removeEventListener('keydown', onKey)
   }, [onClose])
   return (
-    <div className="sheet-backdrop" onClick={onClose}>
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+    <motion.div className="sheet-backdrop" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}>
+      <motion.div
+        className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
+        initial={{ y: 32, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 420, damping: 36 }}
+      >
         <div className="sheet-head">
           <h2>{title}</h2>
-          <button className="ghost" onClick={onClose} aria-label="Close">✕</button>
+          <button className="icon" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
         </div>
         <div className="sheet-body">{children}</div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
 

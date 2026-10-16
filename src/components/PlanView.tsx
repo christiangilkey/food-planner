@@ -1,3 +1,4 @@
+import { motion } from 'motion/react'
 import { useMemo, useState } from 'react'
 import { RECIPE_BY_ID } from '../data/recipes'
 import type { Tab } from '../App'
@@ -11,20 +12,24 @@ import { daySchedule, formatTime, mealTimes, type ItemKind } from '../lib/schedu
 import { mealTip } from '../lib/tips'
 import { hasCondition, planViolations } from '../lib/conditions'
 import { glasses, waterPlan } from '../lib/water'
-import { RecipeSheet } from './RecipeSheet'
+import { Icon, type IconName } from './Icon'
+import { ExportSheet } from './ExportSheet'
+import { RecipeLink } from './RecipeViewer'
 import { Bar, Chip, Cite, Score, Sheet, type ViewProps } from './ui'
 import { money } from '../lib/format'
 
 const SLOT_LABEL: Record<MealSlot, string> = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' }
-const KIND_ICON: Record<ItemKind, string> = { meal: '🍽️', water: '💧', habit: '✨', meds: '💊', workout: '🏋️' }
+const KIND_ICON: Record<ItemKind, IconName> = { meal: 'meal', water: 'water', habit: 'sparkles', meds: 'pill', workout: 'dumbbell' }
 
 const todayIndex = () => (new Date().getDay() + 6) % 7
 
 export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) => void }) {
-  const [day, setDay] = useState(todayIndex)
+  const [day, setDayRaw] = useState(todayIndex)
+  const [dayDir, setDayDir] = useState(0)
+  const setDay = (d: number) => { setDayDir(Math.sign(d - day)); setDayRaw(d) }
   const [swap, setSwap] = useState<Pos | null>(null)
-  const [detail, setDetail] = useState<PlanEntry | null>(null)
   const [showWater, setShowWater] = useState(false)
+  const [showExport, setShowExport] = useState(false)
   const [showTimeline, setShowTimeline] = useState(true)
   const targets = computeTargets(state.profile)
   const plan = state.plan
@@ -68,13 +73,14 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           <div className="hero-actions">
             <button className="primary" onClick={regenerate}>{hasPlan ? 'New week' : 'Build week'}</button>
             <button className="secondary" onClick={() => goTo('shop')}>Shopping list</button>
+            {hasPlan && <button className="secondary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> Google Tasks</button>}
           </div>
         </div>
-        <p className="muted small">"New week" keeps any meal you've locked 🔒.</p>
+        <p className="muted small with-icon">"New week" keeps any meal you've locked <Icon name="lock" size={14} /></p>
         {hasPlan && (
           <button className="rotation-pill" onClick={() => goTo('health')}>
-            <span>🔄 Food rotation: <strong>{rulesMet}/{rotation.rules.length}</strong> guidelines met</span>
-            <span>🌱 <strong>{rotation.plants.length}</strong>/30 plants</span>
+            <span className="with-icon"><Icon name="refresh" size={16} /> Food rotation: <strong>{rulesMet}/{rotation.rules.length}</strong> guidelines met</span>
+            <span className="with-icon"><Icon name="sprout" size={16} /> <strong>{rotation.plants.length}</strong>/30 plants</span>
             <span className="muted">Details ›</span>
           </button>
         )}
@@ -108,12 +114,12 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           </div>
         </div>
         <button className="water-row" onClick={() => setShowWater(true)}>
-          <span className="water-drop" aria-hidden>💧</span>
+          <span className="water-drop"><Icon name="droplet" size={22} /></span>
           <span>
             <strong>Drink {(water.drinkMl / 1000).toFixed(1)} L</strong> (about {glasses(water.drinkMl)} glasses)
             <span className="muted small"> · food gives about {(water.fromFoodMl / 1000).toFixed(1)} L more</span>
           </span>
-          <span className="muted" aria-hidden>ⓘ</span>
+          <span className="muted"><Icon name="info" /></span>
         </button>
         <p className="muted small">
           About {handsOn} min of hands-on cooking · ingredients eaten today ≈ {money(dayEntries(d).reduce((m, { entry }) => {
@@ -126,7 +132,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
       <section className="card">
         <button className="disclosure row-between full" onClick={() => setShowTimeline(!showTimeline)} aria-expanded={showTimeline}>
           <h2>{DAYS[day]}’s schedule</h2>
-          <span className="muted">{showTimeline ? '▾' : '▸'}</span>
+          <span className="muted"><Icon name={showTimeline ? 'chevronDown' : 'chevronRight'} /></span>
         </button>
         {showTimeline && (
           <ol className="timeline">
@@ -136,10 +142,10 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
               return (
                 <li key={i} className={`kind-${item.kind}`}>
                   <span className="t-time">{formatTime(item.at)}</span>
-                  <span className="t-icon" aria-hidden>{KIND_ICON[item.kind]}</span>
+                  <span className="t-icon"><Icon name={KIND_ICON[item.kind]} size={16} /></span>
                   <span className="t-body">
                     <strong>{item.label}</strong>
-                    {r && <span> · {r.name}</span>}
+                    {r && entry && <span> · <RecipeLink id={r.id} portion={entry.portion} /></span>}
                     {item.detail && <span className="muted small t-detail">{item.detail} {item.sources && <Cite ids={item.sources} />}</span>}
                   </span>
                 </li>
@@ -149,6 +155,13 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
         )}
       </section>
 
+      <motion.div
+        key={day}
+        className="stack"
+        initial={{ opacity: 0, x: dayDir * 24 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.2 }}
+      >
       {(['breakfast', 'lunch', 'dinner'] as const).map((slot) => (
         <MealCard
           key={slot}
@@ -156,7 +169,6 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           entry={d[slot]}
           state={state}
           onSwap={() => setSwap({ day, slot })}
-          onDetail={(e) => setDetail(e)}
           onChange={(e) => change({ day, slot }, e)}
         />
       ))}
@@ -167,14 +179,14 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           entry={s}
           state={state}
           onSwap={() => setSwap({ day, slot: 'snack', snack: i })}
-          onDetail={(e) => setDetail(e)}
           onChange={(e) => change({ day, slot: 'snack', snack: i }, e)}
           removable
         />
       ))}
       <button className="secondary add-snack" onClick={() => setSwap({ day, slot: 'snack', snack: d.snacks.length })}>+ Add a snack</button>
+      </motion.div>
 
-      {isAdhd(state.profile) && <HungryNow {...{ state, update }} onPick={(e) => setDetail(e)} />}
+      {isAdhd(state.profile) && <HungryNow {...{ state, update }} />}
       <BatchPrep state={state} />
 
       {swap && (
@@ -185,6 +197,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           onClose={() => setSwap(null)}
         />
       )}
+      {showExport && <ExportSheet state={state} update={update} onClose={() => setShowExport(false)} />}
       {showWater && (
         <Sheet title="Your water target" onClose={() => setShowWater(false)}>
           <p className="big-number">{(water.drinkMl / 1000).toFixed(1)} L to drink</p>
@@ -193,21 +206,17 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           <p className="note">Dehydration of about 2% of body weight measurably impairs attention and complex thinking. <Cite ids={['wittbrodt', 'adan']} /> Your schedule spreads the glasses over the day.</p>
         </Sheet>
       )}
-      {detail && RECIPE_BY_ID[detail.recipe] && (
-        <RecipeSheet recipe={RECIPE_BY_ID[detail.recipe]} portion={detail.portion} state={state} onClose={() => setDetail(null)} />
-      )}
     </div>
   )
 }
 
 function MealCard({
-  label, entry, state, onSwap, onDetail, onChange, removable,
+  label, entry, state, onSwap, onChange, removable,
 }: {
   label: string
   entry: PlanEntry | null
   state: ViewProps['state']
   onSwap: () => void
-  onDetail: (e: PlanEntry) => void
   onChange: (e: PlanEntry | null) => void
   removable?: boolean
 }) {
@@ -230,13 +239,13 @@ function MealCard({
         <div className="meal-slot">{label}</div>
         <div className="meal-tools">
           <button className="icon" onClick={() => onChange({ ...entry, locked: !entry.locked })} aria-pressed={!!entry.locked} title={entry.locked ? 'Unlock' : 'Lock: keep this when making a new week'}>
-            {entry.locked ? '🔒' : '🔓'}
+            <Icon name={entry.locked ? 'lock' : 'unlock'} />
           </button>
-          <button className="icon" onClick={onSwap} title="Swap for something else">⇄</button>
-          {removable && <button className="icon" onClick={() => onChange(null)} title="Remove">✕</button>}
+          <button className="icon" onClick={onSwap} title="Swap for something else" aria-label="Swap"><Icon name="swap" /></button>
+          {removable && <button className="icon" onClick={() => onChange(null)} title="Remove" aria-label="Remove"><Icon name="x" /></button>}
         </div>
       </div>
-      <button className="meal-name" onClick={() => onDetail(entry)}>{r.name}</button>
+      <RecipeLink id={r.id} portion={entry.portion} className="meal-name" />
       <p className="stat-line">
         <strong>{Math.round(t.kcal)}</strong> kcal · <strong>{Math.round(t.protein)} g</strong> protein
         {(hasCondition(state.profile, 't1d') || hasCondition(state.profile, 't2d')) && <> · <span className="carbs">{Math.round(t.carbs)} g carbs</span> ({Math.round(t.fiber)} g fiber)</>}
@@ -250,7 +259,7 @@ function MealCard({
         {r.batch && r.servings > 1 && <Chip tone="accent">Batch · {r.servings} servings</Chip>}
         {crashRisk(t) && <Chip tone="warn">Crash risk</Chip>}
       </div>
-      {tip && <p className="meal-tip">💡 {tip.text} <Cite ids={tip.sources} /></p>}
+      {tip && <p className="meal-tip"><Icon name="lightbulb" size={15} className="tip-icon" /> {tip.text} <Cite ids={tip.sources} /></p>}
       <div className="portion">
         <span className="muted small">Portion</span>
         <button className="icon small" onClick={() => step(-0.25)} aria-label="Smaller portion">−</button>
@@ -276,7 +285,7 @@ function SwapSheet({ pos, state, onPick, onClose }: { pos: Pos; state: ViewProps
           if (isAdhd(state.profile) && c.parts.reward > 0.6) why.push('satisfying')
           if (c.parts.cost > 0.8) why.push('cheap')
           return (
-            <li key={c.recipe.id}>
+            <li key={c.recipe.id} className="option-row">
               <button className="option" onClick={() => onPick({ recipe: c.recipe.id, portion: c.portion })}>
                 <span className="option-title">{c.recipe.name}</span>
                 <span className="muted small">
@@ -284,6 +293,7 @@ function SwapSheet({ pos, state, onPick, onClose }: { pos: Pos; state: ViewProps
                 </span>
                 {why.length > 0 && <span className="why">{why.join(' · ')}</span>}
               </button>
+              <RecipeLink id={c.recipe.id} portion={c.portion} className="details-btn">Details</RecipeLink>
             </li>
           )
         })}
@@ -293,7 +303,7 @@ function SwapSheet({ pos, state, onPick, onClose }: { pos: Pos; state: ViewProps
 }
 
 /** ADHD helper: zero-friction options right now, favoring food already in the house. */
-function HungryNow({ state, onPick }: ViewProps & { onPick: (e: PlanEntry) => void }) {
+function HungryNow({ state }: ViewProps) {
   const targets = computeTargets(state.profile)
   const snackKcal = targets.kcal * (slotShares(state.profile).snack || 0.12)
   const pantry = new Set(state.pantry.filter((p) => p.grams > 0).map((p) => p.food))
@@ -313,11 +323,11 @@ function HungryNow({ state, onPick }: ViewProps & { onPick: (e: PlanEntry) => vo
       <ul className="option-list">
         {picks.map(({ r, portion, t, have }) => (
           <li key={r.id}>
-            <button className="option" onClick={() => onPick({ recipe: r.id, portion })}>
+            <RecipeLink id={r.id} portion={portion} className="option">
               <span className="option-title">{r.name}</span>
               <span className="muted small">{Math.round(t.kcal)} kcal · {Math.round(t.protein)} g protein · fullness {satietyScore(t)}</span>
               {have === 1 && <span className="why">you have everything</span>}
-            </button>
+            </RecipeLink>
           </li>
         ))}
       </ul>
@@ -344,7 +354,7 @@ function BatchPrep({ state }: { state: ViewProps['state'] }) {
           const batches = Math.ceil(servings / r.servings - 0.1)
           return (
             <li key={id}>
-              <strong>{r.name}</strong>
+              <strong><RecipeLink id={r.id} /></strong>
               <span className="muted small">
                 {batches > 1 ? `${batches} batches` : '1 batch'} · {servings} servings planned · {r.activeMin * batches} min hands-on
               </span>

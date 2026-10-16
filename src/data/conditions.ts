@@ -1,3 +1,4 @@
+import type { IconName } from '../components/Icon'
 import type { ConditionId, Domain, Evidence, FoodGroup, MenopauseStage } from '../types'
 import type { RotationRule } from './rotation'
 import type { SourceId } from './sources'
@@ -42,7 +43,7 @@ export interface Limits {
 export interface Condition {
   id: ConditionId
   label: string
-  icon: string
+  icon: IconName
   blurb: string
   limits: Limits
   /** Why each limit is set, keyed like Limits. */
@@ -67,7 +68,7 @@ const rule = (
 
 export const CONDITIONS: Condition[] = [
   {
-    id: 'adhd', label: 'ADHD', icon: '🎯', domains: ['focus', 'mood'],
+    id: 'adhd', label: 'ADHD', icon: 'target', domains: ['focus', 'mood'],
     blurb: 'Plans favor low-effort, rewarding meals at set times, with stimulant-medication timing built in.',
     limits: {}, limitReasons: {},
     avoid: [],
@@ -87,7 +88,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'anxiety', label: 'Anxiety', icon: '🌊', domains: ['mood', 'sleep'],
+    id: 'anxiety', label: 'Anxiety', icon: 'waves', domains: ['mood', 'sleep'],
     blurb: 'Steadier caffeine, regular meals, and omega-3-rich fish.',
     limits: {}, limitReasons: {},
     avoid: [],
@@ -104,7 +105,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'depression', label: 'Depression', icon: '🌤️', domains: ['mood', 'energy'],
+    id: 'depression', label: 'Depression', icon: 'cloudSun', domains: ['mood', 'energy'],
     blurb: 'A Mediterranean-style pattern (fish, legumes, vegetables, olive oil, nuts), which improved depression in a randomized trial.',
     limits: {}, limitReasons: {},
     avoid: [
@@ -131,7 +132,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'migraine', label: 'Migraine', icon: '⚡', domains: ['energy', 'sleep'],
+    id: 'migraine', label: 'Migraine', icon: 'zap', domains: ['energy', 'sleep'],
     blurb: 'Regular meals with no skipping, steady caffeine, magnesium, and omega-3-rich fish. You choose your own trigger foods.',
     limits: {}, limitReasons: {},
     avoid: [
@@ -157,7 +158,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: ['fast'],
   },
   {
-    id: 'menopause', label: 'Menopause', icon: '🌸', domains: ['bones', 'heart', 'sleep'],
+    id: 'menopause', label: 'Menopause', icon: 'flower', domains: ['bones', 'heart', 'sleep'],
     blurb: 'Bone-protecting calcium and vitamin D, protein for muscle, and heart-healthy fats, adjusted by stage.',
     limits: {}, limitReasons: {},
     avoid: [],
@@ -178,7 +179,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'hypertension', label: 'High blood pressure', icon: '🩸', domains: ['heart'],
+    id: 'hypertension', label: 'High blood pressure', icon: 'droplet', domains: ['heart'],
     blurb: 'DASH-style eating with a hard daily sodium cap. DASH plus lower sodium lowered blood pressure in trials.',
     limits: { sodiumMaxMg: 2300, sodiumGoalMg: 1500 },
     limitReasons: {
@@ -203,7 +204,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'cholesterol', label: 'High cholesterol', icon: '🫀', domains: ['heart'],
+    id: 'cholesterol', label: 'High cholesterol', icon: 'heartPulse', domains: ['heart'],
     blurb: 'Saturated fat under 6% of calories, plus foods that lower LDL: oats, nuts, soy and legumes.',
     limits: { satFatMaxPct: 6, eggsMaxWeek: 7 },
     limitReasons: {
@@ -233,7 +234,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 'gerd', label: 'GERD / acid reflux', icon: '🔥', domains: ['sleep'],
+    id: 'gerd', label: 'GERD / acid reflux', icon: 'flame', domains: ['sleep'],
     blurb: 'No food in the 3 hours before bed, and common trigger foods removed (you can re-allow any you tolerate).',
     limits: { lastFoodBeforeBedMin: 180 },
     limitReasons: {
@@ -256,7 +257,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
-    id: 't1d', label: 'Type 1 diabetes', icon: '💉', domains: ['energy'],
+    id: 't1d', label: 'Type 1 diabetes', icon: 'syringe', domains: ['energy'],
     blurb: 'Consistent, visible carbs per meal for insulin dosing, no blood-sugar-spiking meals, and hypoglycemia safety built in.',
     limits: { noCrashMeals: true, addedSugarMaxPct: 5 },
     limitReasons: {
@@ -279,7 +280,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: ['fast'],
   },
   {
-    id: 't2d', label: 'Type 2 diabetes', icon: '🩺', domains: ['energy', 'heart'],
+    id: 't2d', label: 'Type 2 diabetes', icon: 'stethoscope', domains: ['energy', 'heart'],
     blurb: 'High-fiber, low-added-sugar meals, no spike-and-crash meals, legumes and whole grains, and walks after meals.',
     limits: { noCrashMeals: true, addedSugarMaxPct: 5 },
     limitReasons: {
@@ -302,7 +303,7 @@ export const CONDITIONS: Condition[] = [
     suppressTips: ['fast'],
   },
   {
-    id: 'ckd', label: 'Chronic kidney disease', icon: '🫘', domains: [],
+    id: 'ckd', label: 'Chronic kidney disease', icon: 'bean', domains: [],
     blurb: 'Safety mode: lower protein, no creatine, no extra potassium or magnesium pushes. Work with a renal dietitian.',
     limits: { proteinMaxPerKg: 0.8 },
     limitReasons: {
@@ -313,7 +314,7 @@ export const CONDITIONS: Condition[] = [
     helps: [],
     guidance: [
       { text: 'Potassium and phosphorus needs are individual in CKD. The app no longer pushes potassium-rich foods; follow your lab results and renal dietitian.', evidence: 'strong', sources: ['kdoqi', 'ods_potassium'] },
-      { text: 'Don’t take magnesium supplements without medical advice in kidney disease.', evidence: 'strong', sources: ['ods_magnesium'] },
+      { text: 'The kidneys clear magnesium and potassium, so take supplements of either only on medical advice.', evidence: 'strong', sources: ['ods_magnesium', 'kdoqi'] },
     ],
     suppressTips: ['creatine', 'protein_spread'],
   },

@@ -16,6 +16,21 @@ export type ConditionId =
   | 't2d'
   | 'ckd'
 
+/** Medications and states that change which supplements are safe. */
+export interface MedFlags {
+  /** Warfarin, apixaban, rivaroxaban, clopidogrel and similar. */
+  bloodThinner: boolean
+  /** SSRIs, SNRIs, trazodone, triptans or other serotonergic drugs. */
+  ssri: boolean
+  /** Levothyroxine or other thyroid hormone. */
+  thyroid: boolean
+  /** Insulin or sulfonylureas (glipizide, glyburide, glimepiride): can cause lows. */
+  diabetesMeds: boolean
+  /** ACE inhibitors, ARBs or potassium-sparing diuretics. */
+  bpMeds: boolean
+  pregnant: boolean
+}
+
 /** STRAW+10 stages: perimenopause (cycles changing), menopause (first year after the final period), postmenopause. */
 export type MenopauseStage = 'peri' | 'meno' | 'post'
 
@@ -207,6 +222,7 @@ export interface Profile {
   toleratedTriggers: string[]
   /** Optional, individual triggers the user has chosen to avoid (e.g. chocolate for migraine). */
   optInTriggers: string[]
+  meds: MedFlags
 }
 
 export interface Store {
@@ -242,6 +258,8 @@ export interface AppState {
   priceOverrides: Record<string, Record<string, number>>
   preferredStore: string | null
   plan: DayPlan[]
+  /** OAuth client ID for exporting to Google Tasks (public, not a secret). */
+  googleClientId: string
   /** Shopping list check-off state, by food id. */
   checked: Record<string, boolean>
   setupDone: boolean

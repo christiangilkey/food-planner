@@ -5,6 +5,7 @@ import { estimatedPackagePrice } from '../lib/nutrition'
 import { weeklyNeeds } from '../lib/shopping'
 import { type ViewProps } from './ui'
 import { money } from '../lib/format'
+import { Icon } from './Icon'
 
 export function PricesView({ state, update }: ViewProps) {
   const [newStore, setNewStore] = useState('')
@@ -60,14 +61,14 @@ export function PricesView({ state, update }: ViewProps) {
             {state.stores.map((s) => (
               <div key={s.id} className={`store ${s.id === storeId ? 'on' : ''}`}>
                 <button className="store-pick" onClick={() => update((x) => ({ ...x, preferredStore: s.id }))} aria-pressed={s.id === storeId}>
-                  {s.id === storeId ? '★ ' : ''}{s.name}
+                  {s.id === storeId && <Icon name="star" size={14} />} {s.name}
                 </button>
-                <button className="ghost small" onClick={() => removeStore(s.id)} aria-label={`Remove ${s.name}`}>✕</button>
+                <button className="ghost small" onClick={() => removeStore(s.id)} aria-label={`Remove ${s.name}`}><Icon name="x" size={14} /></button>
               </div>
             ))}
           </div>
         )}
-        {storeId && <p className="muted small">★ is your main store: the shopping list totals use its prices. Tap another store to edit its prices.</p>}
+        {storeId && <p className="muted small">The starred store is your main store: the shopping list totals use its prices. Tap another store to edit its prices.</p>}
       </section>
 
       <section className="card">

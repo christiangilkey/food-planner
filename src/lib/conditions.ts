@@ -14,12 +14,16 @@ export function activeConditions(p: Profile): Condition[] {
 
 export interface AvoidReason { condition: Condition; entry: AvoidEntry }
 
-/** Every food the active conditions remove from the plan, with the reasons. */
+/**
+ * Every food the active conditions remove from the plan, with the reasons. Medication-based
+ * avoids (MAOI) apply whenever the medication is set, even if the related condition is off.
+ */
 export function avoidedFoods(p: Profile): Map<string, AvoidReason[]> {
   const out = new Map<string, AvoidReason[]>()
-  for (const condition of activeConditions(p)) {
+  for (const condition of CONDITIONS) {
+    const active = p.conditions.includes(condition.id)
     for (const entry of condition.avoid) {
-      if (entry.onlyIf === 'maoi' && !p.maoi) continue
+      if (entry.onlyIf === 'maoi' ? !p.maoi : !active) continue
       for (const food of entry.foods) {
         if (entry.optIn && !p.optInTriggers.includes(food)) continue
         if (entry.tolerable && p.toleratedTriggers.includes(food)) continue

@@ -4,6 +4,7 @@ import { planCost } from '../lib/planner'
 import { AISLE_ORDER, buildShoppingList, formatLb, type ShoppingItem } from '../lib/shopping'
 import { Chip, type ViewProps } from './ui'
 import { money } from '../lib/format'
+import { Icon } from './Icon'
 
 export function ShopView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) => void }) {
   const { items, covered, total } = useMemo(() => buildShoppingList(state), [state])
@@ -88,7 +89,7 @@ export function ShopView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
       {covered.length > 0 && (
         <section className="card">
           <button className="disclosure" onClick={() => setShowCovered(!showCovered)} aria-expanded={showCovered}>
-            {showCovered ? '▾' : '▸'} Already at home ({covered.length})
+            <Icon name={showCovered ? 'chevronDown' : 'chevronRight'} /> Already at home ({covered.length})
           </button>
           {showCovered && (
             <ul className="shop-list">

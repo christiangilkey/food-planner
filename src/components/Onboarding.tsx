@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { LogoMark } from './Logo'
 import { computeTargets } from '../lib/energy'
 import { generatePlan } from '../lib/planner'
 import { ConditionFields } from './ConditionFields'
+import { MedFields } from './MedFields'
 import { BodyFields, EquipmentFields, LifestyleFields } from './ProfileFields'
 import type { ViewProps } from './ui'
 
@@ -27,8 +29,8 @@ export function Onboarding(props: ViewProps) {
   return (
     <div className="onboarding">
       <div className="onboarding-head">
-        <span className="logo big" aria-hidden>🥕</span>
-        <h1>Food Planner</h1>
+        <LogoMark size={56} />
+        <h1 className="wordmark big">Food Planner</h1>
         <p className="muted">Meals that keep you full, fit your kitchen, your budget and your brain.</p>
         <ol className="steps" aria-label="Setup progress">
           {STEPS.map((s, i) => (
@@ -49,7 +51,14 @@ export function Onboarding(props: ViewProps) {
           </>
         )}
         {step === 1 && <EquipmentFields {...props} />}
-        {step === 2 && <ConditionFields {...props} />}
+        {step === 2 && (
+          <>
+            <ConditionFields {...props} />
+            <h3>Medications & pregnancy</h3>
+            <p className="muted small">Used to screen supplements and foods for interactions.</p>
+            <MedFields {...props} />
+          </>
+        )}
         {step === 3 && <LifestyleFields {...props} />}
       </section>
 
