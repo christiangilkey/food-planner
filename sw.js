@@ -1,5 +1,5 @@
 // Offline support: network-first for pages, cache-first for built assets.
-const CACHE = 'food-planner-v2'
+const CACHE = 'food-planner-v3'
 
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', (e) => {
