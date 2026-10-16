@@ -43,7 +43,7 @@ export function ExportSheet({ state, update, onClose }: ViewProps & { onClose: (
   }
 
   return (
-    <Sheet title="Send to Google Tasks" onClose={onClose}>
+    <Sheet title="Export to Google Tasks" onClose={onClose}>
       <p className="muted small">Creates a task list for each part you choose, with meals due on their day. It goes straight from this device to your Google account; nothing passes through any other server.</p>
       <div className="check-grid">
         {([['meals', 'Meal plan', 'One task per meal, due that day, with ingredients'], ['shopping', 'Shopping list', 'One task per item'], ['prep', 'Prep day', 'Batch cooking, due the Sunday before']] as [keyof ExportOptions, string, string][]).map(([k, label, detail]) => (
@@ -71,7 +71,7 @@ export function ExportSheet({ state, update, onClose }: ViewProps & { onClose: (
       )}
 
       <div className="add-row">
-        <button className="primary with-icon" onClick={send} disabled={!count || status.kind === 'working'}><Icon name="check" /> Connect & send</button>
+        <button className="primary with-icon" onClick={send} disabled={!count || status.kind === 'working'}><Icon name="check" /> Export to Google Tasks</button>
         <button className="secondary" onClick={copy} disabled={!count}>Copy as checklist</button>
       </div>
       {status.text && (

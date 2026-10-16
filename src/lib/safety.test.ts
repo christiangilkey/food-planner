@@ -106,7 +106,7 @@ describe('condition safety', () => {
   it('MAOI removes tyramine-rich foods; triggers can be re-allowed or opted into', () => {
     expect([...avoidedFoods(stateWith(['depression']).profile).keys()]).toEqual([])
     const maoi = avoidedFoods(stateWith(['depression'], { maoi: true }).profile)
-    for (const f of ['cheddar', 'kimchi', 'soy_sauce', 'jerky']) expect(maoi.has(f)).toBe(true)
+    for (const f of ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky']) expect(maoi.has(f)).toBe(true)
     const gerd = avoidedFoods(stateWith(['gerd'], { toleratedTriggers: ['salsa'] }).profile)
     expect(gerd.has('salsa')).toBe(false)
     expect(gerd.has('canned_tomatoes')).toBe(true)

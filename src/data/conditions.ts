@@ -110,7 +110,7 @@ export const CONDITIONS: Condition[] = [
     limits: {}, limitReasons: {},
     avoid: [
       {
-        foods: ['cheddar', 'kimchi', 'soy_sauce', 'jerky'], onlyIf: 'maoi',
+        foods: ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky'], onlyIf: 'maoi',
         reason: { text: 'MAOI antidepressants block the breakdown of tyramine, which is high in aged cheese, fermented soy and cabbage, and cured meat. Too much can cause a dangerous spike in blood pressure.', evidence: 'strong', sources: ['gillman', 'flockhart'] },
       },
     ],
@@ -137,7 +137,7 @@ export const CONDITIONS: Condition[] = [
     limits: {}, limitReasons: {},
     avoid: [
       {
-        foods: ['dark_chocolate', 'cheddar'], optIn: true,
+        foods: ['dark_chocolate', 'cheddar', 'parmesan'], optIn: true,
         reason: { text: 'Chocolate and aged cheese are commonly reported triggers, but controlled evidence is weak and triggers differ between people. Avoid them only if they trigger you.', evidence: 'emerging', sources: ['martin_diet'] },
       },
     ],
@@ -242,7 +242,7 @@ export const CONDITIONS: Condition[] = [
     },
     avoid: [
       {
-        foods: ['canned_tomatoes', 'salsa', 'clementine', 'dark_chocolate', 'kimchi'], tolerable: true,
+        foods: ['canned_tomatoes', 'tomato', 'marinara', 'salsa', 'clementine', 'lemon', 'dark_chocolate', 'kimchi'], tolerable: true,
         reason: { text: 'Tomato, citrus, chocolate and spicy foods are common reflux triggers. The ACG advises avoiding the ones that trigger your symptoms, so re-allow any you tolerate.', evidence: 'emerging', sources: ['acg_gerd'] },
       },
     ],

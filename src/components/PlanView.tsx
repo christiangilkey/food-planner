@@ -73,7 +73,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           <div className="hero-actions">
             <button className="primary" onClick={regenerate}>{hasPlan ? 'New week' : 'Build week'}</button>
             <button className="secondary" onClick={() => goTo('shop')}>Shopping list</button>
-            {hasPlan && <button className="secondary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> Google Tasks</button>}
+            {hasPlan && <button className="primary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> Export to Google Tasks</button>}
           </div>
         </div>
         <p className="muted small with-icon">"New week" keeps any meal you've locked <Icon name="lock" size={14} /></p>
@@ -88,11 +88,9 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
 
       <div className="day-tabs" role="tablist" aria-label="Day">
         {DAYS.map((name, i) => {
-          const k = dayTotals(plan[i]).kcal
           return (
             <button key={name} role="tab" aria-selected={i === day} className={i === day ? 'on' : ''} onClick={() => setDay(i)}>
               <span>{name}</span>
-              <small>{k ? Math.round(k) : '–'}</small>
             </button>
           )
         })}
