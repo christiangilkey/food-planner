@@ -24,6 +24,13 @@ describe('Google Tasks export', () => {
     expect(meals.tasks[0].notes).toMatch(/• .+: \d+ g/)
   })
 
+  it('every meal and prep task includes numbered cooking steps', () => {
+    const lists = buildTaskLists(s, { meals: true, shopping: false, prep: true }, wed)
+    for (const l of lists) for (const t of l.tasks) {
+      expect(t.notes, t.title).toMatch(/How to make it:\n1\. .+\n2\. /)
+    }
+  })
+
   it('lists every grocery item plus a total, and prep tasks', () => {
     const lists = buildTaskLists(s, { meals: false, shopping: true, prep: true }, wed)
     const shop = lists.find((l) => l.title.startsWith('Groceries'))!

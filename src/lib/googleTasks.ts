@@ -1,6 +1,7 @@
 import { FOOD_BY_ID } from '../data/foods'
+import { METHODS } from '../data/methods'
 import { RECIPE_BY_ID } from '../data/recipes'
-import type { AppState } from '../types'
+import type { AppState, Recipe } from '../types'
 import { money } from './format'
 import { servingTotals } from './nutrition'
 import { DAYS, dayEntries } from './plan-utils'
@@ -31,6 +32,15 @@ const API = 'https://tasks.googleapis.com/tasks/v1'
 
 const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
+/** Numbered cooking steps for a task's notes. */
+export function methodText(r: Recipe): string {
+  const steps = METHODS[r.id]
+  return steps?.length ? ['How to make it:', ...steps.map((step, i) => `${i + 1}. ${step}`)].join('\n') : ''
+}
+
+const ingredientLines = (r: Recipe, scale: number) =>
+  r.items.map((it) => `• ${FOOD_BY_ID[it.food]?.name ?? it.food}: ${Math.round(it.grams * scale)} g (${formatLb(it.grams * scale)})`).join('\n')
+
 /** The Monday of the week containing `today` (the plan's Mon–Sun map onto it). */
 export function weekStart(today = new Date()): Date {
   const d = new Date(today.getFullYear(), today.getMonth(), today.getDate())
@@ -56,7 +66,7 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
         const at = slot === 'snack' ? t.snacks[snackIndex] : t[slot]
         const totals = servingTotals(r, entry.portion)
         const scale = entry.portion / r.servings
-        const ingredients = r.items.map((it) => `• ${FOOD_BY_ID[it.food]?.name ?? it.food}: ${Math.round(it.grams * scale)} g (${formatLb(it.grams * scale)})`).join('\n')
+        const ingredients = ingredientLines(r, scale)
         const tip = mealTip(r, entry.portion, state.profile)
         const slotName = slot[0].toUpperCase() + slot.slice(1)
         tasks.push({
@@ -64,7 +74,8 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
           notes: [
             `${Math.round(totals.kcal)} kcal · ${Math.round(totals.protein)} g protein · ${Math.round(totals.carbs)} g carbs · ${r.activeMin} min hands-on`,
             '', ingredients,
-            r.note ? `\n${r.note}` : '',
+            r.batch && r.servings > 1 ? '\nIf you cooked this batch on prep day, just reheat a portion until steaming hot (165°F).' : '',
+            `\n${methodText(r)}`,
             tip ? `\nTip: ${tip.text}` : '',
           ].filter((x) => x !== '').join('\n'),
           due: iso(dateOf(d)),
@@ -104,7 +115,12 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
       const batches = Math.ceil(servings / r.servings - 0.1)
       return {
         title: `Cook ${r.name}${batches > 1 ? ` × ${batches} batches` : ''}`,
-        notes: `${servings} servings planned this week · ${r.activeMin * batches} min hands-on${r.note ? `\n${r.note}` : ''}`,
+        notes: [
+          `${servings} servings planned this week · ${r.activeMin * batches} min hands-on`,
+          '', `Ingredients${batches > 1 ? ` for ${batches} batches` : ''}:`, ingredientLines(r, batches),
+          '', methodText(r),
+          '', 'Cool leftovers within 2 hours, refrigerate, and eat within 3–4 days.',
+        ].join('\n'),
         due: iso(prepDay),
       }
     })
