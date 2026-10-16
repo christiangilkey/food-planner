@@ -224,6 +224,18 @@ export const SOURCES = {
   nccih_garlic: s('NCCIH: Garlic', 'Garlic: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/garlic', 'reference'),
   nccih_ryr: s('NCCIH: Red yeast rice', 'Red yeast rice: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/red-yeast-rice', 'reference'),
 
+  // Coffee, tea, caffeine, grapefruit, ginger, pomegranate
+  poole_coffee: s('Poole 2017', 'Coffee consumption and health: umbrella review of meta-analyses', 'BMJ', 2017, pm(29167102), 'meta-analysis'),
+  fda_caffeine: s('FDA: caffeine', 'Spilling the beans: how much caffeine is too much?', 'U.S. Food & Drug Administration', 2024, 'https://www.fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much', 'guideline'),
+  acog_caffeine: s('ACOG 2010 caffeine', 'Committee Opinion No. 462: moderate caffeine consumption during pregnancy', 'Obstet Gynecol', 2010, pm(20664420), 'guideline'),
+  fda_grapefruit: s('FDA: grapefruit & drugs', 'Grapefruit juice and some drugs don\u2019t mix', 'U.S. Food & Drug Administration', 2024, 'https://www.fda.gov/consumers/consumer-updates/grapefruit-juice-and-some-drugs-dont-mix', 'guideline'),
+  bailey_grapefruit: s('Bailey 2013', 'Grapefruit\u2013medication interactions: forbidden fruit or avoidable consequences?', 'CMAJ', 2013, pm(23184849), 'review'),
+  nccih_green_tea: s('NCCIH: Green tea', 'Green tea: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/green-tea', 'reference'),
+  nccih_ginger: s('NCCIH: Ginger', 'Ginger: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/ginger', 'reference'),
+  viljoen: s('Viljoen 2014', 'Ginger for pregnancy-associated nausea and vomiting: meta-analysis', 'Nutr J', 2014, pm(24642205), 'meta-analysis'),
+  sahebkar_pom: s('Sahebkar 2017', 'Effects of pomegranate juice on blood pressure: meta-analysis of RCTs', 'Pharmacol Res', 2017, pm(27888156), 'meta-analysis'),
+  fsis: s('USDA FSIS: safe temperatures', 'Safe minimum internal temperature chart', 'USDA Food Safety and Inspection Service', 2024, 'https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/safe-temperature-chart', 'guideline'),
+
   // ── Peptides ────────────────────────────────────────────
   step1: s('STEP 1 2021', 'Once-weekly semaglutide in adults with overweight or obesity', 'N Engl J Med', 2021, pm(33567185), 'trial'),
   select: s('SELECT 2023', 'Semaglutide and cardiovascular outcomes in obesity without diabetes', 'N Engl J Med', 2023, pm(37952131), 'trial'),

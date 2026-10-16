@@ -32,7 +32,7 @@ export function defaultState(): AppState {
       maoi: false,
       toleratedTriggers: [],
       optInTriggers: [],
-      meds: { bloodThinner: false, ssri: false, thyroid: false, diabetesMeds: false, bpMeds: false, pregnant: false },
+      meds: { bloodThinner: false, ssri: false, thyroid: false, diabetesMeds: false, bpMeds: false, grapefruitMeds: false, pregnant: false },
     },
     equipment: ['stove', 'skillet', 'pot', 'oven', 'sheetpan', 'microwave'],
     pantry: [],

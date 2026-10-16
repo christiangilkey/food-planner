@@ -5,7 +5,7 @@ import type { AppState, Equipment, Nutrients, Recipe } from '../types'
 export const EMPTY: Nutrients = {
   kcal: 0, protein: 0, carbs: 0, fat: 0, sugar: 0, water: 0, sodium: 0, fiber: 0, calcium: 0,
   iron: 0, magnesium: 0, potassium: 0, zinc: 0, vitA: 0, vitC: 0, vitD: 0, vitE: 0, vitK: 0,
-  folate: 0, b12: 0, omega3: 0, choline: 0, b6: 0, selenium: 0, satFat: 0, addedSugar: 0,
+  folate: 0, b12: 0, omega3: 0, choline: 0, b6: 0, selenium: 0, satFat: 0, addedSugar: 0, caffeine: 0,
 }
 
 const KEYS = Object.keys(EMPTY) as (keyof Nutrients)[]

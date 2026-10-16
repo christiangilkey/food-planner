@@ -3,7 +3,7 @@ import { NUTRIENTS, SODIUM_LIMIT_MG, UPPER_LIMITS, type NutrientInfo } from '../
 import { RECIPES } from '../data/recipes'
 import type { AppState, Food, NutrientKey, Recipe } from '../types'
 import { computeTargets } from './energy'
-import { avoidedFoods, mergedLimits, nutrientTarget, recipeAllowed } from './conditions'
+import { avoidedFoods, caffeineLimit, mergedLimits, nutrientTarget, recipeAllowed } from './conditions'
 import { addInto, canMake, EMPTY, servingTotals } from './nutrition'
 import { dayTotals } from './planner'
 
@@ -29,6 +29,8 @@ export interface WeekAnalysis {
   sodiumPerDay: number
   /** Daily sodium ceiling: 2,300 mg, or a condition's stricter goal. */
   sodiumLimit: number
+  caffeinePerDay: number
+  caffeineLimit: number
   satFatPct: number
   addedSugarPct: number
   daysPlanned: number
@@ -77,6 +79,8 @@ export function analyzeWeek(state: AppState): WeekAnalysis {
   return {
     reports,
     sodiumPerDay: sum.sodium / div,
+    caffeinePerDay: sum.caffeine / div,
+    caffeineLimit: caffeineLimit(p),
     sodiumLimit: limits.sodiumGoalMg ?? SODIUM_LIMIT_MG,
     satFatPct: sum.kcal ? (sum.satFat * 900) / sum.kcal : 0,
     addedSugarPct: sum.kcal ? (sum.addedSugar * 400) / sum.kcal : 0,

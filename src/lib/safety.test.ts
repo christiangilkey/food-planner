@@ -106,7 +106,7 @@ describe('condition safety', () => {
   it('MAOI removes tyramine-rich foods; triggers can be re-allowed or opted into', () => {
     expect([...avoidedFoods(stateWith(['depression']).profile).keys()]).toEqual([])
     const maoi = avoidedFoods(stateWith(['depression'], { maoi: true }).profile)
-    for (const f of ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky']) expect(maoi.has(f)).toBe(true)
+    for (const f of ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky', 'kombucha']) expect(maoi.has(f)).toBe(true)
     const gerd = avoidedFoods(stateWith(['gerd'], { toleratedTriggers: ['salsa'] }).profile)
     expect(gerd.has('salsa')).toBe(false)
     expect(gerd.has('canned_tomatoes')).toBe(true)
@@ -114,6 +114,36 @@ describe('condition safety', () => {
     expect(avoidedFoods(stateWith(['migraine'], { optInTriggers: ['dark_chocolate'] }).profile).has('dark_chocolate')).toBe(true)
     // MAOI safety can't be switched off by "tolerating" a trigger.
     expect(avoidedFoods(stateWith(['depression'], { maoi: true, toleratedTriggers: ['cheddar'] }).profile).has('cheddar')).toBe(true)
+  })
+
+  it('caffeine stays within FDA/ACOG limits and can be switched off', () => {
+    const recipeOf = (id: string) => RECIPES.find((r) => r.id === id)!
+    const caffeinated = (s: AppState) => s.plan.some((d) => dayEntries(d).some(({ entry }) => recipeOf(entry.recipe).items.some((i) => ['coffee', 'green_tea'].includes(i.food))))
+    for (const seed of [1, 2, 3, 4]) {
+      const preg = stateWith([], { sex: 'female', meds: { ...defaultState().profile.meds, pregnant: true } }, KITCHENS[2])
+      preg.plan = generatePlan(preg, seed)
+      expect(planViolations(preg.profile, preg.plan).filter((v) => v.kind === 'caffeine')).toEqual([])
+      expect(analyzeWeek(preg).caffeinePerDay).toBeLessThanOrEqual(200)
+      const off = stateWith([], { caffeine: false }, KITCHENS[2])
+      off.plan = generatePlan(off, seed)
+      expect(caffeinated(off)).toBe(false)
+    }
+  })
+
+  it('grapefruit is removed for medicines with a grapefruit warning, with or without a condition', () => {
+    const meds = { ...defaultState().profile.meds, grapefruitMeds: true }
+    expect(avoidedFoods(stateWith([]).profile).has('grapefruit')).toBe(false)
+    expect(avoidedFoods(stateWith([], { meds }).profile).has('grapefruit')).toBe(true)
+    expect(avoidedFoods(stateWith(['cholesterol'], { meds }).profile).has('grapefruit')).toBe(true)
+    expect(avoidedFoods(stateWith(['hypertension'], { meds }).profile).has('grapefruit')).toBe(true)
+  })
+
+  it('GERD removes coffee and citrus by default; anxiety and migraine can opt out of caffeine', () => {
+    const gerd = avoidedFoods(stateWith(['gerd']).profile)
+    for (const f of ['coffee', 'grapefruit', 'orange', 'lime', 'lemon', 'kombucha']) expect(gerd.has(f), f).toBe(true)
+    expect(avoidedFoods(stateWith(['anxiety']).profile).has('coffee')).toBe(false)
+    expect(avoidedFoods(stateWith(['anxiety'], { optInTriggers: ['coffee'] }).profile).has('coffee')).toBe(true)
+    expect(avoidedFoods(stateWith(['migraine'], { optInTriggers: ['coffee', 'green_tea'] }).profile).has('green_tea')).toBe(true)
   })
 
   it('GERD keeps 3 hours food-free before bed, for any snack count and schedule', () => {

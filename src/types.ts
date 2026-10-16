@@ -28,6 +28,8 @@ export interface MedFlags {
   diabetesMeds: boolean
   /** ACE inhibitors, ARBs or potassium-sparing diuretics. */
   bpMeds: boolean
+  /** Any medicine with a grapefruit warning (some statins, nifedipine, buspirone, transplant drugs…). */
+  grapefruitMeds: boolean
   pregnant: boolean
 }
 
@@ -112,6 +114,7 @@ export interface Nutrients {
   selenium: number // µg
   satFat: number // g
   addedSugar: number // g
+  caffeine: number // mg
 }
 
 export type Aisle =

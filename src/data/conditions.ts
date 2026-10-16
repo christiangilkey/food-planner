@@ -17,7 +17,7 @@ export interface AvoidEntry {
   /** Off by default; the user turns it on if it's one of their triggers. */
   optIn?: boolean
   /** Only applies when this profile flag is on. */
-  onlyIf?: 'maoi'
+  onlyIf?: 'maoi' | 'grapefruitMeds'
 }
 
 /** Hard limits the planner must respect when the condition is on. */
@@ -91,7 +91,12 @@ export const CONDITIONS: Condition[] = [
     id: 'anxiety', label: 'Anxiety', icon: 'waves', domains: ['mood', 'sleep'],
     blurb: 'Steadier caffeine, regular meals, and omega-3-rich fish.',
     limits: {}, limitReasons: {},
-    avoid: [],
+    avoid: [
+      {
+        foods: ['coffee', 'green_tea'], optIn: true,
+        reason: { text: 'Caffeine increases anxiety and can trigger panic attacks in people with panic disorder. Tap to remove caffeinated drinks from your plan.', evidence: 'moderate', sources: ['klevebrant'] },
+      },
+    ],
     rules: [
       rule('anx_fish', 'Fatty fish (anxiety)', ['fatty_fish'], { min: 2 }, 'moderate', ['su_anx'],
         'Omega-3 supplementation reduced anxiety symptoms in a meta-analysis of clinical trials.', ['salmon', 'sardines']),
@@ -110,8 +115,8 @@ export const CONDITIONS: Condition[] = [
     limits: {}, limitReasons: {},
     avoid: [
       {
-        foods: ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky'], onlyIf: 'maoi',
-        reason: { text: 'MAOI antidepressants block the breakdown of tyramine, which is high in aged cheese, fermented soy and cabbage, and cured meat. Too much can cause a dangerous spike in blood pressure.', evidence: 'strong', sources: ['gillman', 'flockhart'] },
+        foods: ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky', 'kombucha'], onlyIf: 'maoi',
+        reason: { text: 'MAOI antidepressants block the breakdown of tyramine, which is high in aged cheese, fermented soy and cabbage, and cured meat. Too much can cause a dangerous spike in blood pressure. As a precaution the app also removes kombucha, a fermented drink whose tyramine content is not well studied.', evidence: 'strong', sources: ['gillman', 'flockhart'] },
       },
     ],
     rules: [
@@ -137,8 +142,8 @@ export const CONDITIONS: Condition[] = [
     limits: {}, limitReasons: {},
     avoid: [
       {
-        foods: ['dark_chocolate', 'cheddar', 'parmesan'], optIn: true,
-        reason: { text: 'Chocolate and aged cheese are commonly reported triggers, but controlled evidence is weak and triggers differ between people. Avoid them only if they trigger you.', evidence: 'emerging', sources: ['martin_diet'] },
+        foods: ['dark_chocolate', 'cheddar', 'parmesan', 'coffee', 'green_tea'], optIn: true,
+        reason: { text: 'Chocolate, aged cheese and caffeine are commonly reported triggers, but controlled evidence is weak and triggers differ between people (caffeine can also relieve migraine). Avoid them only if they trigger you.', evidence: 'emerging', sources: ['martin_diet', 'nowaczewska'] },
       },
     ],
     rules: [
@@ -200,7 +205,9 @@ export const CONDITIONS: Condition[] = [
       { text: 'The DASH diet (rich in fruit, vegetables, low-fat dairy, whole grains and nuts) lowered blood pressure, and adding lower sodium lowered it further.', evidence: 'strong', sources: ['dash', 'dash_sodium'] },
       { text: 'Potassium-rich foods help lower blood pressure. With kidney disease or on ACE inhibitors, ARBs or potassium-sparing diuretics, check with your doctor first.', evidence: 'strong', sources: ['ods_potassium', 'acc_htn'] },
     ],
-    guidance: [],
+    guidance: [
+      { text: 'Some blood-pressure drugs (such as nifedipine) interact with grapefruit. If yours has a grapefruit warning, tick it under Medications.', evidence: 'strong', sources: ['fda_grapefruit'] },
+    ],
     suppressTips: [],
   },
   {
@@ -212,6 +219,10 @@ export const CONDITIONS: Condition[] = [
       eggsMaxWeek: { text: 'The AHA advisory considers up to about one egg a day acceptable, with more caution for people with high LDL or diabetes.', evidence: 'moderate', sources: ['carson_eggs'] },
     },
     avoid: [
+      {
+        foods: ['grapefruit'], onlyIf: 'grapefruitMeds',
+        reason: { text: 'Grapefruit can raise blood levels of some statins (simvastatin, atorvastatin), some blood-pressure drugs (nifedipine), buspirone and transplant drugs, increasing side effects. Seville oranges, pomelos and tangelos can do the same.', evidence: 'strong', sources: ['fda_grapefruit', 'bailey_grapefruit'] },
+      },
       {
         foods: ['butter', 'jerky'],
         reason: { text: 'Butter and fatty cured meat are concentrated saturated-fat sources. The plan uses olive oil instead.', evidence: 'strong', sources: ['sacks_fat'] },
@@ -230,6 +241,7 @@ export const CONDITIONS: Condition[] = [
     ],
     guidance: [
       { text: 'The 2025–2030 Dietary Guidelines encourage full-fat dairy. For high cholesterol this app follows the AHA/ACC saturated-fat limit instead, so full-fat dairy is limited.', evidence: 'strong', sources: ['dga_2025', 'acc_chol'] },
+      { text: 'If you take a statin, check its label for a grapefruit warning and tick it under Medications; the app will then remove grapefruit.', evidence: 'strong', sources: ['fda_grapefruit'] },
     ],
     suppressTips: [],
   },
@@ -242,8 +254,8 @@ export const CONDITIONS: Condition[] = [
     },
     avoid: [
       {
-        foods: ['canned_tomatoes', 'tomato', 'marinara', 'salsa', 'clementine', 'lemon', 'dark_chocolate', 'kimchi'], tolerable: true,
-        reason: { text: 'Tomato, citrus, chocolate and spicy foods are common reflux triggers. The ACG advises avoiding the ones that trigger your symptoms, so re-allow any you tolerate.', evidence: 'emerging', sources: ['acg_gerd'] },
+        foods: ['canned_tomatoes', 'tomato', 'marinara', 'salsa', 'clementine', 'orange', 'grapefruit', 'lemon', 'lime', 'dark_chocolate', 'kimchi', 'coffee', 'kombucha'], tolerable: true,
+        reason: { text: 'Tomato, citrus, chocolate, spicy foods, coffee and carbonated drinks are common reflux triggers. The ACG advises avoiding the ones that trigger your symptoms, so re-allow any you tolerate.', evidence: 'emerging', sources: ['acg_gerd'] },
       },
     ],
     rules: [],

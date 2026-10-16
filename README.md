@@ -21,6 +21,8 @@ A meal and grocery planner that isn't a macro counter. It plans a week of meals 
 
 - **Supplements & peptides**: about 30 supplements with research doses, evidence levels and sources, recommended from your conditions and this week's nutrient gaps. Each is screened against your conditions and medications (blood thinners, SSRIs, MAOIs, thyroid hormone, insulin or sulfonylureas, blood-pressure drugs, pregnancy); unsafe combinations are marked "Not for you" and never recommended. Popular supplements the evidence doesn't support are listed with the reason. Peptides cover approved prescription peptides (semaglutide, tirzepatide, insulin, bremelanotide, tesamorelin) and commonly used unapproved "research peptides" (BPC-157, TB-500, CJC-1295, ipamorelin and others), with what the FDA and the human evidence actually say. No doses are given for unapproved peptides.
 - **Google Tasks export**: sends the meal plan (a task per meal, due that day, with ingredients), the shopping list and prep-day cooking to Google Tasks, straight from the browser. It needs a one-time Google Cloud OAuth client ID; the setup steps are in the app. "Copy as checklist" works with no setup.
+- **Recipes with steps**: 115 recipes, each with numbered step-by-step instructions in its details sheet. Meat, fish and egg steps give USDA safe internal temperatures.
+- **Caffeine and grapefruit**: coffee, green tea, dark chocolate and kombucha count toward a daily caffeine limit (400 mg, or 200 mg in pregnancy). Caffeinated drinks can be switched off, and GERD, anxiety and migraine treat them as triggers. A medication checkbox removes grapefruit for drugs with a grapefruit warning.
 - **Feels like an app**: swipe left and right between tabs, line icons, subtle motion (turned off when your device asks for reduced motion), and every recipe name opens its details.
 
 Everything is stored locally in the browser (`localStorage`). Back up and restore from the Profile screen.
@@ -62,6 +64,7 @@ npm test
 | --- | --- |
 | `src/data/foods.ts` | Food table: nutrients per 100 g (approximate USDA values), package sizes, prices, shelf life |
 | `src/data/recipes.ts` | Recipes: ingredients, equipment, time, steps, "dopamine" traits |
+| `src/data/methods.ts` | Step-by-step instructions for every recipe |
 | `src/data/nutrients.ts` | Nutrient targets by sex/age, deficiency effects, upper limits |
 | `src/data/regions.ts` | State grocery price multipliers |
 | `src/data/sources.ts` | Every cited source (PubMed IDs verified against PubMed) |
@@ -79,6 +82,6 @@ npm test
 | `src/lib/shopping.ts` | Shopping list |
 | `src/lib/analysis.ts` | Deficiency report |
 
-To add a food or recipe, add an entry to `foods.ts` or `recipes.ts`. The tests check that every recipe ingredient exists and that each food's macros roughly add up to its calories.
+To add a food or recipe, add an entry to `foods.ts` or `recipes.ts` (and its steps to `methods.ts`). The tests check that every recipe ingredient exists, every recipe has steps, and that each food's macros roughly add up to its calories.
 
 Nutrition values and prices are estimates. This is a planning tool, not medical advice. Conditions such as diabetes, kidney disease and MAOI use need individual care from your clinicians.

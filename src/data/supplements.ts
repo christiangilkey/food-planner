@@ -3,7 +3,7 @@ import type { ConditionId, Evidence, NutrientKey } from '../types'
 import type { SourceId } from './sources'
 
 /** Something about the person that changes whether a supplement is safe. */
-export type Trigger = ConditionId | 'maoi' | 'ssri' | 'bloodThinner' | 'thyroid' | 'diabetesMeds' | 'bpMeds' | 'pregnant' | 'stimulant'
+export type Trigger = ConditionId | 'maoi' | 'ssri' | 'bloodThinner' | 'thyroid' | 'diabetesMeds' | 'bpMeds' | 'grapefruitMeds' | 'pregnant' | 'stimulant'
 
 export type Goal =
   | 'gaps' | 'sleep' | 'focus' | 'mood' | 'stress' | 'energy' | 'heart' | 'bloodSugar' | 'bloodPressure'
@@ -505,11 +505,33 @@ export const SUPPLEMENTS: Supplement[] = [
       { when: ['bloodThinner'], block: true, text: 'Garlic supplements may increase bleeding risk.', sources: ['nccih_garlic'] },
     ],
   },
+  {
+    id: 'ginger_supplement', name: 'Ginger (capsules or tea)', forms: 'Capsules, tea, fresh root',
+    dose: { text: 'Pregnancy-nausea trials commonly used up to about 1 g a day of ginger.', sources: ['viljoen'] },
+    uses: [
+      { goal: 'gut', text: 'Reduced nausea in pregnancy in a meta-analysis of trials; mostly not helpful for motion sickness.', evidence: 'moderate', sources: ['viljoen', 'nccih_ginger'] },
+    ],
+    cautions: [
+      { when: ['gerd'], text: 'Heartburn is a listed side effect of ginger supplements.', sources: ['nccih_ginger'] },
+      { text: 'Can cause stomach discomfort, diarrhea and mouth irritation; ask your provider if you take other medicines.', sources: ['nccih_ginger'] },
+    ],
+  },
+  {
+    id: 'pomegranate_juice', name: 'Pomegranate juice', forms: 'Juice',
+    dose: { text: 'Trial doses varied; unsweetened juice was typical.', sources: ['sahebkar_pom'] },
+    uses: [
+      { goal: 'bloodPressure', conditions: ['hypertension'], text: 'Lowered systolic blood pressure by about 5 mmHg in a meta-analysis of trials.', evidence: 'emerging', sources: ['sahebkar_pom'] },
+    ],
+    cautions: [
+      { when: ['t1d', 't2d'], text: 'Juice is concentrated sugar; count it toward your carbs or use whole pomegranate seeds.', sources: ['ada_5'] },
+    ],
+  },
 ]
 
 export const NOT_RECOMMENDED: NotRecommended[] = [
   { id: 'black_cohosh', name: 'Black cohosh', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone', 'nccih_black_cohosh'], why: 'NAMS does not recommend it for hot flashes, and rare cases of serious liver damage have been reported.' },
   { id: 'soy_isoflavones', name: 'Soy isoflavone pills', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone'], why: 'NAMS does not recommend soy foods or extracts for hot flashes. Proven options include hormone therapy, nonhormone medications and CBT.' },
+  { id: 'green_tea_extract', name: 'Green tea extract pills', goal: 'heart', claim: 'Weight loss and heart health', evidence: 'strong', sources: ['nccih_green_tea'], why: 'Liver injury has been reported, mainly with concentrated green tea extracts in pill form, and the extracts can raise blood pressure. Brewed green tea as a drink is a different, low-risk thing.' },
   { id: 'red_yeast_rice', name: 'Red yeast rice', goal: 'heart', claim: 'Lowering cholesterol', evidence: 'strong', sources: ['nccih_ryr'], why: 'It works only because it can contain monacolin K, which is chemically identical to the statin lovastatin, in unpredictable amounts. It has the same possible side effects as statins, and some products contain citrinin, a kidney toxin. A prescribed statin is the safer, measured version.' },
   { id: 'chromium_cinnamon', name: 'Chromium, cinnamon, aloe', goal: 'bloodSugar', claim: 'Blood sugar control', evidence: 'strong', sources: ['ada_5'], why: 'The ADA finds no clear evidence that these improve outcomes in diabetes without an underlying deficiency.' },
   { id: 'cocoa_extract', name: 'Cocoa flavanol extract', goal: 'memory', claim: 'Memory and cognition', evidence: 'strong', sources: ['cosmos_mind'], why: 'In the large COSMOS-Mind trial, cocoa extract did not improve cognition.' },

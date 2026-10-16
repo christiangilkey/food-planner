@@ -131,6 +131,9 @@ function BrainBody({ state, a }: { state: AppState; a: WeekAnalysis }) {
           <p className="small muted">Under 10% for most people; 5–6% if you need to lower LDL. <Cite ids={['sacks_fat', 'eckel']} /></p>
           <div className="summary-label"><strong>Added sugar</strong><span>{a.addedSugarPct.toFixed(1)}% of calories</span></div>
           <p className="small muted">The ADA advises minimizing added sugar; the 2025–2030 Dietary Guidelines advise avoiding highly processed sugary foods. <Cite ids={['ada_5', 'dga_2025']} /></p>
+          <div className="summary-label"><strong>Caffeine from food & drinks</strong><span>{Math.round(a.caffeinePerDay)} / {a.caffeineLimit} mg a day</span></div>
+          <Bar value={a.caffeinePerDay} max={a.caffeineLimit} tone={a.caffeinePerDay > a.caffeineLimit ? 'bad' : 'good'} label="Caffeine" />
+          <p className="small muted">{a.caffeineLimit < 400 ? 'Under 200 mg a day in pregnancy.' : 'Up to 400 mg a day isn’t linked to harm for most adults.'} Coffee you drink outside the plan counts too. <Cite ids={a.caffeineLimit < 400 ? ['acog_caffeine'] : ['fda_caffeine']} /></p>
         </section>
       )}
     </>

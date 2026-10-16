@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { FOOD_BY_ID, FOODS } from '../data/foods'
+import { METHODS } from '../data/methods'
 import { RECIPES } from '../data/recipes'
 import { analyzeWeek } from './analysis'
 import { computeTargets } from './energy'
@@ -15,12 +16,17 @@ describe('data integrity', () => {
   it('every recipe ingredient exists in the food table', () => {
     for (const r of RECIPES) for (const i of r.items) expect(FOOD_BY_ID[i.food], `${r.id} → ${i.food}`).toBeTruthy()
   })
+  it('every recipe has step-by-step instructions', () => {
+    for (const r of RECIPES) expect(METHODS[r.id]?.length ?? 0, r.id).toBeGreaterThanOrEqual(2)
+    for (const id of Object.keys(METHODS)) expect(RECIPES.some((r) => r.id === id), `method for unknown recipe ${id}`).toBe(true)
+  })
   it('food macros roughly add up to calories', () => {
     for (const f of FOODS) {
-      const est = f.n.protein * 4 + f.n.carbs * 4 + f.n.fat * 9
-      // Fiber and food-specific Atwater factors leave some slack, especially for leafy greens.
+      // Fiber yields about 2 kcal/g rather than 4; food-specific Atwater factors (and organic acids in
+      // citrus juice) leave some slack, especially for low-calorie foods.
+      const est = f.n.protein * 4 + (f.n.carbs - f.n.fiber) * 4 + f.n.fiber * 2 + f.n.fat * 9
       const diff = Math.abs(est - f.n.kcal)
-      expect(diff < 10 || diff / f.n.kcal < 0.25, `${f.id}: ${Math.round(est)} vs ${f.n.kcal}`).toBe(true)
+      expect(diff < 12 || diff / f.n.kcal < 0.25, `${f.id}: ${Math.round(est)} vs ${f.n.kcal}`).toBe(true)
     }
   })
 })

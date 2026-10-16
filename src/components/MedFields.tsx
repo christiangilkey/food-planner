@@ -7,7 +7,8 @@ const MEDS: { key: keyof MedFlags; label: string; detail: string }[] = [
   { key: 'thyroid', label: 'Thyroid hormone', detail: 'Levothyroxine and similar' },
   { key: 'diabetesMeds', label: 'Insulin or a sulfonylurea', detail: 'Glipizide, glyburide, glimepiride: medicines that can cause lows' },
   { key: 'bpMeds', label: 'ACE inhibitor, ARB or potassium-sparing diuretic', detail: 'Lisinopril, losartan, spironolactone and similar' },
-  { key: 'pregnant', label: 'Pregnant or breastfeeding', detail: 'Many supplements haven’t been shown safe in pregnancy' },
+  { key: 'grapefruitMeds', label: 'A medicine with a grapefruit warning', detail: 'Some statins (simvastatin, atorvastatin), nifedipine, buspirone, transplant drugs. Check your label.' },
+  { key: 'pregnant', label: 'Pregnant or breastfeeding', detail: 'Lowers the caffeine limit to 200 mg; many supplements haven’t been shown safe in pregnancy' },
 ]
 
 /** Medications and pregnancy, used only to screen supplements and peptides for interactions. */

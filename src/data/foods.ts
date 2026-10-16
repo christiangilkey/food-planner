@@ -25,7 +25,7 @@ function food(
     potassium, zinc, vitA, vitC, vitD, vitE, vitK, folate, b12, omega3] = r
   const n: Nutrients = {
     kcal, protein, carbs, fat, sugar, water, sodium, fiber, calcium, iron, magnesium,
-    potassium, zinc, vitA, vitC, vitD, vitE, vitK, folate, b12, omega3, choline: 0, b6: 0, selenium: 0, satFat: 0, addedSugar: 0,
+    potassium, zinc, vitA, vitC, vitD, vitE, vitK, folate, b12, omega3, choline: 0, b6: 0, selenium: 0, satFat: 0, addedSugar: 0, caffeine: 0,
   }
   // Brain nutrients, serving size and groups are filled in from DETAILS below.
   return { id, name, aisle, packageGrams, packageLabel, packagePrice, shelfDays, n, serving: 100, groups: [], plants: [] }
@@ -143,6 +143,27 @@ export const FOODS: Food[] = [
   food('strawberries', 'Strawberries (fresh)', 'Produce', 454, '1 lb', 3.5, 5, [32, 0.7, 7.7, 0.3, 4.9, 91, 1, 2, 16, 0.4, 13, 153, 0.1, 1, 58.8, 0, 0.3, 2.2, 24, 0, 0.07]),
   food('marinara', 'Marinara sauce', 'Condiments & Oils', 680, '24 oz jar', 3, 14, [51, 1.4, 7.7, 1.5, 5.5, 87, 430, 1.9, 27, 0.8, 18, 314, 0.2, 25, 2, 0, 2, 9, 10, 0, 0.04]),
   food('broth', 'Chicken broth (low-sodium)', 'Canned & Dry', 946, '32 oz carton', 2.5, 7, [6, 0.6, 0.4, 0.2, 0.2, 98, 140, 0, 2, 0.1, 1, 30, 0, 0, 0, 0, 0, 0, 1, 0, 0]),
+
+  // ── Added: requested items and pairings ──
+  food('beets', 'Beets (cooked, ready-to-eat)', 'Produce', 250, '8.8 oz pack', 3.5, 14, [44, 1.7, 10, 0.2, 8, 87, 77, 2, 16, 0.8, 23, 305, 0.35, 2, 3.6, 0, 0.04, 0.2, 80, 0, 0.005]),
+  food('pomegranate', 'Pomegranate seeds (arils)', 'Produce', 245, '8.6 oz cup', 5, 7, [83, 1.7, 18.7, 1.2, 13.7, 78, 3, 4, 10, 0.3, 12, 236, 0.35, 0, 10.2, 0, 0.6, 16.4, 38, 0, 0.04]),
+  food('lime', 'Limes (juice)', 'Produce', 120, '4 limes', 1.5, 21, [25, 0.4, 8.4, 0.1, 1.7, 91, 2, 0.4, 14, 0.1, 8, 117, 0.08, 2, 30, 0, 0.2, 0.6, 10, 0, 0.01]),
+  food('grapefruit', 'Grapefruit (red)', 'Produce', 950, '3 lb bag', 4, 21, [42, 0.8, 10.7, 0.1, 6.9, 88, 0, 1.6, 22, 0.1, 9, 135, 0.07, 58, 31.2, 0, 0.1, 0, 13, 0, 0.01]),
+  food('green_tea', 'Green tea (brewed)', 'Canned & Dry', 4800, '20 tea bags', 3.5, 365, [1, 0.2, 0, 0, 0, 99.9, 1, 0, 0, 0, 1, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+  food('ginger', 'Fresh ginger root', 'Produce', 100, '1 piece (~3.5 oz)', 1, 21, [80, 1.8, 17.8, 0.8, 1.7, 79, 13, 2, 16, 0.6, 43, 415, 0.34, 0, 5, 0, 0.26, 0.1, 11, 0, 0.03]),
+  food('pumpkin', 'Pumpkin puree (canned)', 'Canned & Dry', 425, '15 oz can', 2, 730, [34, 1.1, 8.1, 0.3, 3.3, 90, 5, 2.9, 26, 1.4, 23, 206, 0.17, 953, 4.2, 0, 1.06, 16, 12, 0, 0.002]),
+  food('cinnamon', 'Ground cinnamon', 'Condiments & Oils', 68, '2.4 oz jar', 3, 730, [247, 4, 81, 1.2, 2.2, 11, 10, 53, 1002, 8.3, 60, 431, 1.8, 15, 3.8, 0, 2.3, 31, 6, 0, 0.01]),
+  food('coffee', 'Coffee (brewed)', 'Canned & Dry', 8160, '12 oz ground (~34 cups)', 9, 60, [1, 0.1, 0, 0, 0, 99.4, 2, 0, 2, 0, 3, 49, 0, 0, 0, 0, 0, 0.1, 2, 0, 0]),
+  food('kombucha', 'Kombucha', 'Dairy & Eggs', 473, '16 oz bottle', 3.5, 30, [12, 0, 3, 0, 2, 96, 4, 0, 2, 0, 1, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+  food('squash', 'Butternut squash (cubed)', 'Produce', 567, '20 oz pack', 4, 7, [45, 1, 11.7, 0.1, 2.2, 86, 4, 2, 48, 0.7, 34, 352, 0.15, 532, 21, 0, 1.44, 1.1, 27, 0, 0.03]),
+  food('dates', 'Medjool dates', 'Produce', 454, '1 lb', 6, 180, [277, 1.8, 75, 0.15, 66.5, 21, 1, 6.7, 64, 0.9, 54, 696, 0.44, 7, 0, 0, 0.05, 2.7, 15, 0, 0]),
+  food('couscous', 'Couscous (dry)', 'Bakery & Grains', 283, '10 oz box', 2.5, 365, [376, 12.8, 77.4, 0.6, 0, 9, 10, 5, 24, 1.1, 44, 166, 0.83, 0, 0, 0, 0.13, 0.1, 20, 0, 0.01]),
+  food('arugula', 'Arugula', 'Produce', 142, '5 oz box', 3.5, 6, [25, 2.6, 3.7, 0.7, 2.1, 92, 27, 1.6, 160, 1.5, 47, 369, 0.47, 119, 15, 0, 0.43, 108.6, 97, 0, 0.17]),
+  food('goat_cheese', 'Goat cheese (soft)', 'Dairy & Eggs', 113, '4 oz log', 4, 21, [264, 18.5, 0.9, 21, 0.9, 61, 459, 0, 140, 1.9, 16, 26, 0.9, 288, 0, 0.5, 0.2, 1.8, 12, 0.2, 0.2]),
+  food('balsamic', 'Balsamic vinegar', 'Condiments & Oils', 250, '8.5 oz bottle', 4, 730, [88, 0.5, 17, 0, 15, 76, 23, 0, 27, 0.7, 12, 112, 0.08, 0, 0, 0, 0, 0, 0, 0, 0]),
+  food('cilantro', 'Cilantro', 'Produce', 50, '1 bunch', 1, 7, [23, 2.1, 3.7, 0.5, 0.9, 92, 46, 2.8, 67, 1.8, 26, 521, 0.5, 337, 27, 0, 2.5, 310, 62, 0, 0]),
+  food('coconut_milk', 'Light coconut milk (canned)', 'Canned & Dry', 400, '13.5 oz can', 2.5, 730, [74, 0.5, 1.2, 7.4, 1, 90, 15, 0, 6, 0.8, 15, 100, 0.2, 0, 0, 0, 0.1, 0.1, 5, 0, 0]),
+  food('orange', 'Oranges', 'Produce', 1300, '4 lb bag', 5, 21, [47, 0.9, 11.8, 0.1, 9.4, 87, 0, 2.4, 40, 0.1, 10, 181, 0.07, 11, 53.2, 0, 0.18, 0, 30, 0, 0.01]),
 ]
 
 type Detail = [choline: number, b6: number, selenium: number, serving: number, groups: FoodGroup[], plants: string[]]
@@ -248,6 +269,25 @@ export const DETAILS: Record<string, Detail> = {
   strawberries: [5.7, 0.05, 0.4, 150, ['fruit','berries'], ['strawberry']],
   marinara: [9, 0.17, 0.4, 125, ['red_orange_veg'], ['tomato','onion','garlic']],
   broth: [1, 0, 0.5, 240, [], []],
+  beets: [6.3, 0.07, 0.7, 85, ['vegetables'], ['beet']],
+  pomegranate: [7.6, 0.08, 0.5, 87, ['fruit'], ['pomegranate']],
+  lime: [5, 0.04, 0.1, 15, [], ['lime']],
+  grapefruit: [7.7, 0.05, 0.1, 123, ['fruit'], ['grapefruit']],
+  green_tea: [0, 0, 0, 240, [], []],
+  ginger: [28.8, 0.16, 0.7, 5, [], ['ginger']],
+  pumpkin: [8, 0.06, 0.4, 120, ['red_orange_veg'], ['pumpkin']],
+  cinnamon: [11, 0.16, 3.1, 2.6, [], ['cinnamon']],
+  coffee: [2.6, 0, 0, 240, [], []],
+  kombucha: [0, 0, 0, 240, ['fermented'], []],
+  squash: [9.7, 0.15, 0.5, 140, ['red_orange_veg'], ['butternut squash']],
+  dates: [9.9, 0.25, 0, 48, ['fruit'], ['date']],
+  couscous: [15, 0.11, 27.5, 45, ['refined_grain'], ['wheat']],
+  arugula: [15, 0.07, 0.3, 20, ['leafy_greens'], ['arugula']],
+  goat_cheese: [15, 0.25, 2.8, 28, ['dairy','fermented'], []],
+  balsamic: [0, 0, 0, 15, [], []],
+  cilantro: [12.8, 0.15, 0.9, 4, [], ['cilantro']],
+  coconut_milk: [3, 0.02, 1, 60, [], ['coconut']],
+  orange: [8.4, 0.06, 0.5, 140, ['fruit'], ['orange']],
 }
 
 // Per 100 g: saturated fat (g) and added sugars (g), approximated from USDA data and typical US labels.
@@ -264,9 +304,14 @@ export const FATS_SUGARS: Record<string, [satFat: number, addedSugar: number]> =
   dark_chocolate: [24.5, 24], tortilla_chips: [3, 0], hummus: [1.4, 0], salsa: [0, 0], pickles: [0, 0], kimchi: [0.1, 0],
   olive_oil: [13.8, 0], soy_sauce: [0.1, 0], honey: [0, 82],
   pork_loin: [1.2, 0], sirloin: [3.3, 0], cod: [0.1, 0], tilapia: [0.6, 0], canned_salmon: [1.2, 0], feta: [15, 0], parmesan: [16.4, 0], kefir: [0.6, 0], almond_milk: [0.1, 0], pinto_beans: [0.2, 0], kidney_beans: [0.1, 0], cashews: [7.8, 0], sunflower_seeds: [5.2, 0], flaxseed: [3.7, 0], quinoa: [0.7, 0], ww_pasta: [0.3, 0], corn_tortillas: [0.4, 0], corn: [0.1, 0], peas: [0.1, 0], garlic: [0.1, 0], lemon: [0, 0], tomato: [0, 0], romaine: [0, 0], kale: [0.2, 0], cabbage: [0, 0], cauliflower: [0.1, 0], green_beans: [0, 0], zucchini: [0.1, 0], mushrooms: [0, 0], celery: [0, 0], mango: [0.1, 0], grapes: [0.1, 0], strawberries: [0, 0], marinara: [0.2, 2], broth: [0.1, 0],
+  beets: [0, 0], pomegranate: [0.1, 0], lime: [0, 0], grapefruit: [0, 0], green_tea: [0, 0], ginger: [0.2, 0], pumpkin: [0.2, 0], cinnamon: [0.3, 0], coffee: [0, 0], kombucha: [0, 2], squash: [0, 0], dates: [0, 0], couscous: [0.1, 0], arugula: [0.1, 0], goat_cheese: [14.6, 0], balsamic: [0, 0], cilantro: [0, 0], coconut_milk: [6.6, 0], orange: [0, 0],
 }
 
+/** Caffeine, mg per 100 g (USDA): brewed coffee ≈ 95 mg and brewed green tea ≈ 28 mg per 8 oz cup. */
+export const CAFFEINE: Record<string, number> = { coffee: 40, green_tea: 12, dark_chocolate: 80, kombucha: 6 }
+
 for (const f of FOODS) {
+  f.n.caffeine = CAFFEINE[f.id] ?? 0
   const fs = FATS_SUGARS[f.id]
   if (fs) Object.assign(f.n, { satFat: fs[0], addedSugar: fs[1] })
   const d = DETAILS[f.id]

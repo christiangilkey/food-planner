@@ -473,6 +473,162 @@ export const RECIPES: Recipe[] = [
     items: [{ food: 'strawberries', grams: 150 }, { food: 'cottage_cheese', grams: 120 }],
     equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 1, 1, 2),
   },
+  // ── Added: beets, citrus, pomegranate, ginger, pumpkin, squash, dates, couscous, coffee & tea ──
+  {
+    id: 'beet_goat_cheese_salad', name: 'Beet, arugula & goat cheese salad', slots: ['lunch', 'snack'], servings: 1,
+    items: [{ food: 'beets', grams: 150 }, { food: 'arugula', grams: 50 }, { food: 'goat_cheese', grams: 30 }, { food: 'walnuts', grams: 15 }, { food: 'balsamic', grams: 15 }, { food: 'olive_oil', grams: 10 }],
+    equipment: [], activeMin: 5, totalMin: 5, steps: 2, dopamine: d(2, 2, 2, 2),
+  },
+  {
+    id: 'beet_berry_smoothie', name: 'Beet, berry & ginger smoothie', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'beets', grams: 80 }, { food: 'berries', grams: 100 }, { food: 'banana', grams: 80 }, { food: 'greek_yogurt', grams: 150 }, { food: 'ginger', grams: 3 }],
+    equipment: ['blender'], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 2, 3, 2),
+  },
+  {
+    id: 'beet_quinoa_bowl', name: 'Beet & chickpea quinoa bowl', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'quinoa', grams: 150 }, { food: 'beets', grams: 240 }, { food: 'chickpeas', grams: 250 }, { food: 'arugula', grams: 80 }, { food: 'goat_cheese', grams: 60 }, { food: 'lemon', grams: 30 }, { food: 'olive_oil', grams: 20 }],
+    equipment: ['stove', 'pot'], alt: ['ricecooker'], activeMin: 10, totalMin: 25, steps: 3, dopamine: d(2, 2, 3, 2), batch: true,
+  },
+  {
+    id: 'orange_beet_salad', name: 'Orange & beet salad', slots: ['lunch', 'snack'], servings: 1,
+    items: [{ food: 'beets', grams: 120 }, { food: 'orange', grams: 140 }, { food: 'arugula', grams: 40 }, { food: 'goat_cheese', grams: 20 }, { food: 'walnuts', grams: 10 }, { food: 'olive_oil', grams: 5 }],
+    equipment: [], activeMin: 6, totalMin: 6, steps: 2, dopamine: d(2, 2, 3, 2),
+  },
+  {
+    id: 'pomegranate_yogurt', name: 'Pomegranate crunch yogurt bowl', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'greek_yogurt', grams: 200 }, { food: 'pomegranate', grams: 80 }, { food: 'pumpkin_seeds', grams: 10 }, { food: 'honey', grams: 5 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(3, 2, 2, 3),
+  },
+  {
+    id: 'pomegranate_kale_salad', name: 'Kale, pomegranate & chickpea salad', slots: ['lunch'], servings: 1,
+    items: [{ food: 'kale', grams: 80 }, { food: 'pomegranate', grams: 60 }, { food: 'chickpeas', grams: 100 }, { food: 'feta', grams: 20 }, { food: 'lemon', grams: 15 }, { food: 'olive_oil', grams: 10 }],
+    equipment: [], activeMin: 8, totalMin: 8, steps: 2, dopamine: d(2, 2, 2, 2),
+  },
+  {
+    id: 'grapefruit_chicken_salad', name: 'Grapefruit, avocado & chicken salad', slots: ['lunch'], servings: 1,
+    items: [{ food: 'rotisserie', grams: 100 }, { food: 'grapefruit', grams: 150 }, { food: 'avocado', grams: 70 }, { food: 'arugula', grams: 40 }, { food: 'olive_oil', grams: 5 }],
+    equipment: [], activeMin: 7, totalMin: 7, steps: 2, dopamine: d(2, 2, 3, 2),
+  },
+  {
+    id: 'grapefruit_cottage', name: 'Grapefruit & cinnamon cottage cheese', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'grapefruit', grams: 200 }, { food: 'cottage_cheese', grams: 150 }, { food: 'cinnamon', grams: 1 }],
+    equipment: [], activeMin: 3, totalMin: 3, steps: 1, dopamine: d(0, 2, 2, 1),
+  },
+  {
+    id: 'ginger_salmon', name: 'Ginger-lime salmon, brown rice & broccoli', slots: ['dinner'], servings: 2,
+    items: [{ food: 'salmon', grams: 340 }, { food: 'brown_rice', grams: 150 }, { food: 'broccoli', grams: 300 }, { food: 'ginger', grams: 10 }, { food: 'soy_sauce', grams: 20 }, { food: 'lime', grams: 15 }, { food: 'garlic', grams: 5 }],
+    equipment: ['oven', 'sheetpan', 'stove', 'pot'], alt: ['airfryer', 'ricecooker'], activeMin: 12, totalMin: 35, steps: 3, dopamine: d(1, 3, 2, 2),
+  },
+  {
+    id: 'ginger_chicken_curry', name: 'Ginger chicken & spinach curry', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'coconut_milk', grams: 200 }, { food: 'canned_tomatoes', grams: 200 }, { food: 'spinach', grams: 100 }, { food: 'ginger', grams: 15 }, { food: 'garlic', grams: 8 }, { food: 'onion', grams: 100 }, { food: 'brown_rice', grams: 200 }],
+    equipment: ['stove', 'skillet', 'pot'], alt: ['slowcooker', 'ricecooker'], activeMin: 20, totalMin: 45, steps: 4, dopamine: d(0, 3, 3, 1), batch: true,
+  },
+  {
+    id: 'ginger_lime_shrimp', name: 'Ginger-lime shrimp stir-fry', slots: ['dinner'], servings: 3,
+    items: [{ food: 'shrimp', grams: 340 }, { food: 'stirfry_veg', grams: 400 }, { food: 'ginger', grams: 10 }, { food: 'lime', grams: 20 }, { food: 'soy_sauce', grams: 20 }, { food: 'olive_oil', grams: 15 }, { food: 'brown_rice', grams: 150 }],
+    equipment: ['stove', 'skillet', 'pot'], alt: ['ricecooker'], activeMin: 18, totalMin: 40, steps: 4, dopamine: d(1, 3, 2, 1),
+  },
+  {
+    id: 'pumpkin_oats', name: 'Pumpkin pie oatmeal', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'oats', grams: 50 }, { food: 'pumpkin', grams: 80 }, { food: 'milk', grams: 200 }, { food: 'cinnamon', grams: 1 }, { food: 'pumpkin_seeds', grams: 10 }, { food: 'honey', grams: 5 }],
+    equipment: ['microwave'], alt: ['stove', 'pot'], activeMin: 4, totalMin: 5, steps: 2, dopamine: d(1, 1, 2, 1),
+  },
+  {
+    id: 'pumpkin_chili', name: 'Pumpkin turkey two-bean chili', slots: ['lunch', 'dinner'], servings: 6,
+    items: [{ food: 'ground_turkey', grams: 454 }, { food: 'pumpkin', grams: 425 }, { food: 'kidney_beans', grams: 250 }, { food: 'pinto_beans', grams: 250 }, { food: 'canned_tomatoes', grams: 411 }, { food: 'onion', grams: 150 }, { food: 'cinnamon', grams: 1 }],
+    equipment: ['slowcooker'], alt: ['stove', 'pot'], activeMin: 15, totalMin: 240, steps: 3, dopamine: d(0, 3, 2, 1), batch: true,
+  },
+  {
+    id: 'pumpkin_parfait', name: 'Pumpkin spice yogurt cup', slots: ['snack'], servings: 1,
+    items: [{ food: 'pumpkin', grams: 60 }, { food: 'greek_yogurt', grams: 170 }, { food: 'cinnamon', grams: 1 }, { food: 'walnuts', grams: 10 }, { food: 'honey', grams: 5 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 1, 2, 1),
+  },
+  {
+    id: 'squash_soup', name: 'Roasted butternut squash & ginger soup', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'squash', grams: 800 }, { food: 'onion', grams: 150 }, { food: 'broth', grams: 700 }, { food: 'coconut_milk', grams: 150 }, { food: 'ginger', grams: 10 }, { food: 'olive_oil', grams: 15 }, { food: 'pumpkin_seeds', grams: 30 }],
+    equipment: ['oven', 'sheetpan', 'stove', 'pot', 'blender'], alt: ['slowcooker', 'blender'], activeMin: 15, totalMin: 50, steps: 4, dopamine: d(1, 2, 2, 1), batch: true,
+  },
+  {
+    id: 'squash_couscous_bowl', name: 'Butternut squash, chickpea & feta couscous', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'couscous', grams: 150 }, { food: 'squash', grams: 450 }, { food: 'chickpeas', grams: 250 }, { food: 'feta', grams: 45 }, { food: 'arugula', grams: 60 }, { food: 'olive_oil', grams: 20 }, { food: 'cinnamon', grams: 1 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 12, totalMin: 35, steps: 3, dopamine: d(1, 2, 3, 2), batch: true,
+  },
+  {
+    id: 'moroccan_chicken_couscous', name: 'Moroccan chicken with dates & couscous', slots: ['dinner'], servings: 4,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'couscous', grams: 180 }, { food: 'chickpeas', grams: 250 }, { food: 'dates', grams: 60 }, { food: 'onion', grams: 100 }, { food: 'cinnamon', grams: 2 }, { food: 'lemon', grams: 20 }, { food: 'broth', grams: 300 }, { food: 'olive_oil', grams: 15 }],
+    equipment: ['stove', 'skillet', 'pot'], activeMin: 20, totalMin: 35, steps: 4, dopamine: d(1, 3, 3, 2),
+  },
+  {
+    id: 'lemon_herb_couscous_salmon', name: 'Lemon-herb couscous with canned salmon', slots: ['lunch'], servings: 2,
+    items: [{ food: 'couscous', grams: 100 }, { food: 'canned_salmon', grams: 200 }, { food: 'cucumber', grams: 150 }, { food: 'tomato', grams: 120 }, { food: 'cilantro', grams: 8 }, { food: 'lemon', grams: 20 }, { food: 'olive_oil', grams: 15 }],
+    equipment: ['microwave'], alt: ['stove', 'pot'], activeMin: 10, totalMin: 12, steps: 3, dopamine: d(2, 2, 2, 1),
+  },
+  {
+    id: 'date_pb_bites', name: 'Date, oat & peanut butter bites', slots: ['snack'], servings: 6,
+    items: [{ food: 'dates', grams: 150 }, { food: 'oats', grams: 90 }, { food: 'peanut_butter', grams: 80 }, { food: 'cinnamon', grams: 1 }, { food: 'flaxseed', grams: 15 }],
+    equipment: ['blender'], activeMin: 10, totalMin: 15, steps: 3, dopamine: d(1, 2, 2, 3), batch: true,
+    note: 'Makes about 12 bites; a serving is 2. Keeps a week in the fridge.',
+  },
+  {
+    id: 'dates_almonds', name: 'Dates + almonds', slots: ['snack'], servings: 1,
+    items: [{ food: 'dates', grams: 30 }, { food: 'almonds', grams: 20 }],
+    equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(2, 2, 1, 2),
+  },
+  {
+    id: 'kombucha_snack', name: 'Kombucha + roasted chickpeas', slots: ['snack'], servings: 1,
+    items: [{ food: 'kombucha', grams: 240 }, { food: 'chickpeas', grams: 80 }, { food: 'olive_oil', grams: 5 }],
+    equipment: ['airfryer'], alt: ['oven', 'sheetpan'], activeMin: 3, totalMin: 20, steps: 2, dopamine: d(3, 2, 2, 2),
+  },
+  {
+    id: 'cilantro_lime_bowl', name: 'Cilantro-lime brown rice & black bean bowl', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'brown_rice', grams: 150 }, { food: 'black_beans', grams: 250 }, { food: 'lime', grams: 20 }, { food: 'cilantro', grams: 10 }, { food: 'corn', grams: 150 }, { food: 'avocado', grams: 70 }, { food: 'salsa', grams: 60 }],
+    equipment: ['stove', 'pot'], alt: ['ricecooker'], activeMin: 10, totalMin: 40, steps: 3, dopamine: d(1, 3, 2, 3), batch: true,
+  },
+  {
+    id: 'lime_chicken_tacos', name: 'Cilantro-lime chicken tacos', slots: ['dinner'], servings: 4,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'corn_tortillas', grams: 240 }, { food: 'cabbage', grams: 150 }, { food: 'lime', grams: 30 }, { food: 'cilantro', grams: 15 }, { food: 'greek_yogurt', grams: 60 }],
+    equipment: ['stove', 'skillet'], alt: ['airfryer'], activeMin: 18, totalMin: 25, steps: 4, dopamine: d(2, 3, 2, 3),
+  },
+  {
+    id: 'cinnamon_sweet_potato_bowl', name: 'Cinnamon sweet potato & pinto bean bowl', slots: ['lunch', 'dinner'], servings: 1,
+    items: [{ food: 'sweet_potato', grams: 250 }, { food: 'pinto_beans', grams: 125 }, { food: 'cinnamon', grams: 1 }, { food: 'greek_yogurt', grams: 50 }, { food: 'pumpkin_seeds', grams: 10 }, { food: 'olive_oil', grams: 5 }],
+    equipment: ['microwave'], alt: ['oven', 'sheetpan'], activeMin: 5, totalMin: 12, steps: 3, dopamine: d(1, 2, 2, 2),
+  },
+  {
+    id: 'quinoa_breakfast', name: 'Cinnamon quinoa breakfast bowl', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'quinoa', grams: 45 }, { food: 'milk', grams: 200 }, { food: 'berries', grams: 75 }, { food: 'cinnamon', grams: 1 }, { food: 'almonds', grams: 15 }],
+    equipment: ['stove', 'pot'], activeMin: 5, totalMin: 20, steps: 2, dopamine: d(1, 1, 2, 1),
+  },
+  {
+    id: 'choc_pomegranate_bark', name: 'Dark chocolate pomegranate bark', slots: ['snack'], servings: 4,
+    items: [{ food: 'dark_chocolate', grams: 80 }, { food: 'pomegranate', grams: 120 }, { food: 'pumpkin_seeds', grams: 20 }],
+    equipment: ['microwave'], activeMin: 8, totalMin: 40, steps: 3, dopamine: d(3, 3, 3, 3), batch: true,
+  },
+  {
+    id: 'coffee_banana_smoothie', name: 'Coffee banana protein smoothie', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'coffee', grams: 150 }, { food: 'banana', grams: 100 }, { food: 'milk', grams: 150 }, { food: 'peanut_butter', grams: 16 }, { food: 'protein_powder', grams: 20 }, { food: 'cinnamon', grams: 1 }],
+    equipment: ['blender'], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 2, 2, 2),
+    note: 'About 60 mg caffeine. Brew the coffee ahead and chill it.',
+  },
+  {
+    id: 'mocha_overnight_oats', name: 'Mocha overnight oats', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'oats', grams: 50 }, { food: 'coffee', grams: 100 }, { food: 'milk', grams: 100 }, { food: 'greek_yogurt', grams: 80 }, { food: 'dark_chocolate', grams: 10 }, { food: 'chia', grams: 10 }],
+    equipment: [], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 2, 2, 2), batch: true,
+    note: 'About 50 mg caffeine. Make the night before.',
+  },
+  {
+    id: 'coffee_pb_toast', name: 'Café au lait & peanut butter toast', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'coffee', grams: 240 }, { food: 'milk', grams: 60 }, { food: 'bread', grams: 64 }, { food: 'peanut_butter', grams: 24 }],
+    equipment: [], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(1, 1, 0, 1),
+    note: 'About 95 mg caffeine in one 8-oz cup.',
+  },
+  {
+    id: 'green_tea_smoothie', name: 'Green tea, mango & ginger smoothie', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'green_tea', grams: 150 }, { food: 'mango', grams: 120 }, { food: 'spinach', grams: 30 }, { food: 'greek_yogurt', grams: 120 }, { food: 'ginger', grams: 3 }, { food: 'lime', grams: 5 }],
+    equipment: ['blender'], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 2, 3, 2),
+    note: 'About 18 mg caffeine. Brew the tea ahead and chill it.',
+  },
 ]
 
 export const RECIPE_BY_ID: Record<string, Recipe> = Object.fromEntries(RECIPES.map((r) => [r.id, r]))

@@ -8,6 +8,8 @@ import { dayEntries } from './plan-utils'
 
 export const hasCondition = (p: Profile, id: ConditionId) => p.conditions.includes(id)
 
+const medFlag = (p: Profile, flag: 'maoi' | 'grapefruitMeds') => (flag === 'maoi' ? p.maoi : p.meds.grapefruitMeds)
+
 export function activeConditions(p: Profile): Condition[] {
   return CONDITIONS.filter((c) => p.conditions.includes(c.id))
 }
@@ -23,7 +25,7 @@ export function avoidedFoods(p: Profile): Map<string, AvoidReason[]> {
   for (const condition of CONDITIONS) {
     const active = p.conditions.includes(condition.id)
     for (const entry of condition.avoid) {
-      if (entry.onlyIf === 'maoi' ? !p.maoi : !active) continue
+      if (entry.onlyIf ? !medFlag(p, entry.onlyIf) : !active) continue
       for (const food of entry.foods) {
         if (entry.optIn && !p.optInTriggers.includes(food)) continue
         if (entry.tolerable && p.toleratedTriggers.includes(food)) continue
@@ -79,7 +81,7 @@ export function recipeAllowed(r: Recipe, p: Profile, avoided = avoidedFoods(p), 
 }
 
 export interface Violation {
-  kind: 'avoided' | 'sodium' | 'satFat' | 'addedSugar' | 'eggs' | 'crash'
+  kind: 'avoided' | 'sodium' | 'satFat' | 'addedSugar' | 'eggs' | 'crash' | 'caffeine'
   message: string
   day?: number
 }
@@ -107,6 +109,9 @@ export function planViolations(p: Profile, plan: DayPlan[]): Violation[] {
     }
     if (limits.sodiumMaxMg && dayTotals.sodium > limits.sodiumMaxMg) {
       out.push({ kind: 'sodium', day: d, message: `${Math.round(dayTotals.sodium)} mg sodium, over the ${limits.sodiumMaxMg} mg daily cap.` })
+    }
+    if (dayTotals.caffeine > caffeineLimit(p)) {
+      out.push({ kind: 'caffeine', day: d, message: `${Math.round(dayTotals.caffeine)} mg caffeine, over the ${caffeineLimit(p)} mg daily limit.` })
     }
     addInto(week, dayTotals)
   })
@@ -139,6 +144,7 @@ export function safetyGap(p: Profile, plan: DayPlan[]): number {
       eggs += r.items.filter((i) => i.food === 'egg').reduce((sum, i) => sum + (i.grams * entry.portion) / r.servings / EGG_SERVING_G, 0)
     }
     if (limits.sodiumMaxMg && t.sodium > limits.sodiumMaxMg) gap += 2 + (t.sodium - limits.sodiumMaxMg) / limits.sodiumMaxMg
+    if (t.caffeine > caffeineLimit(p)) gap += 2 + (t.caffeine - caffeineLimit(p)) / caffeineLimit(p)
     // Softer pull toward the ideal sodium goal.
     if (limits.sodiumGoalMg && t.sodium > limits.sodiumGoalMg) gap += (0.3 * (t.sodium - limits.sodiumGoalMg)) / limits.sodiumGoalMg
     addInto(week, t)
@@ -152,6 +158,14 @@ export function safetyGap(p: Profile, plan: DayPlan[]): number {
   if (limits.eggsMaxWeek && eggs > limits.eggsMaxWeek + 0.25) gap += 2 + (eggs - limits.eggsMaxWeek) / limits.eggsMaxWeek
   return gap
 }
+
+/** Daily caffeine ceiling: 400 mg for most adults (FDA), under 200 mg in pregnancy (ACOG). */
+export function caffeineLimit(p: Profile): number {
+  return p.meds.pregnant ? 200 : 400
+}
+
+/** Caffeinated drinks the planner may use: none if the person doesn't drink caffeine. */
+export const CAFFEINATED_DRINKS = ['coffee', 'green_tea']
 
 /** Menopause stage and age adjust iron and calcium targets. */
 export function targetOverrides(p: Profile): { iron?: number; calcium?: number } {

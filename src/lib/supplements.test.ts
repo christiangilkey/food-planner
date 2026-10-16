@@ -23,7 +23,7 @@ function person(patch: Partial<AppState['profile']> = {}, meds: Partial<MedFlags
   return s
 }
 
-const MED_KEYS: (keyof MedFlags)[] = ['bloodThinner', 'ssri', 'thyroid', 'diabetesMeds', 'bpMeds', 'pregnant']
+const MED_KEYS: (keyof MedFlags)[] = ['bloodThinner', 'ssri', 'thyroid', 'diabetesMeds', 'bpMeds', 'grapefruitMeds', 'pregnant']
 
 describe('supplement and peptide data', () => {
   it('every dose, use, caution and claim is sourced', () => {

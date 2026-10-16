@@ -67,6 +67,17 @@ export function weeklyTips(state: AppState, nutrients = analyzeWeek(state).repor
       text: `In a controlled study, caffeine taken 6 hours before bed still cut sleep by about an hour.${hasCondition(p, 'anxiety') ? ' Caffeine also raises anxiety, so less overall may help.' : ''}`,
     })
   }
+  if (p.caffeine) {
+    const lim = p.meds.pregnant ? 200 : 400
+    tips.push({
+      id: 'coffee', category: 'brain', evidence: 'moderate', title: `Coffee and tea: up to ${lim} mg caffeine a day`,
+      sources: p.meds.pregnant ? ['acog_caffeine', 'poole_coffee'] : ['fda_caffeine', 'poole_coffee'],
+      text: p.meds.pregnant
+        ? 'In pregnancy, keep caffeine under 200 mg a day (about two 8-oz cups of coffee).'
+        : 'For most adults up to 400 mg of caffeine a day (about two to three 12-oz cups of coffee) isn’t linked to harm. In observational studies, 3–4 cups of coffee a day were associated with lower risk of death and heart disease. Brewed green tea has about a third of coffee’s caffeine.'
+          + (hasCondition(p, 'gerd') ? ' With reflux, coffee is a common trigger.' : ''),
+    })
+  }
   if (p.goal !== 'maintain' || p.activity === 'very' || p.activity === 'athlete' || p.workoutTime) {
     tips.push({
       id: 'protein_spread', category: 'training', evidence: 'moderate', title: 'Spread protein across meals', sources: ['mamerow', 'jager'],
