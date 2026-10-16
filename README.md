@@ -21,7 +21,15 @@ A meal and grocery planner that isn't a macro counter. It plans a week of meals 
 
 Everything is stored locally in the browser (`localStorage`). Back up and restore from the Profile screen.
 
-## Run it
+## Use it
+
+**Live app: https://christiangilkey.github.io/food-planner/**
+
+- **Install on Android:** open the link in Chrome, then tap ⋮ → **Install app** (or **Add to Home screen**). It opens full-screen and works offline after the first visit.
+- **Install on iPhone:** open the link in Safari, tap Share → **Add to Home Screen**.
+- **Share it:** send anyone the link. Each person's profile, conditions, pantry and plans stay on their own device; nothing is uploaded and no account is needed.
+
+## Run it locally
 
 ```bash
 npm install
@@ -30,9 +38,13 @@ npm run dev
 
 Open http://localhost:5173.
 
-To try it on your phone on the same Wi-Fi, run `npm run dev` and open `http://<your-PC-IP>:5173` on the phone (the dev server listens on your network).
+## Publish an update
 
-Installing it as an app on your home screen ("Add to Home screen") and using it offline needs HTTPS. Build it with `npm run build` and host the `dist/` folder on any static host, such as GitHub Pages, Netlify or Cloudflare Pages.
+```bash
+npm run deploy
+```
+
+This runs the tests, builds the site, and pushes `dist/` to the `gh-pages` branch, which GitHub Pages serves. Changes appear at the live link within a minute or two. Installed copies update the next time they're opened online.
 
 ## Test
 
