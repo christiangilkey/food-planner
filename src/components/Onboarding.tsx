@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { DisclaimerAcknowledge } from './Disclaimer'
 import { LogoMark } from './Logo'
 import { computeTargets } from '../lib/energy'
 import { generatePlan } from '../lib/planner'
@@ -25,6 +26,22 @@ export function Onboarding(props: ViewProps) {
       const ready = { ...s, setupDone: true }
       return { ...ready, plan: generatePlan(ready) }
     })
+
+  if (!state.disclaimerAccepted) {
+    return (
+      <div className="onboarding">
+        <div className="onboarding-head">
+          <LogoMark size={56} />
+          <h1 className="wordmark big">Food Planner</h1>
+          <p className="muted">Meals that keep you full, fit your kitchen, your budget and your brain.</p>
+        </div>
+        <section className="card disclaimer-card">
+          <h2>Please read first</h2>
+          <DisclaimerAcknowledge buttonLabel="I understand, get started" onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true }))} />
+        </section>
+      </div>
+    )
+  }
 
   return (
     <div className="onboarding">

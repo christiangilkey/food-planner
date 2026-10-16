@@ -469,3 +469,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+.disclaimer-card { border-left: 4px solid var(--warn); }
+.disclaimer-text p { margin: 0.6em 0; line-height: 1.5; }
+.toggle.on { border-color: var(--accent); background: var(--accent-soft); }

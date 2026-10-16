@@ -43,6 +43,7 @@ export function defaultState(): AppState {
     checked: {},
     googleClientId: '',
     setupDone: false,
+    disclaimerAccepted: false,
   }
 }
 

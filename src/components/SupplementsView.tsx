@@ -3,7 +3,7 @@ import { PEPTIDES, type Peptide } from '../data/peptides'
 import { GOALS, NOT_RECOMMENDED, SUPPLEMENTS, type Goal, type Supplement, type Use } from '../data/supplements'
 import type { NutrientReport } from '../lib/analysis'
 import { assessPeptide, assessSupplement, recommendedSupplements, relevantPeptides, type Assessment } from '../lib/supplements'
-import type { AppState } from '../types'
+import type { AppState, Domain } from '../types'
 import { Icon } from './Icon'
 import { Chip, Cite, EvidenceChip, Sourced } from './ui'
 
@@ -213,7 +213,66 @@ function PeptideCard({ x, assessment, relevant }: { x: Peptide; assessment: Asse
           {assessment.cautions.map((c) => <li key={c.text} className="small warn-text">{c.text} <Cite ids={c.sources} /></li>)}
         </ul>
       )}
-      <p className="small"><EvidenceChip level={x.humanEvidence === 'strong' ? 'strong' : 'emerging'} /> <Cite ids={x.sources} /></p>
+      <p className="small"><EvidenceChip level={x.humanEvidence === 'strong' ? 'strong' : 'limited'} /> <Cite ids={x.sources} /></p>
     </section>
+  )
+}
+
+// ── Per brain/body area ──────────────────────────────────
+
+/** Which supplement goals map onto each Brain & body area. */
+const DOMAIN_GOALS: Record<Domain, Goal[]> = {
+  memory: ['memory'],
+  focus: ['focus'],
+  mood: ['mood', 'stress'],
+  immunity: ['immunity'],
+  energy: ['energy'],
+  sleep: ['sleep'],
+  bones: ['bones', 'muscle'],
+  heart: ['heart', 'bloodPressure'],
+}
+
+const EVIDENCE_ORDER: Record<string, number> = { strong: 0, moderate: 1, emerging: 2, limited: 3 }
+
+/** Every supplement and peptide used for one area, strongest evidence first, with safety checks. */
+export function DomainOptions({ domain, label, state }: { domain: Domain; label: string; state: AppState }) {
+  const p = state.profile
+  const goals = DOMAIN_GOALS[domain]
+  const matching = (s: Supplement) => s.uses.filter((u) => goals.includes(u.goal))
+  const best = (s: Supplement) => Math.min(...matching(s).map((u) => EVIDENCE_ORDER[u.evidence]))
+  const supps = SUPPLEMENTS.filter((s) => matching(s).length > 0).sort((a, b) => best(a) - best(b))
+  const notRec = NOT_RECOMMENDED.filter((n) => goals.includes(n.goal))
+  const peps = PEPTIDES.filter((x) => x.goals.some((g) => goals.includes(g)))
+  return (
+    <>
+      <section className="card hero">
+        <h2>Supplements & peptides for {label.toLowerCase()}</h2>
+        <p className="muted small">
+          Food comes first: see the nutrients for this area below. These are options people use for this area, strongest evidence first. Ones marked <EvidenceChip level="limited" /> are popular but largely unproven. Anything unsafe for your conditions or medications is marked <strong>Not for you</strong>. Check every one with your doctor before starting.
+        </p>
+      </section>
+      {supps.map((s) => <SupplementCard key={s.id} s={s} assessment={assessSupplement(s, p)} highlight={matching(s)} />)}
+      {notRec.length > 0 && (
+        <section className="card">
+          <h3>Popular but not recommended</h3>
+          <ul className="tip-list">
+            {notRec.map((n) => (
+              <li key={n.id}>
+                <div className="row-between"><strong>{n.name}</strong><Chip tone="bad">For {n.claim.toLowerCase()}</Chip></div>
+                <p className="small">{n.why} <Sourced evidence={n.evidence} ids={n.sources} /></p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {peps.length > 0 ? (
+        <>
+          <section className="card"><h3>Peptides used for {label.toLowerCase()}</h3><p className="muted small">Approved ones are prescription-only. Research peptides are unapproved, and no doses are given.</p></section>
+          {peps.map((x) => <PeptideCard key={x.id} x={x} assessment={assessPeptide(x, p)} relevant={false} />)}
+        </>
+      ) : (
+        <p className="muted small">No peptides with human evidence are used for this area.</p>
+      )}
+    </>
   )
 }

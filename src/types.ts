@@ -58,7 +58,8 @@ export type NutrientKey =
 export type Domain = 'memory' | 'focus' | 'mood' | 'immunity' | 'energy' | 'sleep' | 'bones' | 'heart'
 
 /** How solid the science behind a claim or tip is. */
-export type Evidence = 'strong' | 'moderate' | 'emerging'
+/** strong > moderate > emerging; "limited" = commonly used, but little or inconclusive research. */
+export type Evidence = 'strong' | 'moderate' | 'emerging' | 'limited'
 
 /** Food categories used for weekly frequency and rotation guidelines. */
 export type FoodGroup =
@@ -263,4 +264,6 @@ export interface AppState {
   /** Shopping list check-off state, by food id. */
   checked: Record<string, boolean>
   setupDone: boolean
+  /** The user has read and acknowledged the "not a health professional" disclaimer. */
+  disclaimerAccepted: boolean
 }

@@ -12,7 +12,7 @@ import { weeklyTips, type BioTip, type TipCategory } from '../lib/tips'
 import type { AppState, Domain } from '../types'
 import { Icon } from './Icon'
 import { RecipeLink } from './RecipeViewer'
-import { SupplementsView } from './SupplementsView'
+import { DomainOptions, SupplementsView } from './SupplementsView'
 import { Bar, Chip, Cite, EvidenceChip, Sourced } from './ui'
 
 type Section = 'brain' | 'conditions' | 'rotation' | 'biohacks' | 'supplements' | 'sources'
@@ -91,7 +91,7 @@ function BrainBody({ state, a }: { state: AppState; a: WeekAnalysis }) {
         <h1>Brain & body check</h1>
         <p className="muted small">
           Which areas this week’s plan could shortchange: the daily average of your {a.daysPlanned}-day plan against the Dietary Reference Intakes for a {state.profile.age}-year-old {state.profile.sex}
-          {state.profile.conditions.includes('menopause') ? ', adjusted for menopause stage' : ''}. Tap an area to see the nutrients behind it. Food values come from <Cite ids={['usda_fdc']} />.
+          {state.profile.conditions.includes('menopause') ? ', adjusted for menopause stage' : ''}. Tap an area to see the nutrients behind it, plus supplements and peptides people use for it. Food values come from <Cite ids={['usda_fdc']} />.
         </p>
         <div className="domain-grid">
           {DOMAINS.map((d) => {
@@ -110,6 +110,7 @@ function BrainBody({ state, a }: { state: AppState; a: WeekAnalysis }) {
         </div>
       </section>
 
+      {focus && <DomainOptions domain={focus} label={DOMAINS.find((d) => d.id === focus)!.label} state={state} />}
       {focus && (
         <p className="muted small">
           Showing nutrients that affect <strong>{DOMAINS.find((d) => d.id === focus)?.label.toLowerCase()}</strong>.{' '}
@@ -447,6 +448,7 @@ function Sources() {
           <li><EvidenceChip level="strong" /> Backed by randomized trials, meta-analyses or major clinical guidelines.</li>
           <li><EvidenceChip level="moderate" /> Supported by smaller trials or consistent observational research.</li>
           <li><EvidenceChip level="emerging" /> Early or mixed evidence: plausible and low-risk, but not settled.</li>
+          <li><EvidenceChip level="limited" /> Commonly used, but research is sparse, small or inconclusive. Treat as unproven.</li>
           <li><span className="convention">App convention</span> The direction comes from the cited research, but the exact number (a weight, cap or threshold) is this app’s choice because no published figure exists.</li>
         </ul>
         <h3>Limits of this app</h3>

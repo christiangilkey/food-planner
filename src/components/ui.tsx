@@ -90,7 +90,8 @@ export function NumberField({
   )
 }
 
-const EVIDENCE_TEXT: Record<Evidence, { label: string; tone: 'good' | 'accent' | 'muted'; title: string }> = {
+const EVIDENCE_TEXT: Record<Evidence, { label: string; tone: 'good' | 'accent' | 'muted' | 'warn'; title: string }> = {
+  limited: { label: 'Little research', tone: 'warn', title: 'Commonly used, but research is sparse, small or inconclusive' },
   strong: { label: 'Strong evidence', tone: 'good', title: 'Backed by randomized trials or consistent large studies' },
   moderate: { label: 'Moderate evidence', tone: 'accent', title: 'Supported by smaller trials or consistent observational studies' },
   emerging: { label: 'Emerging', tone: 'muted', title: 'Early or mixed research: promising, low risk, not settled' },

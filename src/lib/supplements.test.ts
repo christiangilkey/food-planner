@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { CONDITIONS } from '../data/conditions'
 import { PEPTIDES } from '../data/peptides'
 import { SOURCES } from '../data/sources'
-import { NOT_RECOMMENDED, SUPPLEMENTS, type Trigger } from '../data/supplements'
+import { GOALS, NOT_RECOMMENDED, SUPPLEMENTS, type Trigger } from '../data/supplements'
 import { analyzeWeek } from './analysis'
 import { avoidedFoods } from './conditions'
 import { generatePlan } from './planner'
@@ -97,5 +97,15 @@ describe('interaction safety', () => {
     for (const id of ['magnesium', 'riboflavin', 'feverfew']) expect(ids).toContain(id)
     expect(relevantPeptides(person({ conditions: ['t2d'] }).profile).map((x) => x.id)).toContain('semaglutide')
     expect(relevantPeptides(person({ conditions: [] }).profile)).toEqual([])
+  })
+})
+
+describe('brain & body options', () => {
+  it('every area has supplement options, including annotated low-evidence ones somewhere', () => {
+    const goalIds = new Set(GOALS.map((g) => g.id))
+    for (const s of SUPPLEMENTS) for (const u of s.uses) expect(goalIds.has(u.goal), `${s.id}: ${u.goal}`).toBe(true)
+    const byGoal = (g: string) => SUPPLEMENTS.filter((s) => s.uses.some((u) => u.goal === g))
+    for (const g of ['memory', 'focus', 'mood', 'stress', 'immunity', 'energy', 'sleep', 'bones', 'heart']) expect(byGoal(g).length, g).toBeGreaterThan(0)
+    expect(SUPPLEMENTS.some((s) => s.uses.some((u) => u.evidence === 'limited'))).toBe(true)
   })
 })

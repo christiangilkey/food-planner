@@ -70,7 +70,7 @@ export const PEPTIDES: Peptide[] = [
     cautions: [],
   },
   {
-    id: 'bremelanotide', name: 'Bremelanotide', aka: 'Vyleesi, PT-141', status: 'approved', goals: ['mood'],
+    id: 'bremelanotide', name: 'Bremelanotide', aka: 'Vyleesi, PT-141', status: 'approved', goals: [],
     usedFor: 'Prescription on-demand treatment for low sexual desire (hypoactive sexual desire disorder) in premenopausal women.',
     evidence: 'Small improvements in desire and related distress versus placebo in two phase 3 trials.',
     humanEvidence: 'strong',
@@ -123,7 +123,7 @@ export const PEPTIDES: Peptide[] = [
     cautions: [],
   },
   {
-    id: 'cjc1295', name: 'CJC-1295', status: 'research', goals: ['muscle'], wada: true,
+    id: 'cjc1295', name: 'CJC-1295', status: 'research', goals: ['muscle', 'energy'], wada: true,
     usedFor: 'Injected to raise growth hormone for muscle, fat loss and “anti-aging”.',
     evidence: 'Raised growth hormone and IGF-1 levels in a small study in healthy adults; no trials show benefits for body composition, strength or aging.',
     humanEvidence: 'limited',
@@ -168,7 +168,7 @@ export const PEPTIDES: Peptide[] = [
     cautions: [],
   },
   {
-    id: 'mots_c', name: 'MOTS-c', status: 'research', goals: ['bloodSugar', 'muscle'],
+    id: 'mots_c', name: 'MOTS-c', status: 'research', goals: ['bloodSugar', 'muscle', 'energy'],
     usedFor: 'Marketed for metabolism, insulin sensitivity and endurance.',
     evidence: 'The FDA has identified no human exposure data.',
     humanEvidence: 'none',

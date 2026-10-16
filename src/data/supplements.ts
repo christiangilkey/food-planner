@@ -6,7 +6,7 @@ import type { SourceId } from './sources'
 export type Trigger = ConditionId | 'maoi' | 'ssri' | 'bloodThinner' | 'thyroid' | 'diabetesMeds' | 'bpMeds' | 'pregnant' | 'stimulant'
 
 export type Goal =
-  | 'gaps' | 'sleep' | 'focus' | 'mood' | 'stress' | 'heart' | 'bloodSugar' | 'bloodPressure'
+  | 'gaps' | 'sleep' | 'focus' | 'mood' | 'stress' | 'energy' | 'heart' | 'bloodSugar' | 'bloodPressure'
   | 'migraine' | 'bones' | 'muscle' | 'immunity' | 'gut' | 'reflux' | 'skin' | 'memory'
 
 export const GOALS: { id: Goal; label: string; icon: IconName }[] = [
@@ -16,6 +16,7 @@ export const GOALS: { id: Goal; label: string; icon: IconName }[] = [
   { id: 'mood', label: 'Mood', icon: 'cloudSun' },
   { id: 'stress', label: 'Stress & anxiety', icon: 'waves' },
   { id: 'memory', label: 'Memory', icon: 'brain' },
+  { id: 'energy', label: 'Energy & fatigue', icon: 'zap' },
   { id: 'heart', label: 'Heart & cholesterol', icon: 'heartPulse' },
   { id: 'bloodPressure', label: 'Blood pressure', icon: 'droplet' },
   { id: 'bloodSugar', label: 'Blood sugar', icon: 'stethoscope' },
@@ -119,6 +120,7 @@ export const SUPPLEMENTS: Supplement[] = [
     uses: [
       { goal: 'gaps', nutrient: 'iron', text: 'Corrects iron deficiency and the fatigue and poor concentration it causes.', evidence: 'strong', sources: ['ods_iron'] },
       { goal: 'sleep', text: 'Iron treatment is a guideline-recommended treatment for restless legs when stores are low.', evidence: 'strong', sources: ['allen_rls'] },
+      { goal: 'energy', text: 'Fixes fatigue caused by iron deficiency; it does not boost energy if your iron is normal.', evidence: 'strong', sources: ['ods_iron'] },
       { goal: 'focus', conditions: ['adhd'], text: 'Ferritin is lower on average in ADHD; correcting a measured deficiency matters.', evidence: 'emerging', sources: ['wang_iron', 'konofal'] },
     ],
     cautions: [
@@ -133,6 +135,7 @@ export const SUPPLEMENTS: Supplement[] = [
       { goal: 'gaps', nutrient: 'b12', text: 'Essential if you eat few animal foods; absorption also falls after 50.', evidence: 'strong', sources: ['ods_b12'] },
       { goal: 'bloodSugar', conditions: ['t2d'], text: 'Long-term metformin can lower B12; the ADA advises periodic testing.', evidence: 'strong', sources: ['ada_9', 'ods_b12'] },
       { goal: 'memory', text: 'Deficiency causes memory problems and nerve damage.', evidence: 'strong', sources: ['ods_b12'] },
+      { goal: 'energy', text: 'Fixes fatigue from B12 deficiency; extra B12 does not raise energy if your level is normal.', evidence: 'strong', sources: ['ods_b12'] },
     ],
     cautions: [],
   },
@@ -256,6 +259,7 @@ export const SUPPLEMENTS: Supplement[] = [
     uses: [
       { goal: 'muscle', text: 'The best-studied supplement for strength and lean mass, with a strong safety record in healthy people.', evidence: 'strong', sources: ['kreider'] },
       { goal: 'memory', text: 'Small trials suggest benefits for short-term memory and reasoning, especially in vegetarians or when sleep-deprived.', evidence: 'emerging', sources: ['avgerinos'] },
+      { goal: 'energy', text: 'May reduce mental fatigue in demanding or sleep-deprived conditions.', evidence: 'emerging', sources: ['avgerinos'] },
     ],
     cautions: [{ when: ['ckd'], block: true, text: 'Not for people with kidney disease.', sources: ['kreider', 'kdoqi'] }],
   },
@@ -332,6 +336,7 @@ export const SUPPLEMENTS: Supplement[] = [
     dose: { text: 'The migraine trial used 100 mg three times a day.', sources: ['aan_migraine'] },
     uses: [
       { goal: 'migraine', conditions: ['migraine'], text: 'Rated “possibly effective” for preventing migraine.', evidence: 'emerging', sources: ['aan_migraine'] },
+      { goal: 'heart', text: 'Eased statin-related muscle aches in a meta-analysis of trials.', evidence: 'emerging', sources: ['qu_coq10'] },
     ],
     cautions: [],
   },
@@ -363,11 +368,149 @@ export const SUPPLEMENTS: Supplement[] = [
     ],
     cautions: [],
   },
+  // ── Commonly used, less researched ──────────────────────
+  {
+    id: 'bacopa', name: 'Bacopa monnieri', forms: 'Capsules (standardized extract)',
+    dose: { text: 'Trials used standardized extracts taken daily for 12 weeks or more; effects were not seen in short use.', sources: ['kongkeaw'] },
+    uses: [
+      { goal: 'memory', text: 'Improved attention and processing speed in a meta-analysis of small trials.', evidence: 'emerging', sources: ['kongkeaw'] },
+      { goal: 'focus', text: 'Small improvements in attention and reaction time after several weeks.', evidence: 'emerging', sources: ['kongkeaw'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'lions_mane', name: 'Lion’s mane mushroom', forms: 'Capsules, powder',
+    dose: { text: 'The trial used dried mushroom powder daily for 16 weeks.', sources: ['mori'] },
+    uses: [
+      { goal: 'memory', text: 'Improved cognitive scores in one small trial of older adults with mild cognitive impairment; the benefit faded after stopping. Very little other human research.', evidence: 'limited', sources: ['mori'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'ginkgo', name: 'Ginkgo biloba', forms: 'Tablets, capsules',
+    dose: { text: 'The GEM trial used 120 mg twice daily.', sources: ['dekosky'] },
+    uses: [
+      { goal: 'memory', text: 'Very popular for memory, but in the large GEM trial it did not prevent dementia or cognitive decline.', evidence: 'limited', sources: ['dekosky', 'nccih_ginkgo'] },
+    ],
+    cautions: [
+      { when: ['bloodThinner'], block: true, text: 'Ginkgo may increase bleeding risk with warfarin and other anticoagulants.', sources: ['nccih_ginkgo'] },
+    ],
+  },
+  {
+    id: 'tyrosine', name: 'L-tyrosine', forms: 'Capsules, powder',
+    dose: { text: 'Studied as a single dose before a stressful or demanding task.', sources: ['jongkees'] },
+    uses: [
+      { goal: 'focus', text: 'May help preserve working memory and focus during short, acute stress (cold, noise, multitasking). No evidence of benefit for everyday focus or ADHD.', evidence: 'limited', sources: ['jongkees'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'rhodiola', name: 'Rhodiola rosea', forms: 'Capsules',
+    dose: { text: 'Trial doses and extracts varied widely.', sources: ['ishaque'] },
+    uses: [
+      { goal: 'energy', text: 'Some trials suggest less mental fatigue, but results are contradictory and the studies are flawed.', evidence: 'limited', sources: ['ishaque'] },
+      { goal: 'stress', text: 'Popular as an “adaptogen” for stress; the evidence is inconclusive.', evidence: 'limited', sources: ['ishaque'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'ginseng', name: 'Asian ginseng (Panax)', forms: 'Capsules, tea',
+    dose: { text: 'No standard dose; products vary widely.', sources: ['nccih_ginseng'] },
+    uses: [
+      { goal: 'energy', text: 'Widely promoted for fatigue and stamina; NIH finds the research inconclusive.', evidence: 'limited', sources: ['nccih_ginseng'] },
+    ],
+    cautions: [
+      { text: 'Trouble sleeping is the most common side effect.', sources: ['nccih_ginseng'] },
+      { when: ['diabetesMeds', 't1d', 't2d'], text: 'Research on its effect on blood sugar is conflicting; check glucose if you try it with diabetes medication.', sources: ['nccih_ginseng'] },
+    ],
+  },
+  {
+    id: 'five_htp', name: '5-HTP', forms: 'Capsules',
+    dose: { text: 'Trials were small and used varied doses.', sources: ['shaw_5htp'] },
+    uses: [
+      { goal: 'mood', text: 'Popular for mood; a Cochrane review found too few good-quality trials to judge.', evidence: 'limited', sources: ['shaw_5htp', 'turner_5htp'] },
+      { goal: 'sleep', text: 'Sometimes promoted for sleep, with very little supporting research.', evidence: 'limited', sources: ['turner_5htp'] },
+    ],
+    cautions: [
+      { when: ['ssri', 'maoi'], block: true, text: 'Combined with serotonergic drugs it raises the risk of serotonin syndrome.', sources: ['turner_5htp'] },
+      { text: 'Contaminated products have been linked to eosinophilia-myalgia syndrome.', sources: ['turner_5htp'] },
+    ],
+  },
+  {
+    id: 'same', name: 'SAMe (S-adenosyl methionine)', forms: 'Tablets',
+    dose: { text: 'Trials used a range of oral and injected doses.', sources: ['galizia'] },
+    uses: [
+      { goal: 'mood', text: 'Studied for depression, but a Cochrane review found no high-quality evidence and could not draw firm conclusions.', evidence: 'limited', sources: ['galizia'] },
+    ],
+    cautions: [
+      { when: ['ssri', 'maoi', 'depression'], text: 'Reviewers flagged mania as a particular concern. Use only with your prescriber’s guidance, especially alongside antidepressants or with bipolar disorder.', sources: ['galizia'] },
+    ],
+  },
+  {
+    id: 'valerian', name: 'Valerian root', forms: 'Capsules, tea',
+    dose: { text: 'No established dose; products vary.', sources: ['nccih_valerian'] },
+    uses: [
+      { goal: 'sleep', text: 'One of the most popular sleep herbs, but the evidence is inconsistent and sleep guidelines recommend against it.', evidence: 'limited', sources: ['nccih_valerian'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'chamomile', name: 'Chamomile tea', forms: 'Tea, capsules',
+    dose: { text: 'Usually taken as a cup of tea in the evening.', sources: ['nccih_chamomile'] },
+    uses: [
+      { goal: 'sleep', text: 'A calming bedtime ritual, but the one insomnia study found no benefit.', evidence: 'limited', sources: ['nccih_chamomile'] },
+      { goal: 'stress', text: 'Popular for relaxation; research is sparse.', evidence: 'limited', sources: ['nccih_chamomile'] },
+    ],
+    cautions: [
+      { text: 'Allergic reactions are possible, including severe ones.', sources: ['nccih_chamomile'] },
+      { when: ['bloodThinner'], block: true, text: 'Interactions with warfarin have been reported.', sources: ['nccih_chamomile'] },
+    ],
+  },
+  {
+    id: 'tart_cherry', name: 'Tart cherry juice', forms: 'Juice, concentrate',
+    dose: { text: 'The pilot study used juice twice a day.', sources: ['pigeon'] },
+    uses: [
+      { goal: 'sleep', text: 'Modestly reduced insomnia severity in one small pilot study of older adults.', evidence: 'limited', sources: ['pigeon'] },
+    ],
+    cautions: [
+      { when: ['t1d', 't2d'], text: 'Fruit juice is concentrated sugar; count it toward your carbs.', sources: ['ada_5'] },
+    ],
+  },
+  {
+    id: 'elderberry', name: 'Elderberry', forms: 'Syrup, gummies, lozenges',
+    dose: { text: 'Follow the product label; use only commercially prepared products.', sources: ['nccih_elderberry'] },
+    uses: [
+      { goal: 'immunity', text: 'Preliminary research suggests it may ease cold and flu symptoms.', evidence: 'limited', sources: ['nccih_elderberry'] },
+    ],
+    cautions: [
+      { text: 'Raw or unripe berries, leaves and stems contain cyanide-producing substances.', sources: ['nccih_elderberry'] },
+    ],
+  },
+  {
+    id: 'echinacea', name: 'Echinacea', forms: 'Capsules, tea, tincture',
+    dose: { text: 'Products and doses in trials varied widely.', sources: ['karsch'] },
+    uses: [
+      { goal: 'immunity', text: 'Some products may have a weak effect on preventing colds; results for treating them are inconsistent.', evidence: 'limited', sources: ['karsch'] },
+    ],
+    cautions: [],
+  },
+  {
+    id: 'garlic_supplement', name: 'Garlic supplements', forms: 'Capsules (aged garlic, garlic powder)',
+    dose: { text: 'Products vary; follow the label.', sources: ['nccih_garlic'] },
+    uses: [
+      { goal: 'heart', conditions: ['cholesterol'], text: 'May lower total and LDL cholesterol slightly in people with high cholesterol.', evidence: 'emerging', sources: ['nccih_garlic'] },
+      { goal: 'bloodPressure', conditions: ['hypertension'], text: 'Limited evidence of a small blood-pressure reduction.', evidence: 'limited', sources: ['nccih_garlic'] },
+    ],
+    cautions: [
+      { when: ['bloodThinner'], block: true, text: 'Garlic supplements may increase bleeding risk.', sources: ['nccih_garlic'] },
+    ],
+  },
 ]
 
 export const NOT_RECOMMENDED: NotRecommended[] = [
   { id: 'black_cohosh', name: 'Black cohosh', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone', 'nccih_black_cohosh'], why: 'NAMS does not recommend it for hot flashes, and rare cases of serious liver damage have been reported.' },
   { id: 'soy_isoflavones', name: 'Soy isoflavone pills', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone'], why: 'NAMS does not recommend soy foods or extracts for hot flashes. Proven options include hormone therapy, nonhormone medications and CBT.' },
+  { id: 'red_yeast_rice', name: 'Red yeast rice', goal: 'heart', claim: 'Lowering cholesterol', evidence: 'strong', sources: ['nccih_ryr'], why: 'It works only because it can contain monacolin K, which is chemically identical to the statin lovastatin, in unpredictable amounts. It has the same possible side effects as statins, and some products contain citrinin, a kidney toxin. A prescribed statin is the safer, measured version.' },
   { id: 'chromium_cinnamon', name: 'Chromium, cinnamon, aloe', goal: 'bloodSugar', claim: 'Blood sugar control', evidence: 'strong', sources: ['ada_5'], why: 'The ADA finds no clear evidence that these improve outcomes in diabetes without an underlying deficiency.' },
   { id: 'cocoa_extract', name: 'Cocoa flavanol extract', goal: 'memory', claim: 'Memory and cognition', evidence: 'strong', sources: ['cosmos_mind'], why: 'In the large COSMOS-Mind trial, cocoa extract did not improve cognition.' },
   { id: 'vitd_depression', name: 'Vitamin D for mood', goal: 'mood', claim: 'Preventing depression', evidence: 'strong', sources: ['vital_dep'], why: 'The VITAL trial found vitamin D supplements did not prevent depression. Correct a deficiency for bone health instead.' },

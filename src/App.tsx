@@ -1,5 +1,6 @@
 import { motion, MotionConfig, useMotionValue } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { DisclaimerGate } from './components/Disclaimer'
 import { HealthView } from './components/HealthView'
 import { Icon, type IconName } from './components/Icon'
 import { KitchenView } from './components/KitchenView'
@@ -47,6 +48,7 @@ export default function App() {
   useEffect(() => { window.scrollTo(0, 0); dragX.set(0) }, [tab, dragX])
 
   if (!state.setupDone) return <Onboarding state={state} update={update} />
+  if (!state.disclaimerAccepted) return <DisclaimerGate onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true }))} />
 
   return (
     <MotionConfig reducedMotion="user" transition={{ duration: 0.22, ease: [0.25, 0.8, 0.25, 1] }}>

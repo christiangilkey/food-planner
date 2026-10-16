@@ -3,6 +3,7 @@ import { FOODS } from '../data/foods'
 import { computeTargets } from '../lib/energy'
 import { defaultState, exportState, importState } from '../lib/store'
 import { ConditionFields } from './ConditionFields'
+import { DisclaimerText } from './Disclaimer'
 import { MedFields } from './MedFields'
 import { BodyFields, LifestyleFields } from './ProfileFields'
 import { Cite, type ViewProps } from './ui'
@@ -88,6 +89,11 @@ export function ProfileView(props: ViewProps) {
             </label>
           ))}
         </div>
+      </section>
+
+      <section className="card">
+        <h2>About this app</h2>
+        <DisclaimerText />
       </section>
 
       <section className="card">

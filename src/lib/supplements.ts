@@ -3,7 +3,7 @@ import { SUPPLEMENTS, type Caution, type Supplement, type Trigger, type Use } fr
 import type { Evidence, Profile } from '../types'
 import type { NutrientReport } from './analysis'
 
-const RANK: Record<Evidence, number> = { strong: 0, moderate: 1, emerging: 2 }
+const RANK: Record<Evidence, number> = { strong: 0, moderate: 1, emerging: 2, limited: 3 }
 
 /** Everything about this person that can make a supplement unsafe. */
 export function activeTriggers(p: Profile): Set<Trigger> {

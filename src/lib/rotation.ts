@@ -48,7 +48,7 @@ export function ruleTarget(rule: RotationRule): { min?: number; max?: number } {
   return { min: rule.min, max: rule.max }
 }
 
-export const EVIDENCE_WEIGHT: Record<Evidence, number> = { strong: 1, moderate: 0.7, emerging: 0.4 }
+export const EVIDENCE_WEIGHT: Record<Evidence, number> = { strong: 1, moderate: 0.7, emerging: 0.4, limited: 0.2 }
 
 export interface RuleStatus {
   rule: RotationRule

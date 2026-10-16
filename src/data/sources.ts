@@ -204,6 +204,26 @@ export const SOURCES = {
   gencer: s('Gencer 2021', 'Long-term marine omega-3 supplementation and atrial fibrillation risk: meta-analysis', 'Circulation', 2021, pm(34612056), 'meta-analysis'),
   cosmos_mind: s('COSMOS-Mind 2023', 'Cocoa extract and a multivitamin on cognitive function: randomized trial', 'Alzheimers Dement', 2023, pm(36102337), 'trial'),
 
+  // Commonly used, less-researched supplements
+  dekosky: s('GEM trial 2008', 'Ginkgo biloba for prevention of dementia: randomized controlled trial', 'JAMA', 2008, pm(19017911), 'trial'),
+  kongkeaw: s('Kongkeaw 2014', 'Cognitive effects of Bacopa monnieri extract: meta-analysis of RCTs', 'J Ethnopharmacol', 2014, pm(24252493), 'meta-analysis'),
+  mori: s('Mori 2009', 'Lion\u2019s mane mushroom (Hericium erinaceus) in mild cognitive impairment: double-blind trial', 'Phytother Res', 2009, pm(18844328), 'trial'),
+  jongkees: s('Jongkees 2015', 'Tyrosine supplementation under stress or cognitive demands: review', 'J Psychiatr Res', 2015, pm(26424423), 'review'),
+  ishaque: s('Ishaque 2012', 'Rhodiola rosea for physical and mental fatigue: systematic review', 'BMC Complement Altern Med', 2012, pm(22643043), 'meta-analysis'),
+  shaw_5htp: s('Shaw 2002 (Cochrane)', 'Tryptophan and 5-hydroxytryptophan for depression', 'Cochrane Database Syst Rev', 2002, pm(11869656), 'meta-analysis'),
+  turner_5htp: s('Turner 2006', 'Serotonin a la carte: supplementation with 5-hydroxytryptophan (efficacy and safety)', 'Pharmacol Ther', 2006, pm(16023217), 'review'),
+  galizia: s('Galizia 2016 (Cochrane)', 'S-adenosyl methionine (SAMe) for depression in adults', 'Cochrane Database Syst Rev', 2016, pm(27727432), 'meta-analysis'),
+  pigeon: s('Pigeon 2010', 'Tart cherry juice and sleep in older adults with insomnia: pilot study', 'J Med Food', 2010, pm(20438325), 'trial'),
+  karsch: s('Karsch-Völk 2014 (Cochrane)', 'Echinacea for preventing and treating the common cold', 'Cochrane Database Syst Rev', 2014, pm(24554461), 'meta-analysis'),
+  qu_coq10: s('Qu 2018', 'Coenzyme Q10 for statin-associated muscle symptoms: meta-analysis', 'J Am Heart Assoc', 2018, pm(30371340), 'meta-analysis'),
+  nccih_valerian: s('NCCIH: Valerian', 'Valerian: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/valerian', 'reference'),
+  nccih_chamomile: s('NCCIH: Chamomile', 'Chamomile: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/chamomile', 'reference'),
+  nccih_elderberry: s('NCCIH: Elderberry', 'Elderberry: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/elderberry', 'reference'),
+  nccih_ginkgo: s('NCCIH: Ginkgo', 'Ginkgo: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/ginkgo', 'reference'),
+  nccih_ginseng: s('NCCIH: Asian ginseng', 'Asian ginseng: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/asian-ginseng', 'reference'),
+  nccih_garlic: s('NCCIH: Garlic', 'Garlic: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/garlic', 'reference'),
+  nccih_ryr: s('NCCIH: Red yeast rice', 'Red yeast rice: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/red-yeast-rice', 'reference'),
+
   // ── Peptides ────────────────────────────────────────────
   step1: s('STEP 1 2021', 'Once-weekly semaglutide in adults with overweight or obesity', 'N Engl J Med', 2021, pm(33567185), 'trial'),
   select: s('SELECT 2023', 'Semaglutide and cardiovascular outcomes in obesity without diabetes', 'N Engl J Med', 2023, pm(37952131), 'trial'),
