@@ -19,6 +19,8 @@ export type ConditionId =
   | 't2d'
   | 'ckd'
   | 'hashimotos'
+  /** A goal rather than a condition: skin and appearance through food. */
+  | 'looks'
 
 /** Eating patterns the planner can follow. Several can be combined (the strictest rule wins). */
 export type DietId = 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo' | 'aip'

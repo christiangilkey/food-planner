@@ -546,6 +546,7 @@ export const SUPPLEMENTS: Supplement[] = [
 ]
 
 export const NOT_RECOMMENDED: NotRecommended[] = [
+  { id: 'vitc_megadose', name: 'Vitamin C megadoses (1–2 g a day)', goal: 'skin', claim: 'Anti-aging skin', evidence: 'moderate', sources: ['thomas_vitc', 'ods_vitC'], why: 'Food easily covers the 75–90 mg daily need, and 2,000 mg is the upper limit. Men taking vitamin C supplements had about twice as many kidney stones in a large Swedish study. Eat peppers, citrus and berries instead.' },
   { id: 'kelp_iodine', name: 'Kelp, seaweed or iodine pills', goal: 'thyroid', claim: 'Supporting the thyroid', evidence: 'strong', sources: ['niddk_hashimoto'], why: 'In Hashimoto’s and other autoimmune thyroid disease, large amounts of iodine can cause or worsen hypothyroidism. Normal food amounts (iodized salt, dairy, eggs, fish) are enough.' },
   { id: 'black_cohosh', name: 'Black cohosh', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone', 'nccih_black_cohosh'], why: 'NAMS does not recommend it for hot flashes, and rare cases of serious liver damage have been reported.' },
   { id: 'soy_isoflavones', name: 'Soy isoflavone pills', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone'], why: 'NAMS does not recommend soy foods or extracts for hot flashes. Proven options include hormone therapy, nonhormone medications and CBT.' },

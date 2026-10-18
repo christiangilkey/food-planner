@@ -6,6 +6,7 @@ import { dayEntries, emptyPlan, getEntry, setEntry, type Pos } from './plan-util
 import { addGroups, entryGroups, rotationGap, rotationScore, type GroupServings } from './rotation'
 import { FOOD_BY_ID } from '../data/foods'
 import { buildShoppingList, weeklyNeeds } from './shopping'
+import { gentleness, glycemicLoad, hasLooksGoal, HIGH_GL } from './looks'
 import { computeTargets, type Targets } from './energy'
 import { activeRules, avoidedFoods, CAFFEINATED_DRINKS, dietBlocked, hasCondition, mergedLimits, nutrientTarget, planViolations, recipeAllowed, safetyGap } from './conditions'
 import {
@@ -231,6 +232,13 @@ function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): 
     if (l.addedSugarMaxPct && sugarPct > l.addedSugarMaxPct) safety += Math.min(1, (sugarPct - l.addedSugarMaxPct) / l.addedSugarMaxPct)
   }
 
+  // Skin & looks goal: steer away from high-glycemic-load meals and toward moist-heat cooking.
+  let looks = 0
+  if (hasLooksGoal(p)) {
+    const gl = glycemicLoad(r, portion)
+    looks = -0.15 * Math.max(0, Math.min(1, (gl - HIGH_GL) / HIGH_GL)) + 0.05 * gentleness(r)
+  }
+
   const adhd = isAdhd(p)
   const easeWeight = adhd ? (p.stimulantMeds && slot === 'lunch' ? 0.25 : 0.16) : 0.07
   const parts: ScoreParts = { satiety, protein, gaps, cost: costScore, reward, ease, onHand, pantry, variety, rotation }
@@ -245,6 +253,7 @@ function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): 
     0.22 * variety +
     0.18 * rotation -
     0.35 * safety +
+    looks +
     (ctx.pantryFirst ? 0.55 * pantry + 0.15 * useUp : 0) -
     // Never serve more of a scanned product than is left.
     (r.product && covered < need * 0.99 ? 2 : 0)

@@ -2,6 +2,7 @@ import { FOOD_BY_ID } from '../data/foods'
 import { METHODS } from '../data/methods'
 import { EQUIPMENT } from '../data/recipes'
 import { crashRisk, easeScore, rewardScore, satietyScore, servingCost, servingTotals } from '../lib/nutrition'
+import { gentlerCookingTip, hasLooksGoal } from '../lib/looks'
 import { formatLb } from '../lib/shopping'
 import type { AppState, Recipe } from '../types'
 import { Chip, Cite, Score, Sheet } from './ui'
@@ -34,6 +35,7 @@ export function RecipeSheet({ recipe, portion, state, onClose }: { recipe: Recip
         {recipe.activeMin} min hands-on{recipe.totalMin > recipe.activeMin ? `, ${recipe.totalMin} min total` : ''} · {stepCount} step{stepCount > 1 ? 's' : ''} · about {money(servingCost(recipe, state, portion))} per plate
       </p>
       {recipe.note && <p className="note">{recipe.note}</p>}
+      {hasLooksGoal(state.profile) && gentlerCookingTip(recipe) && <p className="note">{gentlerCookingTip(recipe)} <Cite ids={['uribarri_age']} /></p>}
 
       <h3>Ingredients for {portion === 1 ? 'one serving' : `${portion} servings`}</h3>
       <ul className="ingredients">

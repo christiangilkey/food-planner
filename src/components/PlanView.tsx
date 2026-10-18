@@ -12,6 +12,7 @@ import { analyzeRotation } from '../lib/rotation'
 import { daySchedule, formatTime, mealTimes, type ItemKind } from '../lib/schedule'
 import { mealTip } from '../lib/tips'
 import { hasCondition, planViolations } from '../lib/conditions'
+import { hasLooksGoal, puffiness } from '../lib/looks'
 import { glasses, waterPlan } from '../lib/water'
 import { Icon, type IconName } from './Icon'
 import { ExportSheet, exportLabel } from './ExportSheet'
@@ -153,6 +154,10 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
             return m + (r ? servingCost(r, state, entry.portion) : 0)
           }, 0))}
         </p>
+        {hasLooksGoal(state.profile) && totals.kcal > 0 && (() => {
+          const puff = puffiness(totals, state.profile)
+          return <p className={`small ${puff.tone === 'warn' ? 'warn-text' : 'good-text'}`}>Puffiness check: {puff.text} <Cite ids={puff.sources} /></p>
+        })()}
       </section>
 
       <section className="card">

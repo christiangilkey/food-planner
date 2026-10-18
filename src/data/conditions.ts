@@ -367,6 +367,32 @@ export const CONDITIONS: Condition[] = [
     ],
     suppressTips: ['creatine', 'protein_spread'],
   },
+  {
+    id: 'looks', label: 'Skin & looks (goal)', icon: 'sparkles', domains: [],
+    blurb: 'A goal, not a condition: lower-glycemic meals for clearer skin, red and orange produce for a healthy glow, less salt-driven puffiness, and gentler cooking.',
+    limits: {}, limitReasons: {},
+    avoid: [
+      {
+        foods: ['milk', 'greek_yogurt', 'kefir', 'cottage_cheese', 'cheddar', 'string_cheese', 'mozzarella', 'feta', 'parmesan', 'goat_cheese', 'cream_cheese'], optIn: true,
+        reason: { text: 'In pooled observational studies of people aged 7–30, any dairy (milk, yogurt, cheese) was linked to about 25% higher odds of acne, but the studies were biased and inconsistent. Remove dairy only if you notice it affects your skin.', evidence: 'limited', sources: ['juhl_dairy'] },
+      },
+    ],
+    rules: [
+      rule('looks_glow', 'Red & orange produce (glow)', ['red_orange_veg'], { min: 10 }, 'emerging', ['whitehead_skin'],
+        'Eating about three more portions of fruit and vegetables a day visibly warmed skin color within six weeks, and observers rated the faces healthier and more attractive. The color comes from carotenoids, which are richest in red and orange produce.', ['carrots', 'sweet_potato', 'bell_pepper', 'squash', 'pumpkin', 'tomato'],
+        { convention: 'The study counted all fruit and vegetables; 10 red and orange servings a week is this app’s way of aiming at the carotenoid-rich ones.' }),
+    ],
+    helps: [
+      { text: 'A low-glycemic-load diet (more protein, low-glycemic carbs) reduced acne lesions more than a high-carb control diet in a 12-week trial of 43 young men. That group also lost weight, so the two effects can’t be separated. Your plan scores meals lower when their estimated glycemic load is high (20 or more).', evidence: 'emerging', sources: ['smith_acne', 'atkinson_gi'] },
+      { text: 'Dry, high-heat cooking (frying, grilling, roasting) creates 10 to 100 times more advanced glycation end products (AGEs) than uncooked food, especially in meat and fat. Steaming, poaching, stewing, shorter cooking and an acidic marinade cut them. AGEs stiffen collagen, the link to skin aging, though this comes from lab research rather than trials. Your plan gives a small bonus to moist-heat and no-cook meals.', evidence: 'emerging', sources: ['uribarri_age'] },
+      { text: 'People judge health and attractiveness partly from facial fat. If you have weight to lose, the calorie target does more for your face than any single food.', evidence: 'moderate', sources: ['dejager_face'] },
+    ],
+    guidance: [
+      { text: 'Morning puffiness after a salty day is mostly water, not fat. Keep sodium moderate and eat potassium-rich foods (beans, potatoes, leafy greens, bananas); the Plan tab shows each day’s balance. With kidney disease or a potassium-raising blood-pressure drug, follow your doctor’s potassium advice instead.', evidence: 'moderate', sources: ['nasem_sodium', 'ods_potassium', 'aha_sodium'] },
+      { text: 'Vitamin C megadoses for “anti-aging” aren’t needed. Food covers your needs, and men taking vitamin C supplements had about twice as many kidney stones in a large Swedish study.', evidence: 'moderate', sources: ['thomas_vitc', 'ods_vitC'] },
+    ],
+    suppressTips: [],
+  },
 ]
 
 export const CONDITION_BY_ID = Object.fromEntries(CONDITIONS.map((c) => [c.id, c])) as Record<ConditionId, Condition>

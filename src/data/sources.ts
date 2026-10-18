@@ -247,6 +247,15 @@ export const SOURCES = {
   abbott_aip: s('Abbott 2019', 'Autoimmune protocol diet as part of a lifestyle intervention for Hashimoto’s thyroiditis', 'Cureus', 2019, pm(31275780), 'trial'),
   konijeti_aip: s('Konijeti 2017', 'Efficacy of the autoimmune protocol diet for inflammatory bowel disease', 'Inflamm Bowel Dis', 2017, pm(28858071), 'trial'),
 
+  // Skin & looks
+  smith_acne: s('Smith 2007', 'A low-glycemic-load diet improves symptoms in acne vulgaris patients: randomized controlled trial', 'Am J Clin Nutr', 2007, pm(17616769), 'trial'),
+  atkinson_gi: s('Atkinson 2021', 'International tables of glycemic index and glycemic load values 2021: systematic review', 'Am J Clin Nutr', 2021, pm(34258626), 'review'),
+  juhl_dairy: s('Juhl 2018', 'Dairy intake and acne vulgaris: systematic review and meta-analysis of 78,529 children, adolescents and young adults', 'Nutrients', 2018, pm(30096883), 'meta-analysis'),
+  whitehead_skin: s('Whitehead 2012', 'Within-subject increases in fruit and vegetable consumption confer beneficial skin-color changes', 'PLoS One', 2012, pm(22412966), 'trial'),
+  uribarri_age: s('Uribarri 2010', 'Advanced glycation end products in foods and a practical guide to their reduction in the diet', 'J Am Diet Assoc', 2010, pm(20497781), 'review'),
+  dejager_face: s('de Jager 2018', 'Facial adiposity, attractiveness, and health: a review', 'Front Psychol', 2018, pm(30622491), 'review'),
+  thomas_vitc: s('Thomas 2013', 'Ascorbic acid supplements and kidney stone incidence among men: prospective study', 'JAMA Intern Med', 2013, pm(23381591), 'cohort'),
+
   // Diets
   bueno_keto: s('Bueno 2013', 'Very-low-carbohydrate ketogenic diet vs low-fat diet for long-term weight loss: meta-analysis', 'Br J Nutr', 2013, pm(23651522), 'meta-analysis'),
   retterstol: s('Retterstøl 2018', 'Low-carbohydrate high-fat diet and LDL cholesterol in young adults: RCT', 'Atherosclerosis', 2018, pm(30408717), 'trial'),
