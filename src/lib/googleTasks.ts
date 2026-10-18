@@ -24,6 +24,12 @@ export interface TaskListDraft {
   title: string
   /** Short tag for Onyx (e.g. "meals", "sleep"); Google Tasks ignores it. */
   tag?: string
+  /**
+   * How Onyx takes the list (Google Tasks ignores it): "magic" (default) hands it to Magic add to fit
+   * around the day; "fixed" keeps exact time blocks (sleep); "bundle" sends one task with the list in
+   * its notes (groceries).
+   */
+  onyx?: 'magic' | 'fixed' | 'bundle'
   tasks: TaskDraft[]
 }
 
@@ -99,6 +105,7 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
     lists.push({
       title: `Groceries · ${label}${store ? ` · ${store.name}` : ''}`,
       tag: 'groceries',
+      onyx: 'bundle',
       tasks: [
         ...items.map((it) => ({
           title: `${it.food.name}: ${it.packages > 1 ? `${it.packages} × ` : ''}${it.food.packageLabel}`,
@@ -131,6 +138,8 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
           '', 'Cool leftovers within 2 hours, refrigerate, and eat within 3–4 days.',
         ].join('\n'),
         due: iso(prepDay),
+        // Calendar length: one full cook, plus the hands-on time of each extra batch.
+        minutes: Math.max(15, Math.min(240, r.totalMin + r.activeMin * (batches - 1))),
       }
     })
     if (tasks.length) lists.push({ title: `Prep day · week of ${label}`, tag: 'meal-prep', tasks })

@@ -1,17 +1,13 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { buildTaskLists, exportToGoogleTasks, getTasksToken, toChecklistText, type ExportOptions, type TaskListDraft } from '../lib/googleTasks'
-import { exportToOnyx, onyxHealth } from '../lib/onyx'
+import { exportLabel, exportToOnyx, onyxHealth } from '../lib/onyx'
 import { buildSleepTaskLists } from '../lib/sleep'
-import type { AppState, ExportTarget } from '../types'
+import type { AppState } from '../types'
 import { Icon } from './Icon'
 import { Sheet, type ViewProps } from './ui'
 
 const ORIGIN = typeof location !== 'undefined' ? location.origin : 'https://christiangilkey.github.io'
 
-const TARGET_NAME: Record<ExportTarget, string> = { google: 'Google Tasks', onyx: 'Onyx' }
-
-/** "Export to Google Tasks" or "Export to Onyx", following the setting. */
-export const exportLabel = (s: AppState) => `Export to ${TARGET_NAME[s.exportTarget]}`
 
 /** Send the week to Google Tasks or Onyx (or copy it as a checklist). */
 export function ExportSheet({ state, update, onClose }: ViewProps & { onClose: () => void }) {
@@ -23,12 +19,12 @@ export function ExportSheet({ state, update, onClose }: ViewProps & { onClose: (
     <Sheet title={exportLabel(state)} onClose={onClose}>
       <p className="muted small">
         {onyx
-          ? 'Meals become time blocks on your Onyx calendar at their planned times; groceries and prep become tasks. Everything is tagged “food-planner”.'
+          ? 'Meals and prep go to Onyx’s Magic add, which fits them around what’s already on each day, near their planned times. Groceries go as one shopping task. Everything is tagged “food-planner”, and sending again updates them instead of adding duplicates.'
           : 'Creates a task list for each part you choose, with meals due on their day.'}{' '}
         It goes straight from this device to {onyx ? 'your computer' : 'your Google account'}; nothing passes through any other server.
       </p>
       <div className="check-grid">
-        {([['meals', 'Meal plan', onyx ? 'One block per meal at its time, with ingredients and steps' : 'One task per meal, due that day, with ingredients'], ['shopping', 'Shopping list', 'One task per item'], ['prep', 'Prep day', 'Batch cooking, due the Sunday before']] as [keyof ExportOptions, string, string][]).map(([k, label, detail]) => (
+        {([['meals', 'Meal plan', onyx ? 'Each meal fitted in near its planned time, with ingredients and steps' : 'One task per meal, due that day, with ingredients'], ['shopping', 'Shopping list', 'One task per item'], ['prep', 'Prep day', 'Batch cooking, due the Sunday before']] as [keyof ExportOptions, string, string][]).map(([k, label, detail]) => (
           <label key={k} className={`check-card ${opts[k] ? 'on' : ''}`}>
             <input type="checkbox" checked={opts[k]} onChange={() => toggle(k)} />
             <span><strong>{label}</strong><small className="muted"> {detail}</small></span>
@@ -48,7 +44,7 @@ export function SleepExportSheet({ state, update, onClose }: ViewProps & { onClo
     <Sheet title={`${exportLabel(state)}: sleep schedule`} onClose={onClose}>
       <p className="muted small">
         {onyx
-          ? 'Adds your wind-down routine for the next 7 nights as blocks on your Onyx calendar, with your sleep itself as one block each night, tagged “sleep”.'
+          ? 'Adds your wind-down routine for the next 7 nights as fixed blocks on your Onyx calendar, with your sleep itself as one block each night, tagged “sleep”. These keep their exact times rather than going through Magic add.'
           : 'Adds your wind-down routine for the next 7 nights as tasks due on their day: caffeine cutoff, last food, screens away, lights out and morning light.'}
       </p>
       <ExportPanel state={state} update={update} lists={lists}>
@@ -82,8 +78,14 @@ function ExportPanel({ state, update, lists, children }: ViewProps & { lists: Ta
   }
   const sendOnyx = async () => {
     setStatus({ kind: 'working', text: 'Connecting to Onyx…' })
-    const n = await exportToOnyx(state.onyx, lists, (done, total) => setStatus({ kind: 'working', text: `Adding to Onyx… ${done} of ${total}` }))
-    setStatus({ kind: 'done', text: `Added ${n} items to Onyx.` })
+    const r = await exportToOnyx(state.onyx, lists, (done, total) => setStatus({ kind: 'working', text: `Sending to Onyx… ${done} of ${total}` }))
+    const parts = [
+      r.queued ? `${r.queued} waiting in Magic add for you to review` : '',
+      r.placed ? `${r.placed} placed on your calendar` : '',
+    ].filter(Boolean)
+    const missed = r.unplaced.length ? ` Couldn’t fit ${r.unplaced.length}: ${r.unplaced.slice(0, 3).map((u) => `${u.title} (${u.reason.toLowerCase()})`).join('; ')}${r.unplaced.length > 3 ? '…' : ''}.` : ''
+    const old = r.legacy ? ' This Onyx version has no Magic add for other apps yet, so they went in at their planned times; update Onyx to have them fitted around your day.' : ''
+    setStatus({ kind: r.unplaced.length ? 'error' : 'done', text: `Sent ${r.sent} to Onyx: ${parts.join(', ') || 'nothing new'}.${missed}${old}` })
   }
   const send = async () => {
     try {
@@ -150,7 +152,6 @@ export function OnyxFields({ state, update }: ViewProps) {
   const url = state.onyx.url
   useEffect(() => {
     let live = true
-    setHealth('checking')
     const t = setTimeout(() => onyxHealth({ url, token: '' }).then((h) => {
       if (!live) return
       setHealth(h.ok ? 'ok' : 'down')

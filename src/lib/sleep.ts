@@ -341,7 +341,8 @@ export function buildSleepTaskLists(p: Profile, today = new Date()): TaskListDra
       })
     }
   }
-  return [{ title: `Sleep schedule · from ${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`, tag: 'sleep', tasks }]
+  // Bedtime and waking are anchors, not tasks to fit in: Onyx keeps them as exact blocks.
+  return [{ title: `Sleep schedule · from ${start.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`, tag: 'sleep', onyx: 'fixed', tasks }]
 }
 
 /** Advice when the planned bed and wake times leave too little time to sleep. */

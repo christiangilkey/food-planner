@@ -3,7 +3,8 @@ import type { Tab } from '../App'
 import { analyzeSleep, formatHours, nightMinutes, scheduleAdvice, sleepImpacts, windDown, type ImpactArea, type SleepImpact } from '../lib/sleep'
 import { formatTime, mealTimes, parseTime } from '../lib/schedule'
 import type { Profile, SleepEntry } from '../types'
-import { exportLabel, SleepExportSheet } from './ExportSheet'
+import { exportLabel } from '../lib/onyx'
+import { SleepExportSheet } from './ExportSheet'
 import { Icon } from './Icon'
 import { Cite, EvidenceChip, type ViewProps } from './ui'
 
@@ -109,7 +110,7 @@ function ImpactRow({ x }: { x: SleepImpact }) {
 
 /** Log (or correct) one night. Defaults to last night at the scheduled times. */
 function LogNight({ state, update }: ViewProps) {
-  const today = isoDate(new Date())
+  const [today] = useState(() => isoDate(new Date()))
   const [date, setDate] = useState(today)
   const existing = state.sleepLog.find((e) => e.date === date)
   const [bed, setBed] = useState(existing?.bed ?? state.profile.bedTime)
@@ -175,11 +176,11 @@ function LogNight({ state, update }: ViewProps) {
 
 /** Bars for the last 14 mornings, with the minimum target as a line. */
 function SleepChart({ log, targetMin }: { log: SleepEntry[]; targetMin: number }) {
-  const days = Array.from({ length: 14 }, (_, i) => {
+  const [days] = useState(() => Array.from({ length: 14 }, (_, i) => {
     const d = new Date()
     d.setDate(d.getDate() - (13 - i))
     return isoDate(d)
-  })
+  }))
   const max = 10 * 60
   return (
     <div className="sleep-chart" role="img" aria-label="Hours slept, last 14 nights">

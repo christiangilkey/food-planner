@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { SOURCES } from '../data/sources'
 import type { ConditionId, Profile, SleepEntry } from '../types'
-import { buildTaskLists } from './googleTasks'
+import { buildTaskLists, type TaskListDraft } from './googleTasks'
 import { exportToOnyx, localStamp } from './onyx'
 import { analyzeSleep, buildSleepTaskLists, midpoint, nightMinutes, scheduleAdvice, sleepImpacts, windDown } from './sleep'
 import { defaultState } from './store'
@@ -123,20 +123,73 @@ describe('Onyx export', () => {
     expect(localStamp('2026-10-18', 1440 + 60)).toBe('2026-10-19T01:00')
   })
 
-  it('sends timed items as blocks and the rest as tasks, tagged, with the token', async () => {
-    const calls: { name: string; args: Record<string, unknown>; auth: string }[] = []
+  type Call = { name: string; args: Record<string, any>; auth: string }
+  /** Fake Onyx: answers magic_add with `reply` (or an unknown-tool error) and everything else with an id. */
+  const fakeOnyx = (reply: (args: any) => unknown, hasMagic = true) => {
+    const calls: Call[] = []
     vi.stubGlobal('fetch', vi.fn(async (_url: string, init: RequestInit) => {
       const body = JSON.parse(String(init.body))
       calls.push({ name: body.params.name, args: body.params.arguments, auth: (init.headers as Record<string, string>).Authorization })
-      return new Response(JSON.stringify({ jsonrpc: '2.0', id: body.id, result: { content: [{ type: 'text', text: '{"id":"x"}' }] } }), { status: 200 })
+      if (body.params.name === 'magic_add' && !hasMagic) return new Response(JSON.stringify({ jsonrpc: '2.0', id: body.id, error: { code: -32602, message: 'Unknown tool: magic_add' } }), { status: 200 })
+      const result = body.params.name === 'magic_add' ? reply(body.params.arguments) : { id: 'x' }
+      return new Response(JSON.stringify({ jsonrpc: '2.0', id: body.id, result: { content: [{ type: 'text', text: JSON.stringify(result) }] } }), { status: 200 })
     }))
-    const n = await exportToOnyx({ url: 'http://127.0.0.1:4747/', token: 'abc' }, [
-      { title: 'Meals', tag: 'meals', tasks: [{ title: 'Mon 7:30 am · Breakfast: Oats', due: '2026-10-19', at: 450, minutes: 20 }] },
-      { title: 'Groceries', tag: 'groceries', tasks: [{ title: 'Eggs', due: '2026-10-19' }] },
-    ])
-    expect(n).toBe(2)
-    expect(calls[0]).toMatchObject({ name: 'create_time_block', auth: 'Bearer abc', args: { title: 'Breakfast: Oats', start: '2026-10-19T07:30', end: '2026-10-19T07:50', tags: ['food-planner', 'meals'] } })
-    expect(calls[1]).toMatchObject({ name: 'create_task', args: { title: 'Eggs', due: '2026-10-19', tags: ['food-planner', 'groceries'] } })
+    return calls
+  }
+  const cfg = { url: 'http://127.0.0.1:4747/', token: 'abc' }
+  const week = (): TaskListDraft[] => [
+    { title: 'Meals', tag: 'meals', tasks: [
+      { title: 'Mon 7:30 am · Breakfast: Oats', due: '2026-10-19', at: 450, minutes: 20 },
+      { title: 'Mon 6:00 pm · Dinner: Lentil soup', due: '2026-10-19', at: 1080, minutes: 45 },
+      { title: 'Tue 7:30 am · Breakfast: Eggs', due: '2026-10-20', at: 450, minutes: 15 },
+    ] },
+    { title: 'Groceries · Oct 19', tag: 'groceries', onyx: 'bundle', tasks: [{ title: 'Eggs: 1 dozen', notes: 'Dairy & Eggs', due: '2026-10-19' }, { title: 'Oats: 42 oz', due: '2026-10-19' }] },
+    { title: 'Sleep schedule', tag: 'sleep', onyx: 'fixed', tasks: [{ title: 'Mon 11:00 pm · Lights out', due: '2026-10-19', at: 1380, minutes: 480 }] },
+  ]
+
+  it('hands meals to Magic add one day per call, bundles groceries, keeps sleep as an exact block', async () => {
+    const calls = fakeOnyx((a) => ({ mode: 'review', date: a.date, queued: a.items }))
+    const r = await exportToOnyx(cfg, week())
+    expect(calls.map((c) => c.name)).toEqual(['magic_add', 'magic_add', 'create_time_block'])
+    expect(calls[0].auth).toBe('Bearer abc')
+    expect(calls[0].args).toMatchObject({ date: '2026-10-19', source: 'food-planner' })
+    const [oats, soup, shopping] = calls[0].args.items
+    expect(oats).toMatchObject({ title: 'Breakfast: Oats', minutes: 20, preferred: '07:30', tags: ['food-planner', 'meals'] })
+    expect(soup.preferred).toBe('18:00')
+    expect(shopping).toMatchObject({ title: 'Grocery shopping', tags: ['food-planner', 'groceries'] })
+    expect(shopping.notes).toMatch(/☐ Eggs: 1 dozen \(Dairy & Eggs\)\n☐ Oats: 42 oz/)
+    expect(calls[1].args.date).toBe('2026-10-20')
+    expect(calls[2].args).toMatchObject({ title: 'Lights out', start: '2026-10-19T23:00', end: '2026-10-20T07:00', tags: ['food-planner', 'sleep'] })
+    expect(r).toEqual({ sent: 5, queued: 4, placed: 1, unplaced: [], legacy: false })
+  })
+
+  it('gives each item a stable id, so sending again updates instead of duplicating', async () => {
+    const first = fakeOnyx((a) => ({ mode: 'review', queued: a.items }))
+    await exportToOnyx(cfg, week())
+    const again = fakeOnyx((a) => ({ mode: 'review', queued: a.items }))
+    await exportToOnyx(cfg, week())
+    const ids = (cs: Call[]) => cs.filter((c) => c.name === 'magic_add').flatMap((c) => c.args.items.map((i: { id: string }) => i.id))
+    expect(ids(again)).toEqual(ids(first))
+    expect(new Set(ids(first)).size).toBe(ids(first).length)
+  })
+
+  it('splits days with more than 30 items, and reports what Magic add could not fit', async () => {
+    const many: TaskListDraft[] = [{ title: 'Prep', tag: 'meal-prep', tasks: Array.from({ length: 35 }, (_, i) => ({ title: `Cook ${i}`, due: '2026-10-18', minutes: 30 })) }]
+    const calls = fakeOnyx((a) => ({ mode: 'placed', placed: a.items.slice(1), unplaced: [{ title: a.items[0].title, reason: 'No free time left' }] }))
+    const r = await exportToOnyx(cfg, many)
+    expect(calls.map((c) => c.args.items.length)).toEqual([30, 5])
+    expect(r.placed).toBe(33)
+    expect(r.unplaced).toEqual([{ title: 'Cook 0', reason: 'No free time left' }, { title: 'Cook 30', reason: 'No free time left' }])
+  })
+
+  it('falls back to blocks and tasks on an Onyx without Magic add', async () => {
+    const calls = fakeOnyx(() => ({}), false)
+    const r = await exportToOnyx(cfg, week())
+    expect(r.legacy).toBe(true)
+    expect(calls.filter((c) => c.name === 'magic_add')).toHaveLength(1)
+    expect(calls.find((c) => c.name === 'create_time_block' && c.args.title === 'Breakfast: Oats')?.args).toMatchObject({ start: '2026-10-19T07:30', end: '2026-10-19T07:50' })
+    expect(calls.find((c) => c.name === 'create_task')?.args).toMatchObject({ title: 'Grocery shopping', due: '2026-10-19' })
+    expect(r.sent).toBe(5)
   })
 
   it('explains a wrong token and a missing token', async () => {

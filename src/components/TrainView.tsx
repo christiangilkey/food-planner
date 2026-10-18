@@ -305,8 +305,10 @@ const BAND_TEXT = { healthy: 'Healthy range', increased: 'Increased risk', high:
 
 /** Weekly check-ins: weight (as a weekly average), waist, grip strength and dead-hang time. */
 function CheckIns({ state, update }: ViewProps) {
-  const today = new Date()
-  const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const [iso] = useState(() => {
+    const today = new Date()
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  })
   const [draft, setDraft] = useState<Record<'weightLb' | 'waistIn' | 'gripKg' | 'hangSec', string>>({ weightLb: '', waistIn: '', gripKg: '', hangSec: '' })
   const [saved, setSaved] = useState('')
   const t = bodyTrend(state.bodyLog, state.profile)
