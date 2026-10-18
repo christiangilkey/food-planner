@@ -1,4 +1,6 @@
 import { CONDITION_BY_ID, CONDITIONS, type AvoidEntry, type Claim, type Condition, type Limits } from '../data/conditions'
+import { DIET_BY_ID, DIETS, dietAllowsFood, type Diet } from '../data/diets'
+import { FOODS } from '../data/foods'
 import { RECIPE_BY_ID } from '../data/recipes'
 import { ROTATION_RULES, type RotationRule } from '../data/rotation'
 import { dailyTarget } from '../data/nutrients'
@@ -35,6 +37,25 @@ export function avoidedFoods(p: Profile): Map<string, AvoidReason[]> {
   }
   return out
 }
+
+export function activeDiets(p: Profile): Diet[] {
+  return DIETS.filter((d) => p.diets.includes(d.id))
+}
+
+/** Foods outside any of the chosen diets. */
+export function dietBlocked(p: Profile): Set<string> {
+  const diets = activeDiets(p)
+  return new Set(diets.length ? FOODS.filter((f) => diets.some((d) => !dietAllowsFood(d, f.id))).map((f) => f.id) : [])
+}
+
+/** Net-carb ceilings from the chosen diets (keto), or undefined. */
+export function netCarbLimits(p: Profile): { perServing: number; perDay: number } | undefined {
+  const limits = activeDiets(p).map((d) => d.netCarbs).filter((x) => !!x)
+  if (!limits.length) return undefined
+  return { perServing: Math.min(...limits.map((l) => l.perServing)), perDay: Math.min(...limits.map((l) => l.perDay)) }
+}
+
+const netCarbs = (t: { carbs: number; fiber: number }) => Math.max(0, t.carbs - t.fiber)
 
 /** The strictest version of every limit across active conditions. */
 export function mergedLimits(p: Profile): Limits {
@@ -74,14 +95,16 @@ export function suppressedTips(p: Profile): Set<string> {
 }
 
 /** Is this recipe allowed at all under the active conditions? */
-export function recipeAllowed(r: Recipe, p: Profile, avoided = avoidedFoods(p), limits = mergedLimits(p)): boolean {
-  if (r.items.some((i) => avoided.has(i.food))) return false
+export function recipeAllowed(r: Recipe, p: Profile, avoided = avoidedFoods(p), limits = mergedLimits(p), blocked = dietBlocked(p)): boolean {
+  if (r.items.some((i) => avoided.has(i.food) || blocked.has(i.food))) return false
   if (limits.noCrashMeals && crashRisk(servingTotals(r))) return false
+  const carbs = netCarbLimits(p)
+  if (carbs && netCarbs(servingTotals(r)) > carbs.perServing) return false
   return true
 }
 
 export interface Violation {
-  kind: 'avoided' | 'sodium' | 'satFat' | 'addedSugar' | 'eggs' | 'crash' | 'caffeine'
+  kind: 'avoided' | 'diet' | 'netCarbs' | 'sodium' | 'satFat' | 'addedSugar' | 'eggs' | 'crash' | 'caffeine'
   message: string
   day?: number
 }
@@ -92,6 +115,8 @@ const EGG_SERVING_G = 50
 export function planViolations(p: Profile, plan: DayPlan[]): Violation[] {
   const avoided = avoidedFoods(p)
   const limits = mergedLimits(p)
+  const blocked = dietBlocked(p)
+  const carbLimit = netCarbLimits(p)
   const out: Violation[] = []
   const week = { ...EMPTY }
   let eggs = 0
@@ -102,6 +127,7 @@ export function planViolations(p: Profile, plan: DayPlan[]): Violation[] {
       if (!r) continue
       const bad = r.items.find((i) => avoided.has(i.food))
       if (bad) out.push({ kind: 'avoided', day: d, message: `${r.name} contains a food your conditions exclude.` })
+      if (r.items.some((i) => blocked.has(i.food))) out.push({ kind: 'diet', day: d, message: `${r.name} doesn’t fit your diet.` })
       const t = servingTotals(r, entry.portion)
       if (limits.noCrashMeals && crashRisk(t)) out.push({ kind: 'crash', day: d, message: `${r.name} is likely to spike blood sugar.` })
       addInto(dayTotals, t)
@@ -109,6 +135,9 @@ export function planViolations(p: Profile, plan: DayPlan[]): Violation[] {
     }
     if (limits.sodiumMaxMg && dayTotals.sodium > limits.sodiumMaxMg) {
       out.push({ kind: 'sodium', day: d, message: `${Math.round(dayTotals.sodium)} mg sodium, over the ${limits.sodiumMaxMg} mg daily cap.` })
+    }
+    if (carbLimit && netCarbs(dayTotals) > carbLimit.perDay + 0.5) {
+      out.push({ kind: 'netCarbs', day: d, message: `${Math.round(netCarbs(dayTotals))} g net carbs, over your ${carbLimit.perDay} g keto limit.` })
     }
     if (dayTotals.caffeine > caffeineLimit(p)) {
       out.push({ kind: 'caffeine', day: d, message: `${Math.round(dayTotals.caffeine)} mg caffeine, over the ${caffeineLimit(p)} mg daily limit.` })
@@ -129,6 +158,8 @@ export function planViolations(p: Profile, plan: DayPlan[]): Violation[] {
 export function safetyGap(p: Profile, plan: DayPlan[]): number {
   const limits = mergedLimits(p)
   const avoided = avoidedFoods(p)
+  const blocked = dietBlocked(p)
+  const carbLimit = netCarbLimits(p)
   let gap = 0
   const week = { ...EMPTY }
   let eggs = 0
@@ -137,13 +168,14 @@ export function safetyGap(p: Profile, plan: DayPlan[]): number {
     for (const { entry } of dayEntries(day)) {
       const r = RECIPE_BY_ID[entry.recipe]
       if (!r) continue
-      if (r.items.some((i) => avoided.has(i.food))) gap += 5
+      if (r.items.some((i) => avoided.has(i.food) || blocked.has(i.food))) gap += 5
       const s = servingTotals(r, entry.portion)
       if (limits.noCrashMeals && crashRisk(s)) gap += 2
       addInto(t, s)
       eggs += r.items.filter((i) => i.food === 'egg').reduce((sum, i) => sum + (i.grams * entry.portion) / r.servings / EGG_SERVING_G, 0)
     }
     if (limits.sodiumMaxMg && t.sodium > limits.sodiumMaxMg) gap += 2 + (t.sodium - limits.sodiumMaxMg) / limits.sodiumMaxMg
+    if (carbLimit && netCarbs(t) > carbLimit.perDay) gap += 2 + (netCarbs(t) - carbLimit.perDay) / carbLimit.perDay
     if (t.caffeine > caffeineLimit(p)) gap += 2 + (t.caffeine - caffeineLimit(p)) / caffeineLimit(p)
     // Softer pull toward the ideal sodium goal.
     if (limits.sodiumGoalMg && t.sodium > limits.sodiumGoalMg) gap += (0.3 * (t.sodium - limits.sodiumGoalMg)) / limits.sodiumGoalMg
@@ -181,4 +213,4 @@ export function nutrientTarget(key: NutrientKey, p: Profile, kcal: number): numb
   return key === 'calcium' && o.calcium ? Math.max(base, o.calcium) : base
 }
 
-export { CONDITION_BY_ID, CONDITIONS }
+export { CONDITION_BY_ID, CONDITIONS, DIET_BY_ID, DIETS }

@@ -226,7 +226,7 @@ const DOMAIN_GOALS: Record<Domain, Goal[]> = {
   focus: ['focus'],
   mood: ['mood', 'stress'],
   immunity: ['immunity'],
-  energy: ['energy'],
+  energy: ['energy', 'thyroid'],
   sleep: ['sleep'],
   bones: ['bones', 'muscle'],
   heart: ['heart', 'bloodPressure'],

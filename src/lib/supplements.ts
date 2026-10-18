@@ -7,7 +7,7 @@ const RANK: Record<Evidence, number> = { strong: 0, moderate: 1, emerging: 2, li
 
 /** Everything about this person that can make a supplement unsafe. */
 export function activeTriggers(p: Profile): Set<Trigger> {
-  const t = new Set<Trigger>(p.conditions)
+  const t = new Set<Trigger>([...p.conditions, ...p.diets])
   if (p.maoi) t.add('maoi')
   if (p.stimulantMeds) t.add('stimulant')
   for (const [k, on] of Object.entries(p.meds) as [keyof Profile['meds'], boolean][]) if (on) t.add(k)
@@ -47,7 +47,7 @@ export function recommendedSupplements(p: Profile, reports: NutrientReport[]): R
   for (const s of SUPPLEMENTS) {
     const assessment = assess(s.cautions, triggers)
     if (assessment.blocks.length) continue
-    const reasons = s.uses.filter((u) => (u.conditions?.some((c) => p.conditions.includes(c))) || (u.nutrient && short.has(u.nutrient)))
+    const reasons = s.uses.filter((u) => u.conditions?.some((c) => p.conditions.includes(c)) || u.diets?.some((d) => p.diets.includes(d)) || (u.nutrient && short.has(u.nutrient)))
     if (reasons.length) out.push({ supplement: s, reasons, assessment })
   }
   const best = (r: Recommendation) => Math.min(...r.reasons.map((u) => RANK[u.evidence]))

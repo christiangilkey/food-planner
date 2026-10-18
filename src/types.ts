@@ -15,6 +15,10 @@ export type ConditionId =
   | 't1d'
   | 't2d'
   | 'ckd'
+  | 'hashimotos'
+
+/** Eating patterns the planner can follow. Several can be combined (the strictest rule wins). */
+export type DietId = 'vegetarian' | 'vegan' | 'pescatarian' | 'keto' | 'paleo' | 'aip'
 
 /** Medications and states that change which supplements are safe. */
 export interface MedFlags {
@@ -219,6 +223,8 @@ export interface Profile {
   /** Food ids the user won't eat. */
   excluded: string[]
   conditions: ConditionId[]
+  /** Eating patterns to follow; foods outside them are never planned. */
+  diets: DietId[]
   menopauseStage: MenopauseStage
   /** Takes a monoamine oxidase inhibitor (MAOI) antidepressant: tyramine-rich foods are unsafe. */
   maoi: boolean

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import '@fontsource-variable/plus-jakarta-sans/index.css'
 import './index.css'
 import App from './App.tsx'
+import './lib/install'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -15,7 +15,9 @@ import { glasses, waterPlan } from '../lib/water'
 import { Icon, type IconName } from './Icon'
 import { ExportSheet } from './ExportSheet'
 import { RecipeLink } from './RecipeViewer'
-import { Bar, Chip, Cite, Score, Sheet, type ViewProps } from './ui'
+import { Bar, Chip, Cite, EvidenceChip, Score, Sheet, type ViewProps } from './ui'
+import { analyzeWeek } from '../lib/analysis'
+import { lowEnergyFixes, type EnergyFix } from '../lib/energyNow'
 import { money } from '../lib/format'
 
 const SLOT_LABEL: Record<MealSlot, string> = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Dinner', snack: 'Snack' }
@@ -185,6 +187,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
       </motion.div>
 
       {isAdhd(state.profile) && <HungryNow {...{ state, update }} />}
+      {hasPlan && <LowEnergyNow state={state} />}
       <BatchPrep state={state} />
 
       {swap && (
@@ -361,5 +364,62 @@ function BatchPrep({ state }: { state: ViewProps['state'] }) {
         })}
       </ul>
     </section>
+  )
+}
+
+/** "I feel low energy": quick fixes ranked for the person, the time of day and today's plan. */
+function LowEnergyNow({ state }: { state: ViewProps['state'] }) {
+  const [open, setOpen] = useState(false)
+  const [at, setAt] = useState(() => new Date())
+  const [sleptBadly, setSleptBadly] = useState(false)
+  const [notEaten, setNotEaten] = useState(false)
+  const analysis = useMemo(() => analyzeWeek(state), [state])
+  const result = useMemo(
+    () => (open ? lowEnergyFixes(state, analysis, { now: at.getHours() * 60 + at.getMinutes(), dayIndex: todayIndex(), sleptBadly, notEaten }) : null),
+    [open, state, analysis, at, sleptBadly, notEaten],
+  )
+  return (
+    <section className="card energy-card">
+      <h2 className="with-icon"><Icon name="batteryLow" /> Low on energy right now?</h2>
+      <p className="muted small">Fast fixes ranked for you: the time of day, today’s plan, your conditions, medications and diet. Each is rated by evidence.</p>
+      {!open ? (
+        <button className="primary with-icon" onClick={() => { setAt(new Date()); setOpen(true) }}><Icon name="zap" size={16} /> I feel low energy</button>
+      ) : result && (
+        <>
+          <div className="chips" role="group" aria-label="Tell us more">
+            <button className={`toggle-chip ${sleptBadly ? 'on' : ''}`} aria-pressed={sleptBadly} onClick={() => setSleptBadly(!sleptBadly)}><Icon name="bed" size={14} /> Slept badly</button>
+            <button className={`toggle-chip ${notEaten ? 'on' : ''}`} aria-pressed={notEaten} onClick={() => setNotEaten(!notEaten)}><Icon name="meal" size={14} /> Haven’t eaten in a while</button>
+          </div>
+          <ol className="fix-steps">
+            {result.fixes.map((f) => <FixItem key={f.id} f={f} />)}
+          </ol>
+          {result.later.length > 0 && (
+            <details className="methods">
+              <summary>If it keeps happening</summary>
+              <ul className="fix-steps plain">{result.later.map((f) => <FixItem key={f.id} f={f} />)}</ul>
+            </details>
+          )}
+          <button className="ghost small" onClick={() => setOpen(false)}>Close</button>
+        </>
+      )}
+    </section>
+  )
+}
+
+function FixItem({ f }: { f: EnergyFix }) {
+  return (
+    <li className={f.avoid ? 'avoid' : ''}>
+      <span className="fix-icon"><Icon name={f.icon} size={18} /></span>
+      <span className="fix-body">
+        <span className="row-between"><strong>{f.title}</strong><EvidenceChip level={f.evidence} /></span>
+        <span className="small">{f.detail} <Cite ids={f.sources} /></span>
+        {f.why && <span className="why">For you: {f.why}</span>}
+        {f.snacks && f.snacks.length > 0 && (
+          <span className="fix-snacks">
+            {f.snacks.map(({ recipe, portion }) => <RecipeLink key={recipe.id} id={recipe.id} portion={portion} className="chip tone-accent" />)}
+          </span>
+        )}
+      </span>
+    </li>
   )
 }

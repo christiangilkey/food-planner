@@ -234,6 +234,42 @@ export const SOURCES = {
   nccih_ginger: s('NCCIH: Ginger', 'Ginger: usefulness and safety', 'NIH National Center for Complementary and Integrative Health', 2024, 'https://www.nccih.nih.gov/health/ginger', 'reference'),
   viljoen: s('Viljoen 2014', 'Ginger for pregnancy-associated nausea and vomiting: meta-analysis', 'Nutr J', 2014, pm(24642205), 'meta-analysis'),
   sahebkar_pom: s('Sahebkar 2017', 'Effects of pomegranate juice on blood pressure: meta-analysis of RCTs', 'Pharmacol Res', 2017, pm(27888156), 'meta-analysis'),
+  // Hashimoto's / thyroid
+  niddk_hashimoto: s('NIDDK: Hashimoto’s disease', 'Hashimoto’s disease', 'NIH National Institute of Diabetes and Digestive and Kidney Diseases', 2021, 'https://www.niddk.nih.gov/health-information/endocrine-diseases/hashimotos-disease', 'guideline'),
+  jonklaas: s('ATA 2014 hypothyroidism', 'Guidelines for the treatment of hypothyroidism (American Thyroid Association)', 'Thyroid', 2014, pm(25266247), 'guideline'),
+  huwiler: s('Huwiler 2024', 'Selenium supplementation in Hashimoto thyroiditis: meta-analysis of RCTs', 'Thyroid', 2024, pm(38243784), 'meta-analysis'),
+  wichman: s('Wichman 2016', 'Selenium supplementation reduces thyroid autoantibodies in autoimmune thyroiditis: meta-analysis', 'Thyroid', 2016, pm(27702392), 'meta-analysis'),
+  roy_celiac: s('Roy 2016', 'Prevalence of celiac disease in autoimmune thyroid disease: meta-analysis', 'Thyroid', 2016, pm(27256300), 'meta-analysis'),
+  krysiak: s('Krysiak 2019', 'Gluten-free diet and thyroid autoimmunity in women with Hashimoto’s thyroiditis: pilot study', 'Exp Clin Endocrinol Diabetes', 2019, pm(30060266), 'trial'),
+  benvenga: s('Benvenga 2008', 'Altered intestinal absorption of L-thyroxine caused by coffee', 'Thyroid', 2008, pm(18341376), 'trial'),
+  abbott_aip: s('Abbott 2019', 'Autoimmune protocol diet as part of a lifestyle intervention for Hashimoto’s thyroiditis', 'Cureus', 2019, pm(31275780), 'trial'),
+  konijeti_aip: s('Konijeti 2017', 'Efficacy of the autoimmune protocol diet for inflammatory bowel disease', 'Inflamm Bowel Dis', 2017, pm(28858071), 'trial'),
+
+  // Diets
+  bueno_keto: s('Bueno 2013', 'Very-low-carbohydrate ketogenic diet vs low-fat diet for long-term weight loss: meta-analysis', 'Br J Nutr', 2013, pm(23651522), 'meta-analysis'),
+  retterstol: s('Retterstøl 2018', 'Low-carbohydrate high-fat diet and LDL cholesterol in young adults: RCT', 'Atherosclerosis', 2018, pm(30408717), 'trial'),
+  patel_sglt2: s('Patel 2022', 'SGLT2 inhibitor-induced euglycemic diabetic ketoacidosis: review', 'Cureus', 2022, pm(36320965), 'review'),
+  melina: s('Academy 2016 vegetarian', 'Position of the Academy of Nutrition and Dietetics: vegetarian diets', 'J Acad Nutr Diet', 2016, pm(27886704), 'guideline'),
+  manheimer: s('Manheimer 2015', 'Paleolithic nutrition for metabolic syndrome: meta-analysis', 'Am J Clin Nutr', 2015, pm(26269362), 'meta-analysis'),
+
+  // Energy right now
+  randolph: s('Randolph 2017', 'Stair walking is more energizing than low-dose caffeine in sleep-deprived young women', 'Physiol Behav', 2017, pm(28302573), 'trial'),
+  armstrong: s('Armstrong 2012', 'Mild dehydration affects mood in healthy young women', 'J Nutr', 2012, pm(22190027), 'trial'),
+  brooks_nap: s('Brooks 2006', 'A brief afternoon nap after sleep restriction: which nap duration is most recuperative?', 'Sleep', 2006, pm(16796222), 'trial'),
+  mclellan: s('McLellan 2016', 'Caffeine’s effects on cognitive, physical and occupational performance: review', 'Neurosci Biobehav Rev', 2016, pm(27612937), 'review'),
+  puetz: s('Puetz 2006', 'Effects of chronic exercise on feelings of energy and fatigue: quantitative synthesis', 'Psychol Bull', 2006, pm(17073524), 'meta-analysis'),
+  mantantzis: s('Mantantzis 2019', 'Sugar rush or sugar crash? Meta-analysis of carbohydrate effects on mood', 'Neurosci Biobehav Rev', 2019, pm(30951762), 'meta-analysis'),
+  houston_iron: s('Houston 2018', 'Iron supplementation for fatigue in non-anaemic iron-deficient adults: systematic review', 'BMJ Open', 2018, pm(29626044), 'meta-analysis'),
+
+  // Hormones
+  leproult_cortisol: s('Leproult 1997', 'Sleep loss results in an elevation of cortisol levels the next evening', 'Sleep', 1997, pm(9415946), 'trial'),
+  spiegel: s('Spiegel 2004', 'Sleep curtailment decreases leptin, raises ghrelin, and increases hunger', 'Ann Intern Med', 2004, pm(15583226), 'trial'),
+  taheri: s('Taheri 2004', 'Short sleep duration is associated with reduced leptin, elevated ghrelin and higher BMI', 'PLoS Med', 2004, pm(15602591), 'cohort'),
+  gooley: s('Gooley 2011', 'Room light before bedtime suppresses melatonin onset and shortens melatonin duration', 'J Clin Endocrinol Metab', 2011, pm(21193540), 'trial'),
+  leproult_t: s('Leproult 2011', 'One week of sleep restriction lowers testosterone in young healthy men', 'JAMA', 2011, pm(21632481), 'trial'),
+  corona: s('Corona 2013', 'Weight loss reverses obesity-associated low testosterone: meta-analysis', 'Eur J Endocrinol', 2013, pm(23482592), 'meta-analysis'),
+  whittaker: s('Whittaker 2021', 'Low-fat diets and testosterone in men: meta-analysis of intervention studies', 'J Steroid Biochem Mol Biol', 2021, pm(33741447), 'meta-analysis'),
+  mountjoy: s('IOC 2018 RED-S', 'IOC consensus statement on relative energy deficiency in sport (RED-S)', 'Br J Sports Med', 2018, pm(29773536), 'guideline'),
   fsis: s('USDA FSIS: safe temperatures', 'Safe minimum internal temperature chart', 'USDA Food Safety and Inspection Service', 2024, 'https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/safe-temperature-chart', 'guideline'),
 
   // ── Peptides ────────────────────────────────────────────

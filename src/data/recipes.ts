@@ -629,6 +629,312 @@ export const RECIPES: Recipe[] = [
     equipment: ['blender'], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 2, 3, 2),
     note: 'About 18 mg caffeine. Brew the tea ahead and chill it.',
   },
+  // ── Diet-friendly: AIP, paleo, keto, vegan, pescatarian ─────────
+  {
+    id: 'aip_turkey_hash', name: 'Turkey, sweet potato & spinach hash', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'ground_turkey', grams: 120 }, { food: 'sweet_potato', grams: 180 }, { food: 'spinach', grams: 40 }, { food: 'onion', grams: 50 }, { food: 'coconut_oil', grams: 8 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 20, steps: 3, dopamine: d(1, 1, 1, 1),
+  },
+  {
+    id: 'bacon_sweet_potato_plate', name: 'Bacon, sweet potato & avocado plate', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'bacon', grams: 30 }, { food: 'sweet_potato', grams: 200 }, { food: 'avocado', grams: 70 }],
+    equipment: ['microwave', 'stove', 'skillet'], alt: ['oven', 'sheetpan'], activeMin: 8, totalMin: 15, steps: 3, dopamine: d(2, 2, 1, 2),
+  },
+  {
+    id: 'salmon_avocado_plate', name: 'Salmon, avocado & sauerkraut plate', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'canned_salmon', grams: 100 }, { food: 'avocado', grams: 70 }, { food: 'cucumber', grams: 100 }, { food: 'sauerkraut', grams: 40 }, { food: 'olive_oil', grams: 5 }],
+    equipment: [], activeMin: 5, totalMin: 5, steps: 2, dopamine: d(1, 2, 2, 1),
+    note: 'No cooking. Canned salmon with the soft bones adds calcium.',
+  },
+  {
+    id: 'apple_turkey_patties', name: 'Apple-cinnamon turkey patties & roasted sweet potato', slots: ['breakfast'], servings: 4,
+    items: [{ food: 'ground_turkey', grams: 450 }, { food: 'apple', grams: 200 }, { food: 'sweet_potato', grams: 600 }, { food: 'coconut_oil', grams: 15 }, { food: 'cinnamon', grams: 2 }],
+    equipment: ['oven', 'sheetpan'], activeMin: 20, totalMin: 40, steps: 4, dopamine: d(1, 2, 2, 2), batch: true,
+    note: 'Bake once, reheat all week.',
+  },
+  {
+    id: 'chicken_berry_plate', name: 'Chicken, avocado & strawberry plate', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'rotisserie', grams: 110 }, { food: 'avocado', grams: 60 }, { food: 'strawberries', grams: 120 }, { food: 'arugula', grams: 30 }, { food: 'olive_oil', grams: 5 }],
+    equipment: [], activeMin: 5, totalMin: 5, steps: 2, dopamine: d(1, 1, 2, 2),
+  },
+  {
+    id: 'bacon_brussels_hash', name: 'Bacon & Brussels sprout hash', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'bacon', grams: 40 }, { food: 'brussels', grams: 150 }, { food: 'sweet_potato', grams: 120 }, { food: 'onion', grams: 40 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 20, steps: 3, dopamine: d(3, 3, 2, 1),
+  },
+  {
+    id: 'veggie_frittata', name: 'Spinach & mushroom frittata', slots: ['breakfast', 'lunch'], servings: 4,
+    items: [{ food: 'egg', grams: 600 }, { food: 'spinach', grams: 100 }, { food: 'mushrooms', grams: 150 }, { food: 'bell_pepper', grams: 100 }, { food: 'onion', grams: 80 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'skillet', 'oven'], activeMin: 15, totalMin: 35, steps: 4, dopamine: d(0, 1, 1, 1), batch: true,
+    note: 'Cut into 4 wedges; keeps 4 days in the fridge.',
+  },
+  {
+    id: 'eggs_sweet_potato', name: 'Eggs, sweet potato & avocado', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'egg', grams: 150 }, { food: 'sweet_potato', grams: 200 }, { food: 'avocado', grams: 50 }, { food: 'olive_oil', grams: 5 }],
+    equipment: ['microwave', 'stove', 'skillet'], activeMin: 8, totalMin: 12, steps: 3, dopamine: d(1, 1, 1, 1),
+  },
+  {
+    id: 'almond_banana_smoothie', name: 'Almond butter banana smoothie', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'almond_milk', grams: 250 }, { food: 'banana', grams: 100 }, { food: 'almond_butter', grams: 32 }, { food: 'spinach', grams: 30 }, { food: 'hemp_seeds', grams: 20 }],
+    equipment: ['blender'], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(0, 1, 1, 2),
+  },
+  {
+    id: 'bacon_eggs_avocado', name: 'Bacon, eggs & avocado', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'egg', grams: 150 }, { food: 'bacon', grams: 30 }, { food: 'avocado', grams: 70 }, { food: 'spinach', grams: 30 }],
+    equipment: ['stove', 'skillet'], activeMin: 10, totalMin: 12, steps: 3, dopamine: d(2, 2, 0, 1),
+  },
+  {
+    id: 'coconut_chia_pudding', name: 'Coconut chia pudding', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'chia', grams: 30 }, { food: 'coconut_milk', grams: 200 }, { food: 'berries', grams: 40 }, { food: 'hemp_seeds', grams: 15 }],
+    equipment: [], activeMin: 3, totalMin: 3, steps: 2, dopamine: d(1, 1, 2, 2), batch: true,
+    note: 'Make it the night before.',
+  },
+  {
+    id: 'keto_yogurt_bowl', name: 'Greek yogurt, nut & berry bowl', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'greek_yogurt', grams: 170 }, { food: 'walnuts', grams: 20 }, { food: 'pecans', grams: 15 }, { food: 'berries', grams: 30 }, { food: 'chia', grams: 10 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(3, 1, 1, 1),
+  },
+  {
+    id: 'salmon_cucumber_rollups', name: 'Salmon & cream cheese cucumber bites', slots: ['breakfast', 'lunch', 'snack'], servings: 1,
+    items: [{ food: 'canned_salmon', grams: 100 }, { food: 'cream_cheese', grams: 30 }, { food: 'cucumber', grams: 150 }, { food: 'lemon', grams: 5 }],
+    equipment: [], activeMin: 6, totalMin: 6, steps: 2, dopamine: d(2, 2, 2, 3),
+  },
+  {
+    id: 'tofu_scramble', name: 'Tofu scramble with spinach & mushrooms', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'tofu', grams: 200 }, { food: 'spinach', grams: 40 }, { food: 'mushrooms', grams: 60 }, { food: 'onion', grams: 30 }, { food: 'nutritional_yeast', grams: 8 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'skillet'], activeMin: 10, totalMin: 12, steps: 3, dopamine: d(0, 2, 2, 1),
+    note: 'Nutritional yeast gives a cheesy flavor and (if fortified) vitamin B12.',
+  },
+  {
+    id: 'vegan_overnight_oats', name: 'Vegan overnight oats', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'oats', grams: 50 }, { food: 'soy_milk', grams: 150 }, { food: 'soy_yogurt', grams: 100 }, { food: 'chia', grams: 10 }, { food: 'berries', grams: 75 }, { food: 'walnuts', grams: 10 }],
+    equipment: [], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(1, 1, 1, 1), batch: true,
+  },
+  {
+    id: 'vegan_pb_oatmeal', name: 'Peanut butter banana oatmeal (soy milk)', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'oats', grams: 50 }, { food: 'soy_milk', grams: 250 }, { food: 'peanut_butter', grams: 20 }, { food: 'banana', grams: 60 }, { food: 'hemp_seeds', grams: 10 }],
+    equipment: ['microwave'], activeMin: 4, totalMin: 5, steps: 2, dopamine: d(1, 1, 0, 1),
+  },
+  {
+    id: 'chickpea_avocado_toast', name: 'Smashed chickpea avocado toast', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'bread', grams: 64 }, { food: 'avocado', grams: 70 }, { food: 'chickpeas', grams: 80 }, { food: 'lemon', grams: 5 }, { food: 'hemp_seeds', grams: 10 }],
+    equipment: [], activeMin: 5, totalMin: 5, steps: 2, dopamine: d(2, 2, 2, 2),
+  },
+  {
+    id: 'tempeh_hash', name: 'Tempeh & sweet potato hash', slots: ['breakfast', 'lunch'], servings: 1,
+    items: [{ food: 'tempeh', grams: 100 }, { food: 'sweet_potato', grams: 150 }, { food: 'spinach', grams: 40 }, { food: 'onion', grams: 50 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 20, steps: 3, dopamine: d(2, 2, 2, 1),
+  },
+  {
+    id: 'soy_yogurt_bowl', name: 'Soy yogurt, berry & hemp bowl', slots: ['breakfast', 'snack'], servings: 1,
+    items: [{ food: 'soy_yogurt', grams: 170 }, { food: 'berries', grams: 60 }, { food: 'hemp_seeds', grams: 10 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 1, 1, 1),
+  },
+
+  // Lunch & dinner
+  {
+    id: 'tofu_veg_curry', name: 'Tofu & spinach coconut curry', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'tofu', grams: 400 }, { food: 'coconut_milk', grams: 400 }, { food: 'canned_tomatoes', grams: 400 }, { food: 'spinach', grams: 150 }, { food: 'onion', grams: 150 }, { food: 'garlic', grams: 10 }, { food: 'ginger', grams: 10 }, { food: 'brown_rice', grams: 180 }],
+    equipment: ['stove', 'pot'], activeMin: 20, totalMin: 45, steps: 4, dopamine: d(0, 3, 2, 1), batch: true,
+  },
+  {
+    id: 'chickpea_spinach_curry', name: 'Chickpea & spinach curry', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'chickpeas', grams: 500 }, { food: 'coconut_milk', grams: 400 }, { food: 'canned_tomatoes', grams: 400 }, { food: 'spinach', grams: 150 }, { food: 'onion', grams: 150 }, { food: 'garlic', grams: 10 }, { food: 'ginger', grams: 10 }, { food: 'brown_rice', grams: 200 }],
+    equipment: ['stove', 'pot'], alt: ['slowcooker', 'ricecooker'], activeMin: 15, totalMin: 45, steps: 4, dopamine: d(0, 3, 2, 1), batch: true,
+  },
+  {
+    id: 'tempeh_stirfry', name: 'Ginger tempeh stir-fry', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'tempeh', grams: 227 }, { food: 'stirfry_veg', grams: 400 }, { food: 'soy_sauce', grams: 20 }, { food: 'brown_rice', grams: 150 }, { food: 'olive_oil', grams: 15 }, { food: 'ginger', grams: 5 }, { food: 'garlic', grams: 6 }],
+    equipment: ['stove', 'skillet', 'pot'], activeMin: 20, totalMin: 45, steps: 4, dopamine: d(2, 3, 2, 1),
+  },
+  {
+    id: 'lentil_bolognese', name: 'Lentil bolognese with whole-wheat pasta', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'lentils', grams: 200 }, { food: 'marinara', grams: 680 }, { food: 'onion', grams: 150 }, { food: 'carrots', grams: 150 }, { food: 'ww_pasta', grams: 320 }, { food: 'nutritional_yeast', grams: 16 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'pot'], activeMin: 20, totalMin: 40, steps: 4, dopamine: d(0, 2, 1, 1), batch: true,
+  },
+  {
+    id: 'sweet_potato_bean_tacos', name: 'Roasted sweet potato & black bean tacos', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'black_beans', grams: 250 }, { food: 'sweet_potato', grams: 400 }, { food: 'corn_tortillas', grams: 200 }, { food: 'avocado', grams: 140 }, { food: 'salsa', grams: 120 }, { food: 'lime', grams: 15 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['oven', 'sheetpan'], alt: ['microwave'], activeMin: 15, totalMin: 35, steps: 4, dopamine: d(2, 3, 2, 3),
+  },
+  {
+    id: 'tahini_buddha_bowl', name: 'Quinoa buddha bowl with lemon tahini', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'quinoa', grams: 90 }, { food: 'chickpeas', grams: 240 }, { food: 'kale', grams: 120 }, { food: 'sweet_potato', grams: 300 }, { food: 'tahini', grams: 30 }, { food: 'lemon', grams: 20 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['oven', 'sheetpan', 'stove', 'pot'], activeMin: 20, totalMin: 35, steps: 4, dopamine: d(2, 2, 3, 2), batch: true,
+  },
+  {
+    id: 'peanut_tofu_bowl', name: 'Peanut tofu rice bowl', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'tofu', grams: 300 }, { food: 'brown_rice', grams: 140 }, { food: 'edamame', grams: 150 }, { food: 'carrots', grams: 100 }, { food: 'cucumber', grams: 150 }, { food: 'peanut_butter', grams: 40 }, { food: 'soy_sauce', grams: 20 }, { food: 'lime', grams: 15 }],
+    equipment: ['stove', 'skillet', 'pot'], activeMin: 20, totalMin: 45, steps: 4, dopamine: d(2, 3, 2, 2),
+  },
+  {
+    id: 'vegan_chili', name: 'Three-bean vegan chili', slots: ['lunch', 'dinner'], servings: 5,
+    items: [{ food: 'kidney_beans', grams: 500 }, { food: 'black_beans', grams: 250 }, { food: 'canned_tomatoes', grams: 800 }, { food: 'onion', grams: 150 }, { food: 'bell_pepper', grams: 200 }, { food: 'corn', grams: 150 }, { food: 'veg_broth', grams: 240 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'pot'], alt: ['slowcooker'], activeMin: 15, totalMin: 45, steps: 3, dopamine: d(0, 3, 1, 1), batch: true,
+  },
+  {
+    id: 'hummus_tempeh_wrap', name: 'Hummus & tempeh wrap', slots: ['lunch'], servings: 1,
+    items: [{ food: 'tortillas', grams: 90 }, { food: 'hummus', grams: 60 }, { food: 'tempeh', grams: 85 }, { food: 'spinach', grams: 30 }, { food: 'cucumber', grams: 60 }],
+    equipment: ['microwave'], activeMin: 6, totalMin: 7, steps: 3, dopamine: d(1, 2, 2, 2),
+  },
+  {
+    id: 'salmon_asparagus', name: 'Lemon-garlic salmon & asparagus', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'salmon', grams: 300 }, { food: 'asparagus', grams: 300 }, { food: 'olive_oil', grams: 15 }, { food: 'lemon', grams: 15 }, { food: 'garlic', grams: 6 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 8, totalMin: 20, steps: 3, dopamine: d(1, 2, 1, 1),
+  },
+  {
+    id: 'lemon_chicken_broccoli', name: 'Lemon-garlic chicken thighs & broccoli', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'broccoli', grams: 340 }, { food: 'olive_oil', grams: 15 }, { food: 'lemon', grams: 20 }, { food: 'garlic', grams: 10 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 10, totalMin: 35, steps: 3, dopamine: d(1, 2, 1, 1), batch: true,
+  },
+  {
+    id: 'burger_bowl', name: 'Cheeseburger lettuce bowl', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'ground_beef', grams: 450 }, { food: 'romaine', grams: 200 }, { food: 'cheddar', grams: 60 }, { food: 'pickles', grams: 60 }, { food: 'tomato', grams: 120 }, { food: 'avocado', grams: 140 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 15, steps: 3, dopamine: d(2, 3, 1, 3), batch: true,
+  },
+  {
+    id: 'garlic_shrimp_zoodles', name: 'Garlic shrimp zucchini noodles', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'shrimp', grams: 300 }, { food: 'zucchini', grams: 400 }, { food: 'olive_oil', grams: 20 }, { food: 'garlic', grams: 10 }, { food: 'parmesan', grams: 20 }, { food: 'lemon', grams: 10 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 15, steps: 3, dopamine: d(1, 3, 2, 2),
+  },
+  {
+    id: 'steak_cauli_mash', name: 'Steak, garlic cauliflower mash & spinach', slots: ['dinner'], servings: 2,
+    items: [{ food: 'sirloin', grams: 340 }, { food: 'cauliflower', grams: 340 }, { food: 'butter', grams: 20 }, { food: 'garlic', grams: 6 }, { food: 'spinach', grams: 100 }],
+    equipment: ['stove', 'skillet', 'microwave'], activeMin: 20, totalMin: 25, steps: 4, dopamine: d(1, 2, 1, 1),
+  },
+  {
+    id: 'egg_roll_bowl', name: 'Egg roll in a bowl', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'ground_turkey', grams: 450 }, { food: 'cabbage', grams: 450 }, { food: 'carrots', grams: 60 }, { food: 'soy_sauce', grams: 30 }, { food: 'ginger', grams: 6 }, { food: 'garlic', grams: 6 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 20, steps: 3, dopamine: d(2, 3, 2, 1), batch: true,
+  },
+  {
+    id: 'tuna_lettuce_cups', name: 'Tuna avocado lettuce cups', slots: ['lunch'], servings: 1,
+    items: [{ food: 'tuna', grams: 142 }, { food: 'avocado', grams: 100 }, { food: 'celery', grams: 60 }, { food: 'lemon', grams: 10 }, { food: 'olive_oil', grams: 5 }, { food: 'romaine', grams: 80 }],
+    equipment: [], activeMin: 6, totalMin: 6, steps: 2, dopamine: d(3, 1, 1, 3),
+  },
+  {
+    id: 'mackerel_salad', name: 'Mackerel, olive & arugula salad', slots: ['lunch', 'dinner'], servings: 1,
+    items: [{ food: 'canned_mackerel', grams: 125 }, { food: 'arugula', grams: 60 }, { food: 'cucumber', grams: 100 }, { food: 'olives', grams: 30 }, { food: 'olive_oil', grams: 10 }, { food: 'lemon', grams: 10 }],
+    equipment: [], activeMin: 5, totalMin: 5, steps: 2, dopamine: d(1, 3, 2, 1),
+  },
+  {
+    id: 'chicken_brussels_bacon', name: 'Sheet-pan chicken, Brussels sprouts & bacon', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'brussels', grams: 450 }, { food: 'bacon', grams: 60 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['oven', 'sheetpan'], activeMin: 10, totalMin: 35, steps: 3, dopamine: d(3, 3, 1, 1), batch: true,
+  },
+  {
+    id: 'beef_sweet_potato_skillet', name: 'Beef, sweet potato & kale skillet', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'ground_beef', grams: 450 }, { food: 'sweet_potato', grams: 400 }, { food: 'kale', grams: 150 }, { food: 'onion', grams: 100 }, { food: 'olive_oil', grams: 10 }, { food: 'garlic', grams: 6 }],
+    equipment: ['stove', 'skillet'], activeMin: 20, totalMin: 30, steps: 3, dopamine: d(1, 2, 1, 1), batch: true,
+  },
+  {
+    id: 'aip_chicken_soup', name: 'Chicken & vegetable soup (no noodles)', slots: ['lunch', 'dinner'], servings: 5,
+    items: [{ food: 'chicken_breast', grams: 450 }, { food: 'carrots', grams: 200 }, { food: 'celery', grams: 150 }, { food: 'onion', grams: 150 }, { food: 'zucchini', grams: 200 }, { food: 'broth', grams: 1500 }, { food: 'garlic', grams: 10 }],
+    equipment: ['stove', 'pot'], alt: ['slowcooker'], activeMin: 15, totalMin: 45, steps: 3, dopamine: d(0, 1, 0, 0), batch: true,
+  },
+  {
+    id: 'pork_plantains', name: 'Roast pork, plantains & lime cabbage', slots: ['dinner'], servings: 3,
+    items: [{ food: 'pork_loin', grams: 450 }, { food: 'plantains', grams: 400 }, { food: 'cabbage', grams: 300 }, { food: 'coconut_oil', grams: 15 }, { food: 'lime', grams: 15 }, { food: 'garlic', grams: 6 }],
+    equipment: ['oven', 'sheetpan'], activeMin: 15, totalMin: 40, steps: 4, dopamine: d(2, 2, 3, 2),
+  },
+  {
+    id: 'coconut_squash_curry', name: 'Coconut chicken & squash curry (nightshade-free)', slots: ['lunch', 'dinner'], servings: 4,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'coconut_milk', grams: 400 }, { food: 'squash', grams: 400 }, { food: 'spinach', grams: 100 }, { food: 'ginger', grams: 10 }, { food: 'garlic', grams: 10 }, { food: 'onion', grams: 100 }],
+    equipment: ['stove', 'pot'], alt: ['slowcooker'], activeMin: 15, totalMin: 40, steps: 3, dopamine: d(0, 2, 2, 1), batch: true,
+  },
+  {
+    id: 'shrimp_cauli_rice', name: 'Ginger shrimp & cauliflower rice', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'shrimp', grams: 300 }, { food: 'cauliflower', grams: 340 }, { food: 'zucchini', grams: 200 }, { food: 'coconut_aminos', grams: 20 }, { food: 'garlic', grams: 6 }, { food: 'ginger', grams: 5 }, { food: 'olive_oil', grams: 15 }],
+    equipment: ['stove', 'skillet'], activeMin: 15, totalMin: 20, steps: 3, dopamine: d(1, 2, 2, 1),
+  },
+  {
+    id: 'trout_beets_arugula', name: 'Roast trout with beets & arugula', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'trout', grams: 300 }, { food: 'beets', grams: 250 }, { food: 'arugula', grams: 100 }, { food: 'olive_oil', grams: 15 }, { food: 'balsamic', grams: 10 }, { food: 'lemon', grams: 10 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 8, totalMin: 20, steps: 3, dopamine: d(1, 2, 3, 2),
+  },
+
+  // Snacks
+  {
+    id: 'apple_coconut', name: 'Apple slices & coconut flakes', slots: ['snack'], servings: 1,
+    items: [{ food: 'apple', grams: 150 }, { food: 'coconut_flakes', grams: 15 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(3, 1, 1, 2),
+  },
+  {
+    id: 'plantain_chips_guac', name: 'Baked plantain chips & guacamole', slots: ['snack'], servings: 2,
+    items: [{ food: 'plantains', grams: 300 }, { food: 'avocado', grams: 140 }, { food: 'lime', grams: 10 }, { food: 'coconut_oil', grams: 15 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 10, totalMin: 30, steps: 3, dopamine: d(3, 2, 3, 3),
+  },
+  {
+    id: 'olives_veggies', name: 'Olives with cucumber & carrots', slots: ['snack'], servings: 1,
+    items: [{ food: 'olives', grams: 40 }, { food: 'cucumber', grams: 150 }, { food: 'carrots', grams: 80 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(3, 2, 1, 2),
+  },
+  {
+    id: 'berries_coconut_cream', name: 'Berries with coconut cream', slots: ['snack'], servings: 1,
+    items: [{ food: 'berries', grams: 120 }, { food: 'coconut_milk', grams: 100 }, { food: 'coconut_flakes', grams: 10 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 1, 1, 2),
+  },
+  {
+    id: 'sardine_cucumber_bites', name: 'Sardines on cucumber rounds', slots: ['snack', 'lunch'], servings: 1,
+    items: [{ food: 'sardines', grams: 106 }, { food: 'cucumber', grams: 150 }, { food: 'lemon', grams: 5 }],
+    equipment: [], activeMin: 4, totalMin: 4, steps: 2, dopamine: d(2, 3, 2, 2),
+  },
+  {
+    id: 'mango_coconut', name: 'Mango with coconut & lime', slots: ['snack'], servings: 1,
+    items: [{ food: 'mango', grams: 120 }, { food: 'coconut_flakes', grams: 10 }, { food: 'lime', grams: 5 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 2, 2, 2),
+  },
+  {
+    id: 'chicken_avocado_bites', name: 'Chicken & avocado bites', slots: ['snack'], servings: 1,
+    items: [{ food: 'rotisserie', grams: 60 }, { food: 'avocado', grams: 50 }, { food: 'lime', grams: 5 }],
+    equipment: [], activeMin: 3, totalMin: 3, steps: 1, dopamine: d(0, 1, 1, 2),
+  },
+  {
+    id: 'cheese_olives', name: 'Mozzarella & olives', slots: ['snack'], servings: 1,
+    items: [{ food: 'mozzarella', grams: 40 }, { food: 'olives', grams: 30 }],
+    equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(1, 2, 1, 1),
+  },
+  {
+    id: 'celery_cream_cheese', name: 'Celery & cream cheese', slots: ['snack'], servings: 1,
+    items: [{ food: 'celery', grams: 100 }, { food: 'cream_cheese', grams: 30 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(3, 1, 0, 2),
+  },
+  {
+    id: 'brazil_pecan_mix', name: 'Brazil nut & pecan mix', slots: ['snack'], servings: 1,
+    items: [{ food: 'brazil_nuts', grams: 5 }, { food: 'pecans', grams: 20 }, { food: 'coconut_flakes', grams: 5 }],
+    equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(3, 1, 1, 1),
+    note: 'One Brazil nut has about 95 µg selenium; stick to one or two a day (upper limit 400 µg).',
+  },
+  {
+    id: 'tuscan_chicken', name: 'Creamy Tuscan chicken with spinach', slots: ['lunch', 'dinner'], servings: 3,
+    items: [{ food: 'chicken_thigh', grams: 450 }, { food: 'heavy_cream', grams: 120 }, { food: 'spinach', grams: 100 }, { food: 'parmesan', grams: 30 }, { food: 'tomato', grams: 100 }, { food: 'garlic', grams: 6 }, { food: 'olive_oil', grams: 10 }],
+    equipment: ['stove', 'skillet'], activeMin: 20, totalMin: 25, steps: 4, dopamine: d(0, 3, 2, 1), batch: true,
+  },
+  {
+    id: 'salmon_avocado_salsa', name: 'Salmon with avocado-cucumber salsa', slots: ['lunch', 'dinner'], servings: 2,
+    items: [{ food: 'salmon', grams: 300 }, { food: 'avocado', grams: 140 }, { food: 'cucumber', grams: 100 }, { food: 'olive_oil', grams: 15 }, { food: 'lime', grams: 15 }, { food: 'cilantro', grams: 10 }],
+    equipment: ['oven', 'sheetpan'], alt: ['airfryer'], activeMin: 10, totalMin: 22, steps: 3, dopamine: d(1, 3, 2, 2),
+  },
+  {
+    id: 'cream_cheese_eggs', name: 'Creamy scrambled eggs with avocado', slots: ['breakfast'], servings: 1,
+    items: [{ food: 'egg', grams: 150 }, { food: 'cream_cheese', grams: 30 }, { food: 'butter', grams: 10 }, { food: 'avocado', grams: 70 }, { food: 'spinach', grams: 30 }],
+    equipment: ['stove', 'skillet'], activeMin: 8, totalMin: 8, steps: 3, dopamine: d(0, 2, 1, 1),
+  },
+  {
+    id: 'cheese_almond_plate', name: 'Cheddar & almonds', slots: ['snack'], servings: 1,
+    items: [{ food: 'cheddar', grams: 30 }, { food: 'almonds', grams: 30 }],
+    equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(3, 2, 0, 1),
+  },
+  {
+    id: 'avocado_hemp_snack', name: 'Avocado with olive oil & hemp seeds', slots: ['snack', 'breakfast'], servings: 1,
+    items: [{ food: 'avocado', grams: 140 }, { food: 'olive_oil', grams: 10 }, { food: 'hemp_seeds', grams: 15 }],
+    equipment: [], activeMin: 2, totalMin: 2, steps: 1, dopamine: d(1, 1, 1, 1),
+  },
+  {
+    id: 'pecan_dark_choc', name: 'Pecans & dark chocolate', slots: ['snack'], servings: 1,
+    items: [{ food: 'pecans', grams: 30 }, { food: 'dark_chocolate', grams: 15 }],
+    equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(3, 2, 1, 2),
+  },
 ]
 
 export const RECIPE_BY_ID: Record<string, Recipe> = Object.fromEntries(RECIPES.map((r) => [r.id, r]))

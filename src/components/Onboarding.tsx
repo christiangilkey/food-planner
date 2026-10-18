@@ -4,6 +4,7 @@ import { LogoMark } from './Logo'
 import { computeTargets } from '../lib/energy'
 import { generatePlan } from '../lib/planner'
 import { ConditionFields } from './ConditionFields'
+import { DietFields } from './DietFields'
 import { MedFields } from './MedFields'
 import { BodyFields, EquipmentFields, LifestyleFields } from './ProfileFields'
 import type { ViewProps } from './ui'
@@ -11,7 +12,7 @@ import type { ViewProps } from './ui'
 const STEPS = [
   { title: 'About you', blurb: 'Used to work out how much energy and protein you need, and your vitamin and mineral targets.' },
   { title: 'Your kitchen', blurb: "Check what you own. You'll only get meals you can actually make. A knife and cutting board are assumed." },
-  { title: 'Health', blurb: 'Turn on any conditions you have. The plan will avoid foods that could worsen them and favor foods with evidence of helping. You can change this any time.' },
+  { title: 'Health', blurb: 'Turn on any conditions you have and any diet you follow. The plan will avoid foods that could worsen them and favor foods with evidence of helping. You can change this any time.' },
   { title: 'How you eat', blurb: 'Time, money and daily rhythm. You can change any of these later.' },
 ]
 
@@ -71,6 +72,8 @@ export function Onboarding(props: ViewProps) {
         {step === 2 && (
           <>
             <ConditionFields {...props} />
+            <h3>Diet</h3>
+            <DietFields {...props} />
             <h3>Medications & pregnancy</h3>
             <p className="muted small">Used to screen supplements and foods for interactions.</p>
             <MedFields {...props} />

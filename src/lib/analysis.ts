@@ -3,7 +3,7 @@ import { NUTRIENTS, SODIUM_LIMIT_MG, UPPER_LIMITS, type NutrientInfo } from '../
 import { RECIPES } from '../data/recipes'
 import type { AppState, Food, NutrientKey, Recipe } from '../types'
 import { computeTargets } from './energy'
-import { avoidedFoods, caffeineLimit, mergedLimits, nutrientTarget, recipeAllowed } from './conditions'
+import { avoidedFoods, caffeineLimit, dietBlocked, mergedLimits, nutrientTarget, recipeAllowed } from './conditions'
 import { addInto, canMake, EMPTY, servingTotals } from './nutrition'
 import { dayTotals } from './planner'
 
@@ -33,12 +33,19 @@ export interface WeekAnalysis {
   caffeineLimit: number
   satFatPct: number
   addedSugarPct: number
+  /** Daily averages used by the hormone and diet summaries. */
+  kcalPerDay: number
+  proteinPerDay: number
+  fiberPerDay: number
+  netCarbsPerDay: number
+  fatPct: number
   daysPlanned: number
 }
 
 export function analyzeWeek(state: AppState): WeekAnalysis {
   const p = state.profile
   const avoided = avoidedFoods(p)
+  const blocked = dietBlocked(p)
   const limits = mergedLimits(p)
   const targets = computeTargets(p)
   const sum = { ...EMPTY }
@@ -57,7 +64,7 @@ export function analyzeWeek(state: AppState): WeekAnalysis {
     const pct = target ? perDay / target : 1
     const status: Status = pct < 0.7 ? 'low' : pct < 0.9 ? 'borderline' : 'ok'
 
-    const foods = FOODS.filter((f) => !p.excluded.includes(f.id) && !avoided.has(f.id))
+    const foods = FOODS.filter((f) => !p.excluded.includes(f.id) && !avoided.has(f.id) && !blocked.has(f.id))
       .map((f) => {
         const servingGrams = f.serving
         return { food: f, servingGrams, perServing: (f.n[key] * servingGrams) / 100 }
@@ -66,7 +73,7 @@ export function analyzeWeek(state: AppState): WeekAnalysis {
       .sort((a, b) => b.perServing - a.perServing)
       .slice(0, 5)
 
-    const recipes = RECIPES.filter((r) => canMake(r, state.equipment) && !r.items.some((i) => p.excluded.includes(i.food)) && recipeAllowed(r, p, avoided, limits))
+    const recipes = RECIPES.filter((r) => canMake(r, state.equipment) && !r.items.some((i) => p.excluded.includes(i.food)) && recipeAllowed(r, p, avoided, limits, blocked))
       .map((r) => ({ recipe: r, perServing: servingTotals(r)[key] }))
       .sort((a, b) => b.perServing - a.perServing)
       .slice(0, 3)
@@ -84,6 +91,11 @@ export function analyzeWeek(state: AppState): WeekAnalysis {
     sodiumLimit: limits.sodiumGoalMg ?? SODIUM_LIMIT_MG,
     satFatPct: sum.kcal ? (sum.satFat * 900) / sum.kcal : 0,
     addedSugarPct: sum.kcal ? (sum.addedSugar * 400) / sum.kcal : 0,
+    kcalPerDay: sum.kcal / div,
+    proteinPerDay: sum.protein / div,
+    fiberPerDay: sum.fiber / div,
+    netCarbsPerDay: Math.max(0, sum.carbs - sum.fiber) / div,
+    fatPct: sum.kcal ? (sum.fat * 900) / sum.kcal : 0,
     daysPlanned,
   }
 }

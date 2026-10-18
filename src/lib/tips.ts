@@ -3,7 +3,7 @@ import { PLANT_TARGET } from '../data/rotation'
 import type { SourceId } from '../data/sources'
 import type { AppState, Evidence, Profile, Recipe } from '../types'
 import { analyzeWeek, type NutrientReport } from './analysis'
-import { avoidedFoods, hasCondition, suppressedTips } from './conditions'
+import { avoidedFoods, dietBlocked, hasCondition, suppressedTips } from './conditions'
 import { servingTotals } from './nutrition'
 import { isAdhd } from './planner'
 import { analyzeRotation, type RotationReport } from './rotation'
@@ -27,7 +27,8 @@ const low = (reports: NutrientReport[], key: string) => reports.find((r) => r.in
 /** "a, b or c" from the foods that aren't excluded for this person. */
 function foodList(p: Profile, options: [string, string][]): string {
   const avoided = avoidedFoods(p)
-  const ok = options.filter(([id]) => !avoided.has(id) && !p.excluded.includes(id)).map(([, label]) => label)
+  const blocked = dietBlocked(p)
+  const ok = options.filter(([id]) => !avoided.has(id) && !blocked.has(id) && !p.excluded.includes(id)).map(([, label]) => label)
   if (ok.length <= 1) return ok.join('')
   return `${ok.slice(0, -1).join(', ')} or ${ok[ok.length - 1]}`
 }
@@ -127,7 +128,7 @@ export function weeklyTips(state: AppState, nutrients = analyzeWeek(state).repor
     })
   }
   const choline = low(nutrients, 'choline')
-  if (choline && !p.excluded.includes('egg')) {
+  if (choline && !p.excluded.includes('egg') && !dietBlocked(p).has('egg')) {
     tips.push({
       id: 'choline', category: 'brain', evidence: 'emerging', title: 'Eggs for memory chemistry', sources: ['ods_choline', 'poly'],
       text: 'Choline is used to make acetylcholine, a memory neurotransmitter. One large egg has about 147 mg.',

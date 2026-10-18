@@ -84,9 +84,15 @@ export function computeTargets(p: Profile): Targets {
     })
   }
 
-  const fat = (kcal * 0.3) / 9
-  const carbs = Math.max(0, (kcal - protein * 4 - fat * 9) / 4)
-  explain.push({ text: 'Fat at 30% of calories, inside the 20–35% acceptable range; carbs fill the rest.', sources: ['nasem_macros'], convention: APP_CONVENTION })
+  let fat = (kcal * 0.3) / 9
+  let carbs = Math.max(0, (kcal - protein * 4 - fat * 9) / 4)
+  if (p.diets.includes('keto')) {
+    carbs = 50
+    fat = Math.max(0, (kcal - protein * 4 - carbs * 4) / 9)
+    explain.push({ text: `Keto: carbs held to about 50 g a day (under 50 g net), and fat fills the rest (${Math.round((fat * 900) / kcal)}% of calories).`, sources: ['bueno_keto', 'evert'], convention: 'The 50 g figure is the common definition of a very-low-carb ketogenic diet used in the cited trials.' })
+  } else {
+    explain.push({ text: 'Fat at 30% of calories, inside the 20–35% acceptable range; carbs fill the rest.', sources: ['nasem_macros'], convention: APP_CONVENTION })
+  }
 
   return {
     bmr: Math.round(bmr),

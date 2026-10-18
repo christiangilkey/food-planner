@@ -28,6 +28,7 @@ export function defaultState(): AppState {
       hotClimate: false,
       excluded: [],
       conditions: ['adhd'],
+      diets: [],
       menopauseStage: 'meno',
       maoi: false,
       toleratedTriggers: [],

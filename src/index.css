@@ -479,3 +479,23 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .disclaimer-card { border-left: 4px solid var(--warn); }
 .disclaimer-text p { margin: 0.6em 0; line-height: 1.5; }
 .toggle.on { border-color: var(--accent); background: var(--accent-soft); }
+
+/* ── Hormones ───────────────────────────────────── */
+.hormone-stats { list-style: none; padding: 0; margin: 8px 0 4px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.hormone-stats li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); }
+
+/* ── Low energy right now ───────────────────────── */
+.energy-card .toggle-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; min-height: 0; }
+.energy-card .toggle-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.fix-steps { list-style: none; padding: 0; margin: 10px 0; display: grid; gap: 8px; }
+.fix-steps li { display: flex; gap: 10px; padding: 10px; border-radius: 12px; background: var(--surface-2); }
+.fix-steps li.avoid { background: transparent; border: 1px dashed var(--border); }
+.fix-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.fix-steps li.avoid .fix-icon { background: var(--surface-2); color: var(--muted); }
+.fix-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.fix-snacks { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+/* ── Install ────────────────────────────────────── */
+.topbar-actions { display: flex; align-items: center; gap: 6px; }
+.install-btn { padding: 6px 12px; min-height: 0; border-radius: 999px; border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+@media (max-width: 360px) { .install-btn { padding: 6px 10px; font-size: 0.8rem; } }

@@ -1,13 +1,13 @@
 import type { IconName } from '../components/Icon'
-import type { ConditionId, Evidence, NutrientKey } from '../types'
+import type { ConditionId, DietId, Evidence, NutrientKey } from '../types'
 import type { SourceId } from './sources'
 
 /** Something about the person that changes whether a supplement is safe. */
-export type Trigger = ConditionId | 'maoi' | 'ssri' | 'bloodThinner' | 'thyroid' | 'diabetesMeds' | 'bpMeds' | 'grapefruitMeds' | 'pregnant' | 'stimulant'
+export type Trigger = ConditionId | DietId | 'maoi' | 'ssri' | 'bloodThinner' | 'thyroid' | 'diabetesMeds' | 'bpMeds' | 'grapefruitMeds' | 'pregnant' | 'stimulant'
 
 export type Goal =
   | 'gaps' | 'sleep' | 'focus' | 'mood' | 'stress' | 'energy' | 'heart' | 'bloodSugar' | 'bloodPressure'
-  | 'migraine' | 'bones' | 'muscle' | 'immunity' | 'gut' | 'reflux' | 'skin' | 'memory'
+  | 'migraine' | 'bones' | 'muscle' | 'immunity' | 'gut' | 'reflux' | 'skin' | 'memory' | 'thyroid'
 
 export const GOALS: { id: Goal; label: string; icon: IconName }[] = [
   { id: 'gaps', label: 'Nutrient gaps', icon: 'puzzle' },
@@ -20,6 +20,7 @@ export const GOALS: { id: Goal; label: string; icon: IconName }[] = [
   { id: 'heart', label: 'Heart & cholesterol', icon: 'heartPulse' },
   { id: 'bloodPressure', label: 'Blood pressure', icon: 'droplet' },
   { id: 'bloodSugar', label: 'Blood sugar', icon: 'stethoscope' },
+  { id: 'thyroid', label: 'Thyroid', icon: 'gauge' },
   { id: 'migraine', label: 'Migraine', icon: 'zap' },
   { id: 'bones', label: 'Bones & menopause', icon: 'bone' },
   { id: 'muscle', label: 'Muscle & training', icon: 'dumbbell' },
@@ -33,6 +34,8 @@ export interface Use {
   goal: Goal
   /** Conditions this use is relevant to (drives "recommended for you"). */
   conditions?: ConditionId[]
+  /** Diets this use is relevant to (e.g. B12 when vegan). */
+  diets?: DietId[]
   /** Recommended when this nutrient is low in your plan. */
   nutrient?: NutrientKey
   text: string
@@ -94,6 +97,7 @@ export const SUPPLEMENTS: Supplement[] = [
       { goal: 'focus', conditions: ['adhd'], text: 'Small improvements in ADHD symptoms in trials.', evidence: 'emerging', sources: ['bloch', 'chang_adhd'] },
       { goal: 'migraine', conditions: ['migraine'], text: 'More omega-3 (from fish) reduced headache frequency in a trial.', evidence: 'moderate', sources: ['ramsden'] },
       { goal: 'heart', conditions: ['cholesterol'], nutrient: 'omega3', text: 'EPA and DHA lower triglycerides.', evidence: 'strong', sources: ['ods_omega3'] },
+      { goal: 'gaps', diets: ['vegan', 'vegetarian'], text: 'Without fish, EPA and DHA intake is very low. Algae oil supplies them without animal products.', evidence: 'moderate', sources: ['melina', 'ods_omega3'] },
     ],
     cautions: [
       { text: 'Doses above about 1 g a day were linked to a higher risk of atrial fibrillation in trials.', sources: ['gencer'] },
@@ -133,6 +137,7 @@ export const SUPPLEMENTS: Supplement[] = [
     dose: { text: 'Recommended intake 2.4 µg a day; no upper limit has been set.', sources: ['ods_b12'] },
     uses: [
       { goal: 'gaps', nutrient: 'b12', text: 'Essential if you eat few animal foods; absorption also falls after 50.', evidence: 'strong', sources: ['ods_b12'] },
+      { goal: 'gaps', diets: ['vegan', 'vegetarian'], text: 'Vegans need a reliable B12 source: fortified foods or a supplement. The Academy of Nutrition and Dietetics advises it for all vegans; plants don’t supply active B12.', evidence: 'strong', sources: ['melina', 'ods_b12'] },
       { goal: 'bloodSugar', conditions: ['t2d'], text: 'Long-term metformin can lower B12; the ADA advises periodic testing.', evidence: 'strong', sources: ['ada_9', 'ods_b12'] },
       { goal: 'memory', text: 'Deficiency causes memory problems and nerve damage.', evidence: 'strong', sources: ['ods_b12'] },
       { goal: 'energy', text: 'Fixes fatigue from B12 deficiency; extra B12 does not raise energy if your level is normal.', evidence: 'strong', sources: ['ods_b12'] },
@@ -152,6 +157,7 @@ export const SUPPLEMENTS: Supplement[] = [
     dose: { text: 'Only to fill the gap between your food and your target, in doses of 500 mg or less (absorption is best then).', sources: ['ods_calcium', 'nams_bone'] },
     uses: [
       { goal: 'bones', conditions: ['menopause'], nutrient: 'calcium', text: 'Protects bone when food falls short; NAMS advises food first.', evidence: 'strong', sources: ['nams_bone', 'ods_calcium'] },
+      { goal: 'bones', diets: ['vegan', 'paleo', 'aip'], nutrient: 'calcium', text: 'Diets without dairy often fall short on calcium. Calcium-set tofu, fortified soy milk, sardines and greens help; a supplement can fill the rest.', evidence: 'strong', sources: ['ods_calcium', 'melina'] },
     ],
     cautions: [
       { text: 'Higher supplemental calcium may raise kidney-stone risk.', sources: ['ods_calcium'] },
@@ -506,6 +512,17 @@ export const SUPPLEMENTS: Supplement[] = [
     ],
   },
   {
+    id: 'selenium', name: 'Selenium (selenomethionine)', forms: 'Tablets, capsules; one Brazil nut has about 95 µg',
+    dose: { text: 'Hashimoto’s trials mostly used 200 µg a day. The adult upper limit is 400 µg a day from food and supplements combined.', sources: ['huwiler', 'ods_selenium'] },
+    uses: [
+      { goal: 'thyroid', conditions: ['hashimotos'], text: 'Lowered TPO antibodies, and TSH in people not yet on thyroid hormone, in a 2024 meta-analysis of 35 trials, with side effects similar to placebo.', evidence: 'moderate', sources: ['huwiler', 'wichman'] },
+      { goal: 'gaps', nutrient: 'selenium', text: 'Fills a selenium shortfall.', evidence: 'strong', sources: ['ods_selenium'] },
+    ],
+    cautions: [
+      { text: 'Too much selenium (over 400 µg a day) causes hair and nail loss, garlic breath and nerve problems. Count Brazil nuts and multivitamins toward the total.', sources: ['ods_selenium'] },
+    ],
+  },
+  {
     id: 'ginger_supplement', name: 'Ginger (capsules or tea)', forms: 'Capsules, tea, fresh root',
     dose: { text: 'Pregnancy-nausea trials commonly used up to about 1 g a day of ginger.', sources: ['viljoen'] },
     uses: [
@@ -529,6 +546,7 @@ export const SUPPLEMENTS: Supplement[] = [
 ]
 
 export const NOT_RECOMMENDED: NotRecommended[] = [
+  { id: 'kelp_iodine', name: 'Kelp, seaweed or iodine pills', goal: 'thyroid', claim: 'Supporting the thyroid', evidence: 'strong', sources: ['niddk_hashimoto'], why: 'In Hashimoto’s and other autoimmune thyroid disease, large amounts of iodine can cause or worsen hypothyroidism. Normal food amounts (iodized salt, dairy, eggs, fish) are enough.' },
   { id: 'black_cohosh', name: 'Black cohosh', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone', 'nccih_black_cohosh'], why: 'NAMS does not recommend it for hot flashes, and rare cases of serious liver damage have been reported.' },
   { id: 'soy_isoflavones', name: 'Soy isoflavone pills', goal: 'bones', claim: 'Hot flashes', evidence: 'strong', sources: ['nams_nonhormone'], why: 'NAMS does not recommend soy foods or extracts for hot flashes. Proven options include hormone therapy, nonhormone medications and CBT.' },
   { id: 'green_tea_extract', name: 'Green tea extract pills', goal: 'heart', claim: 'Weight loss and heart health', evidence: 'strong', sources: ['nccih_green_tea'], why: 'Liver injury has been reported, mainly with concentrated green tea extracts in pill form, and the extracts can raise blood pressure. Brewed green tea as a drink is a different, low-risk thing.' },

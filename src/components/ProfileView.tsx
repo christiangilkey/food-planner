@@ -3,6 +3,8 @@ import { FOODS } from '../data/foods'
 import { computeTargets } from '../lib/energy'
 import { defaultState, exportState, importState } from '../lib/store'
 import { ConditionFields } from './ConditionFields'
+import { DietFields } from './DietFields'
+import { InstallCard } from './InstallApp'
 import { DisclaimerText } from './Disclaimer'
 import { MedFields } from './MedFields'
 import { BodyFields, LifestyleFields } from './ProfileFields'
@@ -68,6 +70,12 @@ export function ProfileView(props: ViewProps) {
       </section>
 
       <section className="card">
+        <h2>Diet</h2>
+        <DietFields {...props} />
+        <p className="muted small">After changing your diet, make a new week on the Plan tab.</p>
+      </section>
+
+      <section className="card">
         <h2>Medications & pregnancy</h2>
         <p className="muted small">Used only to screen supplements, peptides and foods for interactions. Stored on this device only.</p>
         <MedFields {...props} />
@@ -90,6 +98,8 @@ export function ProfileView(props: ViewProps) {
           ))}
         </div>
       </section>
+
+      <InstallCard />
 
       <section className="card">
         <h2>About this app</h2>

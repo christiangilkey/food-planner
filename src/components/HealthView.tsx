@@ -5,7 +5,9 @@ import { DOMAINS, SODIUM_SOURCES } from '../data/nutrients'
 import { PLANT_SOURCES, PLANT_TARGET, PROTEIN_VARIETY_TARGET } from '../data/rotation'
 import { SOURCES, type SourceKind } from '../data/sources'
 import { analyzeWeek, type NutrientReport, type WeekAnalysis } from '../lib/analysis'
-import { activeConditions, avoidedFoods, limitReasons, mergedLimits, planViolations } from '../lib/conditions'
+import { activeConditions, activeDiets, avoidedFoods, limitReasons, mergedLimits, netCarbLimits, planViolations } from '../lib/conditions'
+import { DietCard } from './DietFields'
+import { Hormones } from './HormonesView'
 import { DAYS } from '../lib/plan-utils'
 import { analyzeRotation, type RuleStatus } from '../lib/rotation'
 import { weeklyTips, type BioTip, type TipCategory } from '../lib/tips'
@@ -15,7 +17,7 @@ import { RecipeLink } from './RecipeViewer'
 import { DomainOptions, SupplementsView } from './SupplementsView'
 import { Bar, Chip, Cite, EvidenceChip, Sourced } from './ui'
 
-type Section = 'brain' | 'conditions' | 'rotation' | 'biohacks' | 'supplements' | 'sources'
+type Section = 'brain' | 'conditions' | 'hormones' | 'rotation' | 'biohacks' | 'supplements' | 'sources'
 
 const fmt = (n: number, unit: string) => `${n >= 100 ? Math.round(n) : n >= 10 ? n.toFixed(0) : n.toFixed(1)} ${unit}`
 
@@ -24,7 +26,7 @@ function ClaimLine({ c }: { c: Claim }) {
 }
 
 export function HealthView({ state }: { state: AppState }) {
-  const hasConditions = state.profile.conditions.length > 0
+  const hasConditions = state.profile.conditions.length > 0 || state.profile.diets.length > 0
   const [section, setSection] = useState<Section>(hasConditions ? 'conditions' : 'brain')
   const analysis = useMemo(() => analyzeWeek(state), [state])
   const rotation = useMemo(() => analyzeRotation(state), [state])
@@ -32,7 +34,8 @@ export function HealthView({ state }: { state: AppState }) {
 
   const tabs: [Section, string][] = [
     ['brain', 'Brain & body'],
-    ...(hasConditions ? [['conditions', 'Conditions'] as [Section, string]] : []),
+    ...(hasConditions ? [['conditions', state.profile.diets.length ? (state.profile.conditions.length ? 'Conditions & diet' : 'Diet') : 'Conditions'] as [Section, string]] : []),
+    ['hormones', 'Hormones'],
     ['rotation', 'Rotation'],
     ['biohacks', 'Biohacks'],
     ['supplements', 'Supplements & peptides'],
@@ -57,6 +60,7 @@ export function HealthView({ state }: { state: AppState }) {
       </div>
       {section === 'brain' && <BrainBody state={state} a={analysis} />}
       {section === 'conditions' && <Conditions state={state} a={analysis} rules={rotation.rules} />}
+      {section === 'hormones' && <Hormones state={state} a={analysis} />}
       {section === 'rotation' && <Rotation rules={rotation.rules} plants={rotation.plants} proteinGroups={rotation.proteinGroups.length} />}
       {section === 'biohacks' && <Biohacks tips={tips} />}
       {section === 'supplements' && <SupplementsView state={state} reports={analysis.reports} />}
@@ -236,13 +240,15 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
   const limits = mergedLimits(p)
   const avoided = avoidedFoods(p)
   const reasons = limitReasons(p)
+  const diets = activeDiets(p)
+  const carbs = netCarbLimits(p)
 
   return (
     <>
       <section className={`card ${violations.length ? 'banner' : 'hero'}`}>
-        <h1>Your conditions</h1>
+        <h1>{conditions.length ? (diets.length ? 'Your conditions & diet' : 'Your conditions') : 'Your diet'}</h1>
         {violations.length === 0 ? (
-          <p className="good-text with-icon"><Icon name="check" /> This week’s plan is within every limit set by your conditions.</p>
+          <p className="good-text with-icon"><Icon name="check" /> This week’s plan is within every limit set by your {conditions.length ? (diets.length ? 'conditions and diet' : 'conditions') : 'diet'}.</p>
         ) : (
           <>
             <p className="warn-text">This week breaks {violations.length} rule{violations.length > 1 ? 's' : ''}. Make a new week on the Plan tab.</p>
@@ -257,9 +263,13 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
           {limits.lastFoodBeforeBedMin && <li>No food in the {limits.lastFoodBeforeBedMin / 60} hours before bed.</li>}
           {limits.eggsMaxWeek && <li>At most {limits.eggsMaxWeek} eggs a week.</li>}
           {limits.proteinMaxPerKg && <li>Protein capped at {limits.proteinMaxPerKg} g per kg.</li>}
+          {diets.length > 0 && <li>Diet: {diets.map((d) => d.label).join(' + ')}. Only foods {diets.length > 1 ? 'all of these allow' : 'it allows'} are planned.</li>}
+          {carbs && <li>Net carbs: under {carbs.perDay} g a day. This week averages {Math.round(a.netCarbsPerDay)} g.</li>}
           {avoided.size > 0 && <li>Removed foods: {[...avoided.keys()].map((f) => FOOD_BY_ID[f]?.name ?? f).join(', ')}.</li>}
         </ul>
       </section>
+
+      {diets.map((d) => <DietCard key={d.id} d={d} p={p} />)}
 
       {conditions.map((c) => {
         const ruleStatus = c.rules.map((r) => rules.find((x) => x.rule.id === r.id)).filter((x): x is RuleStatus => !!x)

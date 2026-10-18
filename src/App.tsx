@@ -2,6 +2,7 @@ import { motion, MotionConfig, useMotionValue } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { DisclaimerGate } from './components/Disclaimer'
 import { HealthView } from './components/HealthView'
+import { InstallButton } from './components/InstallApp'
 import { Icon, type IconName } from './components/Icon'
 import { KitchenView } from './components/KitchenView'
 import { Logo } from './components/Logo'
@@ -56,9 +57,12 @@ export default function App() {
         <div className="app">
           <header className="topbar">
             <Logo />
-            <button className={`ghost ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')}>
-              {state.profile.name ? state.profile.name : 'Profile'}
-            </button>
+            <div className="topbar-actions">
+              <InstallButton />
+              <button className={`ghost ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')}>
+                {state.profile.name ? state.profile.name : 'Profile'}
+              </button>
+            </div>
           </header>
 
           <main className="content" ref={mainRef}>

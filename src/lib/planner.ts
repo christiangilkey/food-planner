@@ -6,7 +6,7 @@ import { dayEntries, emptyPlan, getEntry, setEntry, type Pos } from './plan-util
 import { addGroups, entryGroups, rotationGap, rotationScore, type GroupServings } from './rotation'
 import { buildShoppingList } from './shopping'
 import { computeTargets, type Targets } from './energy'
-import { activeRules, avoidedFoods, CAFFEINATED_DRINKS, hasCondition, mergedLimits, nutrientTarget, planViolations, recipeAllowed, safetyGap } from './conditions'
+import { activeRules, avoidedFoods, CAFFEINATED_DRINKS, dietBlocked, hasCondition, mergedLimits, nutrientTarget, planViolations, recipeAllowed, safetyGap } from './conditions'
 import {
   addInto, canMake, EMPTY, easeScore, rewardScore, satietyScore, servingCost, servingTotals, type Totals,
 } from './nutrition'
@@ -38,6 +38,7 @@ export function eligibleRecipes(state: AppState, slot: MealSlot): Recipe[] {
   const p = state.profile
   const avoided = avoidedFoods(p)
   const limits = mergedLimits(p)
+  const blocked = dietBlocked(p)
   return RECIPES.filter(
     (r) =>
       r.slots.includes(slot) &&
@@ -45,7 +46,7 @@ export function eligibleRecipes(state: AppState, slot: MealSlot): Recipe[] {
       r.activeMin <= p.maxMealMin &&
       (r.batch || r.totalMin <= Math.max(p.maxMealMin * 2, 20)) &&
       !r.items.some((i) => p.excluded.includes(i.food)) &&
-      recipeAllowed(r, p, avoided, limits) &&
+      recipeAllowed(r, p, avoided, limits, blocked) &&
       (p.caffeine || !r.items.some((i) => CAFFEINATED_DRINKS.includes(i.food))),
   )
 }

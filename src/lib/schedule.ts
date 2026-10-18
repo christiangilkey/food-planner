@@ -60,7 +60,8 @@ export function mealTimes(p: Profile, snackCount: number): MealTimes {
   const clearBeforeBed = mergedLimits(p).lastFoodBeforeBedMin ?? 75
   const lastFood = floor15(bed - clearBeforeBed)
 
-  const breakfast = round15(wake + 30)
+  // Levothyroxine goes on an empty stomach 30–60 min before breakfast.
+  const breakfast = round15(wake + (p.meds.thyroid ? 45 : 30))
   const dinner = Math.min(lastFood, round15(Math.max(breakfast + 8 * 60, Math.min(breakfast + 11 * 60, bed - 3 * 60))))
   const lunch = round15((breakfast + dinner) / 2)
 
@@ -97,6 +98,13 @@ export function daySchedule(p: Profile, day: DayPlan, water: WaterPlan): Schedul
   const diabetes = hasCondition(p, 't1d') || hasCondition(p, 't2d')
 
   items.push({ at: t.wake, kind: 'water', label: 'Glass of water', detail: 'About 500 ml to start on your daily target.', sources: ['nasem_water'] })
+  if (p.meds.thyroid) {
+    items.push({
+      at: t.wake, kind: 'meds', label: 'Thyroid medication with water',
+      detail: `Levothyroxine on an empty stomach, 30–60 minutes before breakfast.${p.caffeine ? ' Hold coffee until breakfast: coffee taken with it reduced absorption.' : ''} Keep iron and calcium supplements at least 4 hours apart.`,
+      sources: p.caffeine ? ['niddk_hashimoto', 'jonklaas', 'benvenga'] : ['niddk_hashimoto', 'jonklaas'],
+    })
+  }
   items.push({ at: t.wake + 10, kind: 'habit', label: 'Morning light', detail: 'Get outside for daylight soon after waking. Morning light is the strongest signal setting your body clock, which shapes alertness and sleep.', sources: ['blume'] })
   items.push({
     at: t.breakfast, kind: 'meal', label: 'Breakfast', slot: 'breakfast',

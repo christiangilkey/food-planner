@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest'
 // Each case builds many full weeks; give them room.
 vi.setConfig({ testTimeout: 120_000 })
 import { CONDITIONS } from '../data/conditions'
+import { DIET_BY_ID, dietAllowsFood } from '../data/diets'
+import { NOT_RECOMMENDED, SUPPLEMENTS } from '../data/supplements'
 import { NUTRIENTS } from '../data/nutrients'
 import { RECIPES } from '../data/recipes'
 import { ROTATION_RULES } from '../data/rotation'
@@ -11,6 +13,7 @@ import { analyzeWeek } from './analysis'
 import { activeRules, avoidedFoods, planViolations } from './conditions'
 import { computeTargets, lbToKg } from './energy'
 import { dayEntries, eligibleRecipes, generatePlan, rankCandidates } from './planner'
+import { servingTotals } from './nutrition'
 import { mealTimes } from './schedule'
 import { defaultState } from './store'
 import { weeklyTips } from './tips'
@@ -38,6 +41,14 @@ const COMBOS: { conditions: ConditionId[]; patch?: Partial<AppState['profile']> 
   { conditions: ['menopause', 'gerd', 'migraine'], patch: { sex: 'female', age: 52, menopauseStage: 'peri', optInTriggers: ['dark_chocolate', 'cheddar'] } },
   { conditions: ['t1d', 'gerd'], patch: { workoutTime: '18:00' } },
   { conditions: CONDITIONS.map((c) => c.id), patch: { maoi: true, sex: 'female', age: 55 } },
+  // Diets, alone and with conditions they're often paired with.
+  ...(['vegetarian', 'vegan', 'pescatarian', 'keto', 'paleo', 'aip'] as const).map((d) => ({ conditions: [] as ConditionId[], patch: { diets: [d] } })),
+  { conditions: ['hashimotos'], patch: { diets: ['aip'], meds: { ...defaultState().profile.meds, thyroid: true } } },
+  { conditions: ['hashimotos', 'adhd'], patch: { diets: ['vegan'] } },
+  { conditions: ['t2d', 'hypertension'], patch: { diets: ['keto'] } },
+  { conditions: ['cholesterol'], patch: { diets: ['pescatarian'] } },
+  { conditions: ['gerd', 'migraine'], patch: { diets: ['paleo'] } },
+  { conditions: ['hashimotos'], patch: { diets: ['keto', 'pescatarian'] } },
 ]
 const CASES = [...SINGLE.map((conditions) => ({ conditions, patch: {} })), ...COMBOS]
 
@@ -128,6 +139,41 @@ describe('condition safety', () => {
       off.plan = generatePlan(off, seed)
       expect(caffeinated(off)).toBe(false)
     }
+  })
+
+  it('every diet fills a full week near the calorie target, using only foods the diet allows', () => {
+    for (const d of ['vegetarian', 'vegan', 'pescatarian', 'keto', 'paleo', 'aip'] as const) {
+      const s = stateWith([], { diets: [d] }, KITCHENS[2])
+      s.plan = generatePlan(s, 7)
+      const target = computeTargets(s.profile).kcal
+      const diet = DIET_BY_ID[d]
+      for (const day of s.plan) {
+        expect(day.breakfast && day.lunch && day.dinner, d).toBeTruthy()
+        const t = dayEntries(day).reduce((n, { entry }) => n + servingTotals(RECIPES.find((r) => r.id === entry.recipe)!, entry.portion).kcal, 0)
+        expect(t, d).toBeGreaterThan(target * 0.75)
+        for (const { entry } of dayEntries(day)) {
+          for (const i of RECIPES.find((r) => r.id === entry.recipe)!.items) expect(dietAllowsFood(diet, i.food), `${d}: ${entry.recipe} → ${i.food}`).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('keto targets keep carbs at 50 g and plans under 50 g net carbs a day', () => {
+    const s = stateWith([], { diets: ['keto'] }, KITCHENS[2])
+    expect(computeTargets(s.profile).carbs).toBe(50)
+    s.plan = generatePlan(s, 3)
+    for (const day of s.plan) {
+      const t = dayEntries(day).map(({ entry }) => servingTotals(RECIPES.find((r) => r.id === entry.recipe)!, entry.portion))
+      expect(t.reduce((n, x) => n + x.carbs - x.fiber, 0)).toBeLessThanOrEqual(50.5)
+    }
+  })
+
+  it('Hashimoto’s: thyroid medication goes before a later breakfast, and kelp is flagged', () => {
+    const p = stateWith(['hashimotos'], { meds: { ...defaultState().profile.meds, thyroid: true } }).profile
+    const t = mealTimes(p, 2)
+    expect(t.breakfast - t.wake).toBeGreaterThanOrEqual(30)
+    expect(NOT_RECOMMENDED.some((x) => x.id === 'kelp_iodine')).toBe(true)
+    expect(SUPPLEMENTS.find((x) => x.id === 'selenium')!.uses.some((u) => u.conditions?.includes('hashimotos'))).toBe(true)
   })
 
   it('grapefruit is removed for medicines with a grapefruit warning, with or without a condition', () => {

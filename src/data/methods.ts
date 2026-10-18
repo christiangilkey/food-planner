@@ -577,4 +577,256 @@ export const METHODS: Record<string, string[]> = {
     'Spread thinly on the parchment and scatter with the pomegranate seeds and pumpkin seeds.',
     'Refrigerate 30 minutes until firm, then break into pieces. Keep chilled.',
   ],
+  // ── Diet-friendly recipes ───────────────────────────────
+  aip_turkey_hash: [
+    'Dice the sweet potato into small cubes and the onion.',
+    'Melt the coconut oil in a skillet over medium heat. Add the sweet potato, cover, and cook 8 minutes, stirring now and then.',
+    'Add the turkey and onion, breaking up the meat, and cook until no pink remains and it reaches 165°F, about 7 minutes.',
+    'Stir in the spinach until wilted and season with salt.',
+  ],
+  bacon_sweet_potato_plate: [
+    'Prick the sweet potato and microwave 5 minutes, turn, then 3–4 minutes until soft.',
+    'Meanwhile, cook the bacon in a skillet over medium heat until crisp, 6–8 minutes; drain on a paper towel.',
+    'Split the sweet potato and serve with the bacon and sliced avocado with a pinch of salt.',
+    '(Oven: roast sweet potato cubes and bacon on a sheet pan at 400°F for 20 minutes.)',
+  ],
+  salmon_avocado_plate: [
+    'Drain the salmon and break it into chunks (the soft bones mash in easily).',
+    'Arrange with sliced avocado, cucumber and sauerkraut, and drizzle with olive oil and a pinch of salt.',
+  ],
+  apple_turkey_patties: [
+    'Heat the oven to 400°F. Cube the sweet potatoes, toss with half the coconut oil and salt, and spread on one side of a sheet pan.',
+    'Grate the apple, squeeze out excess juice, and mix it into the turkey with the cinnamon and a pinch of salt.',
+    'Shape into 8 patties, place on the other side of the pan, and brush with the remaining oil.',
+    'Bake 20–25 minutes, flipping the patties once, until they reach 165°F and the potatoes are tender. Refrigerate up to 4 days.',
+  ],
+  chicken_berry_plate: [
+    'Pull the rotisserie chicken into pieces; slice the avocado and strawberries.',
+    'Pile on the arugula, drizzle with olive oil and a pinch of salt.',
+  ],
+  bacon_brussels_hash: [
+    'Halve the Brussels sprouts; dice the sweet potato and onion. Chop the bacon.',
+    'Cook the bacon in a skillet over medium heat until crisp, then lift it out, leaving the fat.',
+    'Add the sweet potato, cover, and cook 6 minutes. Add the sprouts and onion and cook uncovered 8–10 minutes until browned and tender.',
+    'Stir the bacon back in and season with salt.',
+  ],
+  veggie_frittata: [
+    'Heat the oven to 375°F. Slice the mushrooms and dice the pepper and onion.',
+    'Heat the olive oil in an oven-safe skillet over medium heat and cook the vegetables 5 minutes, then wilt in the spinach.',
+    'Whisk the eggs with salt and pepper, pour over the vegetables, and cook without stirring 2–3 minutes until the edges set.',
+    'Bake 12–15 minutes until the center is set (160°F). Cool, cut into 4 wedges and refrigerate up to 4 days.',
+  ],
+  eggs_sweet_potato: [
+    'Prick the sweet potato and microwave 5 minutes, turn, then 3–4 minutes until soft.',
+    'Fry the eggs in the olive oil over medium heat until whites and yolks are firm, 3–4 minutes.',
+    'Serve with the split sweet potato and sliced avocado, seasoned with salt and pepper.',
+  ],
+  almond_banana_smoothie: [
+    'Add the almond milk, banana, almond butter, spinach and hemp seeds to the blender.',
+    'Blend until smooth, about 45 seconds. Add ice if you like it colder.',
+  ],
+  bacon_eggs_avocado: [
+    'Cook the bacon in a skillet over medium heat until crisp; set aside.',
+    'In the same pan, wilt the spinach, then push it aside and fry the eggs until whites and yolks are firm, 3–4 minutes.',
+    'Serve with sliced avocado and a pinch of salt and pepper.',
+  ],
+  coconut_chia_pudding: [
+    'Shake the can of coconut milk, then stir the chia and hemp seeds into it in a jar.',
+    'Stir again after 5 minutes to break up clumps.',
+    'Refrigerate at least 2 hours or overnight, then top with the berries.',
+  ],
+  keto_yogurt_bowl: [
+    'Spoon the yogurt into a bowl.',
+    'Top with the chopped walnuts and pecans, berries and chia seeds.',
+  ],
+  salmon_cucumber_rollups: [
+    'Drain the salmon and mash it with the cream cheese and lemon juice.',
+    'Slice the cucumber into thick rounds and top each with a spoonful of the salmon mix.',
+  ],
+  tofu_scramble: [
+    'Press the tofu dry with paper towels. Dice the onion and slice the mushrooms.',
+    'Heat the oil in a skillet over medium heat and cook the onion and mushrooms 4 minutes.',
+    'Crumble in the tofu, add the nutritional yeast and a pinch of salt (and turmeric for color if you have it), and cook 4 minutes until hot. Fold in the spinach until wilted.',
+  ],
+  vegan_overnight_oats: [
+    'Stir the oats, chia, soy milk and soy yogurt together in a jar.',
+    'Top with the berries and walnuts, cover, and refrigerate overnight.',
+  ],
+  vegan_pb_oatmeal: [
+    'Combine the oats and soy milk in a large microwave-safe bowl and microwave 2 minutes, stir, then 30–60 seconds more.',
+    'Stir in the peanut butter and top with sliced banana and hemp seeds.',
+  ],
+  chickpea_avocado_toast: [
+    'Toast the bread if you like. Drain and rinse the chickpeas.',
+    'Mash the avocado and chickpeas with the lemon juice and a pinch of salt.',
+    'Spread on the toast and sprinkle with hemp seeds.',
+  ],
+  tempeh_hash: [
+    'Cube the tempeh and sweet potato; dice the onion.',
+    'Heat the oil in a skillet over medium heat, add the sweet potato, cover and cook 8 minutes.',
+    'Add the tempeh and onion and cook uncovered until golden, 6–8 minutes. Stir in the spinach and season with salt and pepper.',
+  ],
+  soy_yogurt_bowl: ['Spoon the soy yogurt into a bowl.', 'Top with the berries and hemp seeds.'],
+
+  tofu_veg_curry: [
+    'Start the brown rice: simmer covered in twice its volume of water for 40 minutes (or use a rice cooker).',
+    'Press and cube the tofu. Dice the onion; grate the garlic and ginger.',
+    'Soften the onion in a little oil in a pot for 5 minutes, add the garlic, ginger and curry powder for 1 minute, then add the coconut milk, tomatoes and tofu.',
+    'Simmer 15 minutes, stir in the spinach until wilted, and serve over the rice. Refrigerate up to 4 days.',
+  ],
+  chickpea_spinach_curry: [
+    'Start the brown rice: simmer covered in twice its volume of water for 40 minutes (or use a rice cooker).',
+    'Dice the onion; grate the garlic and ginger. Drain the chickpeas.',
+    'Soften the onion in a little oil 5 minutes, add the garlic, ginger and curry powder for 1 minute, then the chickpeas, coconut milk and tomatoes.',
+    'Simmer 15 minutes, stir in the spinach, and serve over the rice. (Slow cooker: everything but spinach and rice on low 6 hours.)',
+  ],
+  tempeh_stirfry: [
+    'Cook the brown rice (rice cooker, or simmer covered 40 minutes).',
+    'Cut the tempeh into thin strips; grate the ginger and garlic.',
+    'Heat the oil in a large skillet over medium-high heat and brown the tempeh 5 minutes; add the frozen vegetables and cook 5 minutes.',
+    'Stir in the ginger, garlic and soy sauce, toss 1 minute, and serve over the rice.',
+  ],
+  lentil_bolognese: [
+    'Rinse the lentils and simmer them in 3 cups of water for 20 minutes until tender; drain.',
+    'Meanwhile, finely dice the onion and carrots and cook them in the olive oil in a large pot for 8 minutes.',
+    'Add the marinara and lentils and simmer 10 minutes. Stir in the nutritional yeast.',
+    'Cook the pasta according to the package, drain, and toss with the sauce. Refrigerate up to 4 days.',
+  ],
+  sweet_potato_bean_tacos: [
+    'Heat the oven to 425°F. Cube the sweet potatoes, toss with the oil, cumin and salt, and roast 25 minutes. (Or microwave whole, then cube.)',
+    'Warm the drained black beans with a splash of water.',
+    'Mash the avocado with the lime juice and a pinch of salt.',
+    'Warm the tortillas and fill with sweet potato, beans, avocado and salsa.',
+  ],
+  tahini_buddha_bowl: [
+    'Heat the oven to 425°F. Cube the sweet potato, toss with half the oil and salt, and roast 25 minutes.',
+    'Rinse the quinoa and simmer covered in twice its volume of water for 15 minutes.',
+    'Chop the kale and massage it with a squeeze of lemon. Drain the chickpeas.',
+    'Whisk the tahini with the remaining lemon juice, a pinch of salt and water until pourable. Build bowls and drizzle with the sauce.',
+  ],
+  peanut_tofu_bowl: [
+    'Cook the brown rice (rice cooker, or simmer covered 40 minutes).',
+    'Press and cube the tofu and brown it in a little oil in a skillet over medium-high heat, 8 minutes. Microwave the edamame 3 minutes.',
+    'Whisk the peanut butter, soy sauce, lime juice and 2–3 tablespoons of warm water into a sauce.',
+    'Build bowls with rice, tofu, edamame, shredded carrot and sliced cucumber, and drizzle with the sauce.',
+  ],
+  vegan_chili: [
+    'Dice the onion and pepper and soften them in the oil in a large pot for 5 minutes.',
+    'Add the drained beans, tomatoes, corn, broth, chili powder and cumin.',
+    'Simmer 30 minutes, stirring now and then. (Slow cooker: everything on low 6–8 hours.) Keeps 4 days or freezes well.',
+  ],
+  hummus_tempeh_wrap: [
+    'Slice the tempeh thinly and microwave it covered with a splash of water for 1 minute (or pan-fry 3 minutes per side).',
+    'Spread the hummus over the tortilla.',
+    'Add the tempeh, spinach and sliced cucumber, and roll up tightly.',
+  ],
+  salmon_asparagus: [
+    'Heat the oven to 425°F. Snap the woody ends off the asparagus and mince the garlic.',
+    'Put the salmon and asparagus on a sheet pan, drizzle with the olive oil, lemon juice and garlic, and season with salt.',
+    'Roast 12–15 minutes until the salmon flakes and reaches 145°F (air fryer: 400°F for 8–10 minutes).',
+  ],
+  lemon_chicken_broccoli: [
+    'Heat the oven to 425°F. Mince the garlic.',
+    'Toss the chicken thighs and broccoli with the olive oil, lemon juice, garlic and salt on a sheet pan.',
+    'Roast 25 minutes until the chicken reaches 165°F (air fryer: 380°F for 18–20 minutes). Refrigerate up to 4 days.',
+  ],
+  burger_bowl: [
+    'Cook the ground beef in a skillet over medium-high heat with salt and pepper, breaking it up, until no pink remains (160°F). Drain the fat.',
+    'Chop the romaine, tomato and pickles; slice the avocado.',
+    'Build bowls with lettuce, beef, cheddar, tomato, pickles and avocado. Add mustard if you like.',
+  ],
+  garlic_shrimp_zoodles: [
+    'Spiralize the zucchini (or cut it into thin ribbons with a peeler). Mince the garlic.',
+    'Heat the oil in a large skillet over medium-high heat. Cook the shrimp 2 minutes per side until pink and opaque (145°F); set aside.',
+    'Cook the zucchini and garlic 2–3 minutes until just tender, return the shrimp, and finish with lemon juice and Parmesan.',
+  ],
+  steak_cauli_mash: [
+    'Microwave the cauliflower covered with a splash of water for 6–8 minutes until very soft.',
+    'Mash or blend it with the butter, minced garlic and salt.',
+    'Pat the steak dry, season, and sear in a hot skillet 3–5 minutes per side to 145°F; rest 3 minutes.',
+    'Wilt the spinach in the same pan for 1 minute. Slice the steak and serve with the mash and spinach.',
+  ],
+  egg_roll_bowl: [
+    'Shred the cabbage and carrots (or use a bagged slaw mix); grate the ginger and garlic.',
+    'Cook the turkey in the oil in a large skillet over medium-high heat until it reaches 165°F, 7 minutes.',
+    'Add the cabbage, carrots, ginger and garlic and cook 5 minutes until just wilted. Stir in the soy sauce.',
+  ],
+  tuna_lettuce_cups: [
+    'Drain the tuna and mash it with the avocado, lemon juice, olive oil and a pinch of salt. Stir in the diced celery.',
+    'Spoon into romaine leaves to eat.',
+  ],
+  mackerel_salad: [
+    'Drain the mackerel and break it into chunks.',
+    'Toss the arugula, sliced cucumber and olives with the olive oil, lemon juice and a pinch of salt, and top with the fish.',
+  ],
+  chicken_brussels_bacon: [
+    'Heat the oven to 425°F. Halve the Brussels sprouts and chop the bacon.',
+    'Toss the chicken thighs, sprouts and bacon with the olive oil and salt on a sheet pan.',
+    'Roast 25–30 minutes, stirring once, until the chicken reaches 165°F and the sprouts are browned.',
+  ],
+  beef_sweet_potato_skillet: [
+    'Dice the sweet potatoes and onion; mince the garlic; strip and chop the kale.',
+    'Heat the oil in a large skillet, add the sweet potatoes, cover, and cook 10 minutes, stirring now and then.',
+    'Add the beef, onion and garlic and cook, breaking up the beef, until it reaches 160°F. Stir in the kale until wilted and season with salt.',
+  ],
+  aip_chicken_soup: [
+    'Dice the chicken, carrots, celery, onion and zucchini; mince the garlic.',
+    'Simmer everything except the zucchini in the broth for 20 minutes until the chicken reaches 165°F.',
+    'Add the zucchini and simmer 5 minutes more. Season with salt and fresh herbs. (Slow cooker: low 6 hours.)',
+  ],
+  pork_plantains: [
+    'Heat the oven to 400°F. Peel the plantains (cut off the ends, slit the skin and peel) and slice into thick coins.',
+    'Rub the pork with half the coconut oil, garlic and salt. Toss the plantains in the remaining oil. Roast both on a sheet pan 25 minutes, turning the plantains once.',
+    'Check the pork reaches 145°F; rest it 3 minutes before slicing.',
+    'Meanwhile, finely shred the cabbage and toss it with the lime juice and a pinch of salt. Serve together.',
+  ],
+  coconut_squash_curry: [
+    'Dice the chicken and onion; grate the ginger and garlic.',
+    'Soften the onion in a little oil in a pot 4 minutes, add the chicken, ginger and garlic and cook 3 minutes.',
+    'Add the squash and coconut milk, simmer 20 minutes until the squash is tender and the chicken reaches 165°F, then stir in the spinach. (Slow cooker: low 6 hours.)',
+  ],
+  shrimp_cauli_rice: [
+    'Pulse the cauliflower into rice-size pieces; dice the zucchini; grate the garlic and ginger.',
+    'Heat the oil in a large skillet over high heat. Cook the shrimp 2 minutes per side until pink and opaque (145°F); set aside.',
+    'Cook the cauliflower, zucchini, garlic and ginger 5–6 minutes, add the coconut aminos, and return the shrimp.',
+  ],
+  trout_beets_arugula: [
+    'Heat the oven to 425°F. Cube the beets.',
+    'Put the trout and beets on a sheet pan, drizzle with the olive oil, lemon juice and salt, and roast 10–12 minutes until the fish flakes and reaches 145°F.',
+    'Serve over the arugula, drizzled with balsamic.',
+  ],
+
+  apple_coconut: ['Core and slice the apple.', 'Dip or sprinkle with the coconut flakes.'],
+  plantain_chips_guac: [
+    'Heat the oven to 400°F. Peel the plantains and slice very thinly.',
+    'Toss with the melted coconut oil and a pinch of salt, spread in one layer, and bake 15–20 minutes, flipping once, until crisp (air fryer: 375°F for 10–12 minutes).',
+    'Mash the avocado with the lime juice and salt for dipping.',
+  ],
+  olives_veggies: ['Cut the cucumber into spears.', 'Serve with the olives and carrots.'],
+  berries_coconut_cream: ['Thaw the berries for a few minutes or microwave 30 seconds.', 'Pour the coconut milk over and sprinkle with coconut flakes.'],
+  sardine_cucumber_bites: ['Slice the cucumber into thick rounds.', 'Top each with a piece of sardine and a squeeze of lemon.'],
+  mango_coconut: ['Thaw the mango for a few minutes.', 'Sprinkle with the coconut flakes and lime juice.'],
+  chicken_avocado_bites: ['Cube the chicken and avocado.', 'Toss with the lime juice and a pinch of salt.'],
+  cheese_olives: ['Cube the mozzarella.', 'Serve with the olives.'],
+  celery_cream_cheese: ['Cut the celery into sticks.', 'Fill with the cream cheese.'],
+  brazil_pecan_mix: ['Mix one Brazil nut with the pecans and coconut flakes.', 'Keep the rest of the Brazil nuts separate so you don’t eat more than one or two a day.'],
+  tuscan_chicken: [
+    'Season the chicken thighs with salt and pepper; mince the garlic and chop the tomato.',
+    'Heat the oil in a skillet over medium-high heat and cook the chicken 5–6 minutes per side until it reaches 165°F; set aside.',
+    'Lower the heat, add the garlic and tomato for 2 minutes, then the cream and Parmesan, and simmer 2 minutes until slightly thickened.',
+    'Stir in the spinach until wilted and return the chicken to coat in the sauce.',
+  ],
+  salmon_avocado_salsa: [
+    'Heat the oven to 425°F. Put the salmon on a sheet pan, drizzle with half the oil and salt, and roast 12–15 minutes until it reaches 145°F (air fryer: 400°F for 8–10 minutes).',
+    'Dice the avocado and cucumber and chop the cilantro.',
+    'Toss with the lime juice, remaining oil and a pinch of salt, and spoon over the salmon.',
+  ],
+  cream_cheese_eggs: [
+    'Whisk the eggs with the cream cheese and a pinch of salt (small lumps are fine).',
+    'Melt the butter in a skillet over medium-low heat, wilt the spinach, then add the eggs and stir gently until softly set with no liquid egg left, 2–3 minutes.',
+    'Serve with sliced avocado.',
+  ],
+  cheese_almond_plate: ['Slice the cheddar.', 'Serve with the almonds.'],
+  avocado_hemp_snack: ['Halve the avocado and remove the pit.', 'Drizzle with the olive oil, sprinkle with hemp seeds and a pinch of salt, and eat with a spoon.'],
+  pecan_dark_choc: ['Break the chocolate into squares.', 'Portion with the pecans into a small bowl.'],
 }

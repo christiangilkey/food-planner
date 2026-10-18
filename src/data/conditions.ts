@@ -315,6 +315,30 @@ export const CONDITIONS: Condition[] = [
     suppressTips: ['fast'],
   },
   {
+    id: 'hashimotos', label: 'Hashimoto’s (thyroid)', icon: 'gauge', domains: ['energy', 'mood'],
+    blurb: 'Selenium-rich foods, no high-iodine seaweed or kelp, and breakfast timed around levothyroxine.',
+    limits: {}, limitReasons: {},
+    avoid: [],
+    rules: [
+      rule('hashi_fish', 'Fish & seafood (selenium)', ['seafood'], { min: 3 }, 'emerging', ['huwiler', 'ods_selenium'],
+        'Selenium supplements lowered TSH and thyroid antibodies in a meta-analysis of trials in Hashimoto’s. Seafood is one of the richest food sources of selenium.', ['sardines', 'tuna', 'shrimp', 'salmon'],
+        { convention: 'The trials used supplements; three seafood servings a week is this app’s food-first way of covering selenium.' }),
+    ],
+    helps: [
+      { text: 'Selenium supplements lowered TSH (in people not yet on thyroid hormone) and TPO antibodies in a 2024 meta-analysis of 35 trials, with no more side effects than placebo. The plan favors selenium-rich foods: seafood, eggs, sunflower seeds and one Brazil nut (about 95 µg). Stay under the 400 µg daily upper limit.', evidence: 'moderate', sources: ['huwiler', 'wichman', 'ods_selenium'] },
+      { text: 'Celiac disease is several times more common in autoimmune thyroid disease (about 1 in 60). Ask your doctor about a celiac blood test before changing what you eat; a gluten-free diet is only proven to help if you have celiac disease.', evidence: 'moderate', sources: ['roy_celiac'] },
+      { text: 'A gluten-free diet lowered thyroid antibodies in one small pilot study of women without celiac disease. This is too little evidence to recommend it to everyone.', evidence: 'limited', sources: ['krysiak'] },
+      { text: 'The autoimmune protocol (AIP) diet improved quality of life and symptoms in a small, uncontrolled study of 16 women with Hashimoto’s, but did not change thyroid hormone levels. You can choose it under Diet.', evidence: 'limited', sources: ['abbott_aip'] },
+    ],
+    guidance: [
+      { text: 'Take levothyroxine with water 30 to 60 minutes before breakfast. Espresso coffee, grapefruit juice, soy, and supplements with iron or calcium can reduce how much you absorb.', evidence: 'strong', sources: ['niddk_hashimoto', 'jonklaas'] },
+      { text: 'Coffee within an hour of levothyroxine reduced its absorption in a study. Wait at least 30 to 60 minutes before your morning coffee.', evidence: 'moderate', sources: ['benvenga', 'niddk_hashimoto'] },
+      { text: 'Large amounts of iodine (kelp, dulse and other seaweed, iodine supplements) can cause or worsen hypothyroidism in Hashimoto’s. Normal amounts from iodized salt, dairy, eggs and fish are fine.', evidence: 'strong', sources: ['niddk_hashimoto'] },
+      { text: 'Tiredness that won’t go away can mean your thyroid dose needs adjusting. Ask your doctor about checking your TSH.', evidence: 'strong', sources: ['niddk_hashimoto', 'jonklaas'] },
+    ],
+    suppressTips: [],
+  },
+  {
     id: 'ckd', label: 'Chronic kidney disease', icon: 'bean', domains: [],
     blurb: 'Safety mode: lower protein, no creatine, no extra potassium or magnesium pushes. Work with a renal dietitian.',
     limits: { proteinMaxPerKg: 0.8 },
