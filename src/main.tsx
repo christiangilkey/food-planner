@@ -12,7 +12,8 @@ createRoot(document.getElementById('root')!).render(
 )
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'))
+  // Registration can fail in some private windows and embedded browsers; the app works without offline support.
+  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}))
 
   // An installed app can sit in the background for days. When it comes back, check whether a
   // newer version was published and reload into it (everything you entered is kept in storage).
@@ -26,7 +27,9 @@ if ('serviceWorker' in navigator && import.meta.env.PROD) {
         sessionStorage.setItem('reloadedFor', latest)
         location.reload()
       }
-      navigator.serviceWorker.getRegistration().then((r) => r?.update())
+      // On a first visit the new worker is still installing and the browser rejects update(); skip it then.
+      const reg = await navigator.serviceWorker.getRegistration()
+      if (reg && !reg.installing) await reg.update().catch(() => {})
     } catch {
       // Offline: keep using the cached version.
     }
