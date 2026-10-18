@@ -14,7 +14,7 @@ import { mealTip } from '../lib/tips'
 import { hasCondition, planViolations } from '../lib/conditions'
 import { glasses, waterPlan } from '../lib/water'
 import { Icon, type IconName } from './Icon'
-import { ExportSheet } from './ExportSheet'
+import { ExportSheet, exportLabel } from './ExportSheet'
 import { RecipeLink } from './RecipeViewer'
 import { Bar, Chip, Cite, EvidenceChip, Score, Sheet, type ViewProps } from './ui'
 import { analyzeWeek } from '../lib/analysis'
@@ -99,7 +99,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
               <Icon name="wand" size={16} /> Magic plan
             </button>
             <button className="secondary" onClick={() => goTo('shop')}>Shopping list</button>
-            {hasPlan && <button className="primary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> Export to Google Tasks</button>}
+            {hasPlan && <button className="primary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> {exportLabel(state)}</button>}
           </div>
         </div>
         <p className="muted small with-icon">"New week" keeps any meal you've locked <Icon name="lock" size={14} /></p>

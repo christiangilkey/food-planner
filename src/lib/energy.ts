@@ -71,6 +71,10 @@ export function computeTargets(p: Profile): Targets {
   const refKg = bmi > 27 ? kgAt25 + 0.25 * (kg - kgAt25) : kg
   let perKg = p.goal === 'maintain' ? 1.4 : 1.6
   if (p.activity === 'very' || p.activity === 'athlete') perKg += 0.2
+  // Lifting: at least the 1.6 g/kg where gains level off, and more in a deficit to protect muscle.
+  const trainingFloor = p.strengthTraining ? (p.goal === 'lose' ? 2.0 : 1.6) : 0
+  const raisedForTraining = trainingFloor > perKg
+  if (raisedForTraining) perKg = trainingFloor
   const capped = limits.proteinMaxPerKg !== undefined && perKg > limits.proteinMaxPerKg
   if (capped) perKg = limits.proteinMaxPerKg!
   const protein = refKg * perKg
@@ -82,6 +86,15 @@ export function computeTargets(p: Profile): Targets {
       sources: ['dga_2025', 'jager', 'morton', 'leidy'],
       convention: bmi > 27 ? 'Using an adjusted weight above BMI 27 (so protein isn’t overestimated from fat mass) is this app’s convention.' : undefined,
     })
+    if (raisedForTraining) {
+      explain.push({
+        text: p.goal === 'lose'
+          ? 'Raised to 2.0 g per kg for your training plan: in a calorie deficit with hard training, higher protein kept and even built muscle while losing more fat.'
+          : 'Raised to 1.6 g per kg for your training plan: muscle gains from lifting leveled off around this intake on average.',
+        sources: p.goal === 'lose' ? ['longland', 'morton'] : ['morton'],
+        convention: p.goal === 'lose' ? 'The trial compared 2.4 with 1.2 g/kg; 2.0 g/kg is this app’s middle ground.' : undefined,
+      })
+    }
   }
 
   let fat = (kcal * 0.3) / 9

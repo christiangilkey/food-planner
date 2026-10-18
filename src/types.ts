@@ -1,4 +1,5 @@
 import type { DietTag } from './data/diets'
+import type { Access, Experience, Muscle, TrainingGoal } from './data/training'
 
 export type Sex = 'male' | 'female'
 export type Activity = 'sedentary' | 'light' | 'moderate' | 'very' | 'athlete'
@@ -243,6 +244,8 @@ export interface Profile {
   /** Optional, individual triggers the user has chosen to avoid (e.g. chocolate for migraine). */
   optInTriggers: string[]
   meds: MedFlags
+  /** Follows a resistance-training plan (set from the Train tab): raises the protein target. */
+  strengthTraining: boolean
 }
 
 export interface Store {
@@ -319,4 +322,49 @@ export interface AppState {
   setupDone: boolean
   /** The user has read and acknowledged the "not a health professional" disclaimer. */
   disclaimerAccepted: boolean
+  /** Nights the user has logged, newest last. */
+  sleepLog: SleepEntry[]
+  /** Where the export buttons send tasks. */
+  exportTarget: ExportTarget
+  onyx: OnyxSettings
+  fitness: FitnessSettings
+}
+
+// ── Training ──────────────────────────────────────────────
+
+export interface FitnessSettings {
+  /** The user has set up a training plan. */
+  enabled: boolean
+  goal: TrainingGoal
+  /** Training days a week, 2–6. */
+  days: number
+  /** Minutes per session, including rest between sets. */
+  sessionMin: number
+  experience: Experience
+  access: Access
+  /** Body parts to grow most: these get extra weekly sets. */
+  priorities: Muscle[]
+  /** Let the training plan raise protein and set activity in the meal plan. */
+  feedMealPlan: boolean
+}
+
+// ── Sleep and exports ─────────────────────────────────────
+
+/** One night of sleep, logged by the date the user woke up. */
+export interface SleepEntry {
+  /** YYYY-MM-DD of the morning they woke. */
+  date: string
+  /** "HH:MM", 24-hour: when they fell asleep (roughly). */
+  bed: string
+  /** "HH:MM", 24-hour: when they woke for the day. */
+  wake: string
+}
+
+export type ExportTarget = 'google' | 'onyx'
+
+export interface OnyxSettings {
+  /** Base address of Onyx Calendar's server, e.g. http://127.0.0.1:4747. */
+  url: string
+  /** The token from Onyx Calendar → Settings → MCP server. */
+  token: string
 }

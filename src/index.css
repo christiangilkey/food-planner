@@ -523,3 +523,28 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .magic-card { border-color: var(--accent); }
 .pantry-picker { display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--accent); }
 .pantry-picker select { min-height: 36px; padding: 6px 10px; font-size: 0.88rem; color: var(--text); }
+
+/* ── Sleep ──────────────────────────────────────── */
+.stack.tight { gap: 6px; }
+.sleep-chart { position: relative; display: grid; grid-template-columns: repeat(14, 1fr); gap: 4px; height: 120px; margin: 12px 0 4px; padding-bottom: 18px; }
+.sleep-col { position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; }
+.sleep-bar { width: 100%; max-width: 22px; border-radius: 4px 4px 0 0; background: var(--accent); }
+.sleep-bar.short { background: var(--warn); }
+.sleep-bar.empty { background: var(--border); }
+.sleep-day { position: absolute; bottom: -18px; font-size: 0.7rem; color: var(--muted); }
+.sleep-target { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--muted); z-index: 1; pointer-events: none; margin-bottom: 18px; }
+.sleep-target span { position: absolute; right: 0; top: -1.3em; font-size: 0.7rem; color: var(--muted); }
+.sleep-impact { border-left: 3px solid var(--border); padding-left: 10px; display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+.sleep-impact.tone-bad { border-left-color: var(--bad, var(--warn)); }
+.sleep-impact.tone-warn { border-left-color: var(--warn); }
+.sleep-impact.tone-good { border-left-color: var(--good); }
+.sleep-log { margin-top: 10px; }
+
+/* ── Training ───────────────────────────────────── */
+.trigger-list .toggle-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.85rem; min-height: 0; }
+.trigger-list .toggle-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.lift-list { list-style: none; margin: 8px 0; padding: 0; counter-reset: lift; }
+.lift-list li { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px dashed var(--border); }
+.lift-list li:first-child { border-top: 0; }
+.lift-dose { font-weight: 700; white-space: nowrap; }
+.lift-cue { color: var(--muted); }

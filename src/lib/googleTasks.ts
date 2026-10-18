@@ -14,10 +14,16 @@ export interface TaskDraft {
   notes?: string
   /** YYYY-MM-DD (Google Tasks stores due dates without a time). */
   due?: string
+  /** Start, in minutes after midnight of `due` (may pass 1440). Onyx turns timed tasks into calendar blocks. */
+  at?: number
+  /** Length in minutes, for calendar blocks. */
+  minutes?: number
 }
 
 export interface TaskListDraft {
   title: string
+  /** Short tag for Onyx (e.g. "meals", "sleep"); Google Tasks ignores it. */
+  tag?: string
   tasks: TaskDraft[]
 }
 
@@ -30,7 +36,7 @@ export interface ExportOptions {
 const SCOPE = 'https://www.googleapis.com/auth/tasks'
 const API = 'https://tasks.googleapis.com/tasks/v1'
 
-const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+export const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 /** Numbered cooking steps for a task's notes. */
 export function methodText(r: Recipe): string {
@@ -79,10 +85,12 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
             tip ? `\nTip: ${tip.text}` : '',
           ].filter((x) => x !== '').join('\n'),
           due: iso(dateOf(d)),
+          at,
+          minutes: Math.max(15, Math.min(60, r.activeMin + 15)),
         })
       }
     })
-    lists.push({ title: `Meal plan · week of ${label}`, tasks })
+    lists.push({ title: `Meal plan · week of ${label}`, tag: 'meals', tasks })
   }
 
   if (opts.shopping) {
@@ -90,6 +98,7 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
     const store = state.stores.find((s) => s.id === state.preferredStore)
     lists.push({
       title: `Groceries · ${label}${store ? ` · ${store.name}` : ''}`,
+      tag: 'groceries',
       tasks: [
         ...items.map((it) => ({
           title: `${it.food.name}: ${it.packages > 1 ? `${it.packages} × ` : ''}${it.food.packageLabel}`,
@@ -124,7 +133,7 @@ export function buildTaskLists(state: AppState, opts: ExportOptions, today = new
         due: iso(prepDay),
       }
     })
-    if (tasks.length) lists.push({ title: `Prep day · week of ${label}`, tasks })
+    if (tasks.length) lists.push({ title: `Prep day · week of ${label}`, tag: 'meal-prep', tasks })
   }
   return lists
 }
@@ -195,7 +204,8 @@ export async function exportToGoogleTasks(token: string, lists: TaskListDraft[],
         notes: t.notes?.slice(0, 8192),
         due: t.due ? `${t.due}T00:00:00.000Z` : undefined,
       })
-      onProgress?.(++done, total)
+      done++
+      onProgress?.(done, total)
     }
   }
   return done

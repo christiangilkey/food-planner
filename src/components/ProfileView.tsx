@@ -4,6 +4,8 @@ import { computeTargets } from '../lib/energy'
 import { defaultState, exportState, importState } from '../lib/store'
 import { ConditionFields } from './ConditionFields'
 import { DietFields } from './DietFields'
+import { OnyxFields } from './ExportSheet'
+import type { ExportTarget } from '../types'
 import { InstallCard } from './InstallApp'
 import { DisclaimerText } from './Disclaimer'
 import { MedFields } from './MedFields'
@@ -97,6 +99,21 @@ export function ProfileView(props: ViewProps) {
             </label>
           ))}
         </div>
+      </section>
+
+      <section className="card">
+        <h2>Exports</h2>
+        <p className="muted small">Where the export buttons on the Plan and Sleep tabs send your meals, groceries, prep day and sleep schedule.</p>
+        <div className="radio-list">
+          {([['google', 'Google Tasks', 'Task lists in your Google account. Needs a one-time Google Cloud client ID.'], ['onyx', 'Onyx Calendar', 'Time blocks and tasks on your Onyx calendar, sent to the Onyx app on your computer.']] as [ExportTarget, string, string][]).map(([id, label, detail]) => (
+            <label key={id} className={`radio-card ${state.exportTarget === id ? 'on' : ''}`}>
+              <input type="radio" name="export-target" checked={state.exportTarget === id} onChange={() => update((s) => ({ ...s, exportTarget: id }))} />
+              <strong>{label}</strong>
+              <small>{detail}</small>
+            </label>
+          ))}
+        </div>
+        {state.exportTarget === 'onyx' && <OnyxFields {...props} />}
       </section>
 
       <InstallCard />

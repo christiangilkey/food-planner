@@ -12,15 +12,19 @@ import { PricesView } from './components/PricesView'
 import { ProfileView } from './components/ProfileView'
 import { RecipeViewerProvider } from './components/RecipeViewer'
 import { ShopView } from './components/ShopView'
+import { SleepView } from './components/SleepView'
+import { TrainView } from './components/TrainView'
 import { useAppState } from './lib/store'
 import { useSwipe } from './lib/swipe'
 
-type Tab = 'plan' | 'shop' | 'health' | 'kitchen' | 'prices' | 'profile'
+type Tab = 'plan' | 'shop' | 'health' | 'train' | 'sleep' | 'kitchen' | 'prices' | 'profile'
 
 const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'plan', label: 'Plan', icon: 'calendar' },
   { id: 'shop', label: 'Shop', icon: 'cart' },
   { id: 'health', label: 'Health', icon: 'activity' },
+  { id: 'train', label: 'Train', icon: 'dumbbell' },
+  { id: 'sleep', label: 'Sleep', icon: 'moon' },
   { id: 'kitchen', label: 'Kitchen', icon: 'chef' },
   { id: 'prices', label: 'Prices', icon: 'tag' },
 ]
@@ -72,6 +76,8 @@ export default function App() {
                   {tab === 'plan' && <PlanView state={state} update={update} goTo={goTo} />}
                   {tab === 'shop' && <ShopView state={state} update={update} goTo={goTo} />}
                   {tab === 'health' && <HealthView state={state} />}
+                  {tab === 'train' && <TrainView state={state} update={update} goTo={goTo} />}
+                  {tab === 'sleep' && <SleepView state={state} update={update} goTo={goTo} />}
                   {tab === 'kitchen' && <KitchenView state={state} update={update} />}
                   {tab === 'prices' && <PricesView state={state} update={update} />}
                   {tab === 'profile' && <ProfileView state={state} update={update} />}
