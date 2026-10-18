@@ -42,6 +42,8 @@ export const SOURCES = {
   ods_choline: s('NIH ODS: Choline', 'Choline – Health Professional Fact Sheet', 'NIH Office of Dietary Supplements', 2024, ods('Choline'), 'reference'),
   ods_b6: s('NIH ODS: Vitamin B6', 'Vitamin B6 – Health Professional Fact Sheet', 'NIH Office of Dietary Supplements', 2024, ods('VitaminB6'), 'reference'),
   ods_selenium: s('NIH ODS: Selenium', 'Selenium – Health Professional Fact Sheet', 'NIH Office of Dietary Supplements', 2024, ods('Selenium'), 'reference'),
+  ods_iodine: s('NIH ODS: Iodine', 'Iodine – Health Professional Fact Sheet', 'NIH Office of Dietary Supplements', 2024, ods('Iodine'), 'reference'),
+  ods_biotin: s('NIH ODS: Biotin', 'Biotin – Health Professional Fact Sheet', 'NIH Office of Dietary Supplements', 2022, ods('Biotin'), 'reference'),
   nasem_macros: s('NASEM 2005 (macronutrients)', 'Dietary Reference Intakes for Energy, Carbohydrate, Fiber, Fat, Fatty Acids, Cholesterol, Protein, and Amino Acids', 'National Academies Press', 2005, 'https://nap.nationalacademies.org/catalog/10490/dietary-reference-intakes-for-energy-carbohydrate-fiber-fat-fatty-acids-cholesterol-protein-and-amino-acids', 'reference'),
   nasem_water: s('NASEM 2005 (water)', 'Dietary Reference Intakes for Water, Potassium, Sodium, Chloride, and Sulfate', 'National Academies Press', 2005, 'https://nap.nationalacademies.org/catalog/10925/dietary-reference-intakes-for-water-potassium-sodium-chloride-and-sulfate', 'reference'),
   nasem_sodium: s('NASEM 2019 (sodium & potassium)', 'Dietary Reference Intakes for Sodium and Potassium', 'National Academies Press', 2019, 'https://nap.nationalacademies.org/catalog/25353/dietary-reference-intakes-for-sodium-and-potassium', 'reference'),

@@ -227,7 +227,7 @@ export const SUPPLEMENTS: Supplement[] = [
     ],
     cautions: [
       { when: ['pregnant'], block: true, text: 'Experts advise against ashwagandha during pregnancy.', sources: ['ods_ashwagandha'] },
-      { when: ['thyroid'], text: 'Ashwagandha might affect thyroid function; check with your doctor.', sources: ['ods_ashwagandha'] },
+      { when: ['thyroid', 'hashimotos'], text: 'Three case reports describe thyrotoxicosis (too much thyroid hormone) in women taking ashwagandha, which resolved when they stopped, so it might interact with thyroid medication. Check with your doctor first.', sources: ['ods_ashwagandha'] },
       { text: 'Rare reports of liver problems; stop if you notice yellowing skin or dark urine.', sources: ['ods_ashwagandha'] },
     ],
   },

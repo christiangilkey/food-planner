@@ -1,3 +1,5 @@
+import type { DietTag } from './data/diets'
+
 export type Sex = 'male' | 'female'
 export type Activity = 'sedentary' | 'light' | 'moderate' | 'very' | 'athlete'
 export type Goal = 'lose' | 'maintain' | 'gain'
@@ -150,6 +152,12 @@ export interface Food {
   /** Plant species in this food, for the weekly plant-diversity count. */
   plants: string[]
   n: Nutrients
+  /** Set on foods made from a scanned product: the product's id. */
+  product?: string
+  /** Scanned products: lowercase name and ingredient list, checked against condition trigger words. */
+  scanText?: string
+  /** Scanned products: an ingredient list was entered, so trigger checks are meaningful. */
+  ingredientsKnown?: boolean
 }
 
 export type Equipment =
@@ -194,6 +202,8 @@ export interface Recipe {
   /** Keeps well as leftovers / meal prep. */
   batch?: boolean
   note?: string
+  /** A ready-to-eat scanned product served as is: the product's id. Only planned while it's in the pantry. */
+  product?: string
 }
 
 export interface Profile {
@@ -240,6 +250,38 @@ export interface Store {
   name: string
 }
 
+/** Nutrition Facts values per serving, as printed (g, mg or µg like the label). */
+export type LabelKey = 'kcal' | 'fat' | 'satFat' | 'sodium' | 'carbs' | 'fiber' | 'sugar' | 'addedSugar' | 'protein' | 'vitD' | 'calcium' | 'iron' | 'potassium'
+export type LabelFacts = Partial<Record<LabelKey, number>>
+
+/** A product scanned from its barcode or Nutrition Facts label. */
+export interface Product {
+  id: string
+  name: string
+  brand: string
+  barcode: string
+  /** Grams in one serving, from the label. */
+  servingGrams: number
+  /** Grams in one package. */
+  packageGrams: number
+  /** What one package cost, USD; 0 if not entered. */
+  price: number
+  label: LabelFacts
+  ingredients: string
+  /** The app food this product is (e.g. greek_yogurt), so recipes can use it; '' if none. */
+  matches: string
+  /** Eaten as is (protein bar, frozen meal), so the planner can serve it on its own. */
+  readyToEat: boolean
+  slots: MealSlot[]
+  /** Heated in the microwave (frozen meals). */
+  microwave: boolean
+  /** What kinds of food it contains, for diets. */
+  tags: DietTag[]
+  aisle: Aisle
+  /** ISO date it was scanned. */
+  addedAt: string
+}
+
 export interface PantryItem {
   food: string
   grams: number
@@ -263,6 +305,8 @@ export interface AppState {
   profile: Profile
   equipment: Equipment[]
   pantry: PantryItem[]
+  /** Products scanned into the pantry. */
+  products: Product[]
   stores: Store[]
   /** priceOverrides[storeId][foodId] = package price */
   priceOverrides: Record<string, Record<string, number>>

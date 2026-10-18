@@ -4,7 +4,8 @@ import { RECIPE_BY_ID } from '../data/recipes'
 import type { Tab } from '../App'
 import { computeTargets } from '../lib/energy'
 import { crashRisk, easeScore, rewardScore, satietyScore, servingCost, servingTotals } from '../lib/nutrition'
-import { DAYS, dayEntries, dayTotals, eligibleRecipes, generatePlan, isAdhd, rankCandidates, shoppingCost, slotShares, portionFor } from '../lib/planner'
+import { DAYS, dayEntries, dayTotals, eligibleRecipes, generatePlan, isAdhd, magicPlan, pantryReport, rankCandidates, shoppingCost, slotShares, portionFor, type Candidate, type PantryReport } from '../lib/planner'
+import { FOOD_BY_ID } from '../data/foods'
 import type { MealSlot, PlanEntry } from '../types'
 import { setEntry, type Pos } from '../lib/plan-utils'
 import { analyzeRotation } from '../lib/rotation'
@@ -40,7 +41,27 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
   const bill = useMemo(() => shoppingCost(state, plan), [state, plan])
   const hasPlan = plan.some((x) => dayEntries(x).length > 0)
 
-  const regenerate = () => update((s) => ({ ...s, plan: generatePlan(s), checked: {} }))
+  const regenerate = () => { setMagic(null); update((s) => ({ ...s, plan: generatePlan(s), checked: {} })) }
+
+  // Magic plan: same rules as any week, built from the pantry first.
+  const [magic, setMagic] = useState<PantryReport | null>(null)
+  const pantryCount = state.pantry.filter((p) => p.grams > 0).length
+  const runMagic = () => {
+    const next = magicPlan(state)
+    update((s) => ({ ...s, plan: next, checked: {} }))
+    setMagic(pantryReport(state, next))
+  }
+  /** Pantry-based alternatives for one slot today, for the meal cards' dropdown. */
+  const pantryByPos = useMemo(() => {
+    const out: Record<string, Candidate[]> = {}
+    if (!pantryCount) return out
+    const positions: Pos[] = [{ day, slot: 'breakfast' }, { day, slot: 'lunch' }, { day, slot: 'dinner' }, ...plan[day].snacks.map((_, i): Pos => ({ day, slot: 'snack', snack: i }))]
+    for (const pos of positions) {
+      out[`${pos.slot}-${pos.snack ?? 0}`] = rankCandidates(state, plan, pos.day, pos.slot, { pantryFirst: true }).filter((c) => c.parts.pantry >= 0.5).slice(0, 8)
+    }
+    return out
+  }, [state, plan, day, pantryCount])
+  const pantryChoices = (pos: Pos) => pantryByPos[`${pos.slot}-${pos.snack ?? 0}`] ?? []
   const change = (pos: Pos, entry: PlanEntry | null) => update((s) => ({ ...s, plan: setEntry(s.plan, pos, entry) }))
 
   const water = waterPlan(state.profile, d)
@@ -74,6 +95,9 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           </div>
           <div className="hero-actions">
             <button className="primary" onClick={regenerate}>{hasPlan ? 'New week' : 'Build week'}</button>
+            <button className="magic with-icon" onClick={runMagic} disabled={!pantryCount} title={pantryCount ? 'Build the week from your pantry first' : 'Scan or add pantry items first (Kitchen tab)'}>
+              <Icon name="wand" size={16} /> Magic plan
+            </button>
             <button className="secondary" onClick={() => goTo('shop')}>Shopping list</button>
             {hasPlan && <button className="primary with-icon" onClick={() => setShowExport(true)}><Icon name="check" size={16} /> Export to Google Tasks</button>}
           </div>
@@ -87,6 +111,8 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           </button>
         )}
       </section>
+
+      {magic && <MagicSummary report={magic} violations={violations.length} budget={state.profile.weeklyBudget} onClose={() => setMagic(null)} />}
 
       <div className="day-tabs" role="tablist" aria-label="Day">
         {DAYS.map((name, i) => {
@@ -170,6 +196,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           state={state}
           onSwap={() => setSwap({ day, slot })}
           onChange={(e) => change({ day, slot }, e)}
+          pantryOptions={pantryChoices({ day, slot })}
         />
       ))}
       {d.snacks.map((s, i) => (
@@ -180,6 +207,7 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
           state={state}
           onSwap={() => setSwap({ day, slot: 'snack', snack: i })}
           onChange={(e) => change({ day, slot: 'snack', snack: i }, e)}
+          pantryOptions={pantryChoices({ day, slot: 'snack', snack: i })}
           removable
         />
       ))}
@@ -211,8 +239,55 @@ export function PlanView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) =
   )
 }
 
+/** "Swap for a pantry meal": the best meals for this slot that mostly use what you have. */
+function PantryPicker({ options, current, onPick }: { options: Candidate[]; current?: string; onPick: (e: PlanEntry) => void }) {
+  const list = options.filter((c) => c.recipe.id !== current)
+  if (!list.length) return null
+  return (
+    <label className="pantry-picker">
+      <Icon name="wand" size={15} />
+      <select value="" aria-label="Swap for a meal from your pantry"
+        onChange={(e) => { const c = list.find((x) => x.recipe.id === e.target.value); if (c) onPick({ recipe: c.recipe.id, portion: c.portion }) }}>
+        <option value="">Swap for a pantry meal…</option>
+        {list.map((c) => (
+          <option key={c.recipe.id} value={c.recipe.id}>
+            {c.recipe.name} · {Math.round(c.parts.pantry * 100)}% from pantry · {Math.round(c.totals.kcal)} kcal
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function MagicSummary({ report, violations, budget, onClose }: { report: PantryReport; violations: number; budget: number; onClose: () => void }) {
+  const name = (id: string) => FOOD_BY_ID[id]?.name ?? id
+  const spoiling = report.used.filter((u) => u.spoilsSoon)
+  return (
+    <section className="card magic-card" role="status">
+      <div className="row-between">
+        <h2 className="with-icon"><Icon name="wand" /> Magic plan</h2>
+        <button className="icon" onClick={onClose} aria-label="Close"><Icon name="x" /></button>
+      </div>
+      <p>
+        Uses <strong>{report.used.length}</strong> of your {report.used.length + report.unused.length} pantry items, which cover{' '}
+        <strong>{Math.round(report.fromPantry * 100)}%</strong> of the week’s ingredients. Still to buy ≈ <strong>{money(report.toBuy)}</strong>
+        {report.toBuy > budget ? <span className="warn-text"> (over your {money(budget)} budget)</span> : ` of your ${money(budget)} budget`}.
+      </p>
+      <p className={violations ? 'warn-text small' : 'good-text small with-icon'}>
+        {violations ? `${violations} health rule${violations > 1 ? 's' : ''} can’t be met with these foods; see the warning above.` : <><Icon name="check" size={14} /> Every limit from your conditions and diet is met, same as any other week.</>}
+      </p>
+      {spoiling.length > 0 && <p className="small">Uses up what spoils first: {spoiling.map((u) => name(u.food)).join(', ')}.</p>}
+      {report.unused.length > 0 && (
+        <p className="muted small">
+          Not used: {report.unused.map(name).join(', ')}. These have no recipe that fits your kitchen, time limit and health settings this week, or they’re kept out by a condition.
+        </p>
+      )}
+    </section>
+  )
+}
+
 function MealCard({
-  label, entry, state, onSwap, onChange, removable,
+  label, entry, state, onSwap, onChange, removable, pantryOptions = [],
 }: {
   label: string
   entry: PlanEntry | null
@@ -220,6 +295,7 @@ function MealCard({
   onSwap: () => void
   onChange: (e: PlanEntry | null) => void
   removable?: boolean
+  pantryOptions?: Candidate[]
 }) {
   const r = entry ? RECIPE_BY_ID[entry.recipe] : undefined
   if (!entry || !r) {
@@ -228,6 +304,7 @@ function MealCard({
         <div className="meal-slot">{label}</div>
         <p className="muted">Nothing planned.</p>
         <button className="secondary" onClick={onSwap}>Choose a meal</button>
+        <PantryPicker options={pantryOptions} onPick={onChange} />
       </section>
     )
   }
@@ -267,6 +344,7 @@ function MealCard({
         <span className="portion-value">{entry.portion}×</span>
         <button className="icon small" onClick={() => step(0.25)} aria-label="Bigger portion">+</button>
       </div>
+      {!entry.locked && <PantryPicker options={pantryOptions} current={r.id} onPick={onChange} />}
     </section>
   )
 }

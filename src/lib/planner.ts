@@ -4,7 +4,8 @@ import { RECIPES, RECIPE_BY_ID } from '../data/recipes'
 import type { AppState, DayPlan, MealSlot, NutrientKey, Nutrients, PlanEntry, Profile, Recipe } from '../types'
 import { dayEntries, emptyPlan, getEntry, setEntry, type Pos } from './plan-utils'
 import { addGroups, entryGroups, rotationGap, rotationScore, type GroupServings } from './rotation'
-import { buildShoppingList } from './shopping'
+import { FOOD_BY_ID } from '../data/foods'
+import { buildShoppingList, weeklyNeeds } from './shopping'
 import { computeTargets, type Targets } from './energy'
 import { activeRules, avoidedFoods, CAFFEINATED_DRINKS, dietBlocked, hasCondition, mergedLimits, nutrientTarget, planViolations, recipeAllowed, safetyGap } from './conditions'
 import {
@@ -47,8 +48,17 @@ export function eligibleRecipes(state: AppState, slot: MealSlot): Recipe[] {
       (r.batch || r.totalMin <= Math.max(p.maxMealMin * 2, 20)) &&
       !r.items.some((i) => p.excluded.includes(i.food)) &&
       recipeAllowed(r, p, avoided, limits, blocked) &&
-      (p.caffeine || !r.items.some((i) => CAFFEINATED_DRINKS.includes(i.food))),
+      (p.caffeine || !r.items.some((i) => CAFFEINATED_DRINKS.includes(i.food))) &&
+      // A scanned ready-to-eat product can only be served while some is in the pantry.
+      (!r.product || pantryGrams(state, r.items[0].food) >= r.items[0].grams * 0.5),
   )
+}
+
+const pantryGrams = (state: AppState, food: string) => state.pantry.find((x) => x.food === food)?.grams ?? 0
+
+export interface PlanOptions {
+  /** Magic plan: build the week mostly from what's already in the pantry, using up what spoils first. */
+  pantryFirst?: boolean
 }
 
 export const isAdhd = (p: Profile) => hasCondition(p, 'adhd')
@@ -70,6 +80,8 @@ export interface ScoreParts {
   reward: number
   ease: number
   onHand: number
+  /** Share of this meal's ingredients (by weight) still in the pantry. */
+  pantry: number
   variety: number
   /** Helps the week hit food-frequency guidelines (fish, legumes, greens, plant variety…). */
   rotation: number
@@ -99,6 +111,8 @@ interface WeekTracker {
   /** Standard servings per food group, and plant species, for rotation guidelines. */
   groups: GroupServings
   plants: Set<string>
+  /** Grams of each food still in the pantry after the meals planned so far. */
+  stock: Record<string, number>
 }
 
 function newTracker(state: AppState): WeekTracker {
@@ -106,6 +120,7 @@ function newTracker(state: AppState): WeekTracker {
     week: { ...EMPTY }, planned: 0, usesThisWeek: {}, servingsUsed: {},
     onHandFoods: new Set(state.pantry.filter((p) => p.grams > 0).map((p) => p.food)),
     groups: {}, plants: new Set(),
+    stock: Object.fromEntries(state.pantry.filter((p) => p.grams > 0).map((p) => [p.food, p.grams])),
   }
 }
 
@@ -117,7 +132,10 @@ function track(w: WeekTracker, entry: PlanEntry) {
   w.planned += t.kcal
   w.usesThisWeek[r.id] = (w.usesThisWeek[r.id] ?? 0) + 1
   w.servingsUsed[r.id] = (w.servingsUsed[r.id] ?? 0) + entry.portion
-  r.items.forEach((it) => w.onHandFoods.add(it.food))
+  r.items.forEach((it) => {
+    w.onHandFoods.add(it.food)
+    if (w.stock[it.food] !== undefined) w.stock[it.food] -= (it.grams * entry.portion) / r.servings
+  })
   const g = entryGroups(r, entry.portion)
   addGroups(w.groups, g.servings)
   g.plants.forEach((x) => w.plants.add(x))
@@ -132,6 +150,7 @@ interface Ctx extends WeekTracker {
   costWeight: number
   rules: RotationRule[]
   limits: ReturnType<typeof mergedLimits>
+  pantryFirst: boolean
 }
 
 function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): Candidate {
@@ -163,9 +182,24 @@ function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): 
     if (projectedDaily > ul * 0.8) gaps -= 0.5
   }
 
-  // Cost relative to what the weekly budget allows per 1000 kcal.
+  // How much of the meal (by weight) comes out of what's left in the pantry, and how much of that spoils soon.
+  let need = 0
+  let covered = 0
+  let spoiling = 0
+  for (const it of r.items) {
+    const g = (it.grams * portion) / r.servings
+    const have = Math.max(0, Math.min(g, ctx.stock[it.food] ?? 0))
+    need += g
+    covered += have
+    if ((FOOD_BY_ID[it.food]?.shelfDays ?? 99) <= 7) spoiling += have
+  }
+  const pantry = need ? covered / need : 0
+  const useUp = need ? spoiling / need : 0
+
+  // Cost relative to what the weekly budget allows per 1000 kcal. Pantry-first counts only what you'd still buy.
   const allowedPer1000 = p.weeklyBudget / 7 / (targets.kcal / 1000)
-  const per1000 = totals.kcal > 0 ? (cost / totals.kcal) * 1000 : 99
+  const spend = ctx.pantryFirst ? cost * (1 - pantry) : cost
+  const per1000 = totals.kcal > 0 ? (spend / totals.kcal) * 1000 : 99
   const costScore = Math.max(0, Math.min(1, 1.5 - per1000 / allowedPer1000))
 
   const reward = rewardScore(r) / 100
@@ -199,7 +233,7 @@ function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): 
 
   const adhd = isAdhd(p)
   const easeWeight = adhd ? (p.stimulantMeds && slot === 'lunch' ? 0.25 : 0.16) : 0.07
-  const parts: ScoreParts = { satiety, protein, gaps, cost: costScore, reward, ease, onHand, variety, rotation }
+  const parts: ScoreParts = { satiety, protein, gaps, cost: costScore, reward, ease, onHand, pantry, variety, rotation }
   const score =
     0.24 * satiety +
     0.15 * protein +
@@ -210,13 +244,16 @@ function scoreCandidate(r: Recipe, slot: MealSlot, slotKcal: number, ctx: Ctx): 
     0.1 * onHand +
     0.22 * variety +
     0.18 * rotation -
-    0.35 * safety
+    0.35 * safety +
+    (ctx.pantryFirst ? 0.55 * pantry + 0.15 * useUp : 0) -
+    // Never serve more of a scanned product than is left.
+    (r.product && covered < need * 0.99 ? 2 : 0)
 
   return { recipe: r, portion, totals, cost, score, parts }
 }
 
 /** Ranked options for one slot on one day, given the rest of the plan. */
-export function rankCandidates(state: AppState, plan: DayPlan[], dayIndex: number, slot: MealSlot): Candidate[] {
+export function rankCandidates(state: AppState, plan: DayPlan[], dayIndex: number, slot: MealSlot, opts: PlanOptions = {}): Candidate[] {
   const targets = computeTargets(state.profile)
   const shares = slotShares(state.profile)
   const w = newTracker(state)
@@ -230,7 +267,7 @@ export function rankCandidates(state: AppState, plan: DayPlan[], dayIndex: numbe
   })
   const slotKcal = targets.kcal * shares[slot]
   const ctx: Ctx = {
-    ...w, state, targets, usedToday, costWeight: 1, rules: activeRules(state.profile), limits: mergedLimits(state.profile),
+    ...w, state, targets, usedToday, costWeight: 1, rules: activeRules(state.profile), limits: mergedLimits(state.profile), pantryFirst: !!opts.pantryFirst,
     progress: Math.min(1, (w.planned + slotKcal) / (targets.kcal * 7)),
   }
   return eligibleRecipes(state, slot)
@@ -250,7 +287,7 @@ function mulberry32(seed: number) {
   }
 }
 
-function buildOnce(state: AppState, seed: number, costWeight: number): DayPlan[] {
+function buildOnce(state: AppState, seed: number, costWeight: number, opts: PlanOptions): DayPlan[] {
   const rand = mulberry32(seed)
   const targets = computeTargets(state.profile)
   const shares = slotShares(state.profile)
@@ -276,7 +313,7 @@ function buildOnce(state: AppState, seed: number, costWeight: number): DayPlan[]
       } else {
         const slotKcal = targets.kcal * shares[slot]
         const ctx: Ctx = {
-          ...w, state, targets, usedToday, costWeight, rules, limits,
+          ...w, state, targets, usedToday, costWeight, rules, limits, pantryFirst: !!opts.pantryFirst,
           progress: Math.min(1, (w.planned + slotKcal) / (targets.kcal * 7)),
         }
         const ranked = eligibleRecipes(state, slot)
@@ -323,7 +360,7 @@ export function planCost(state: AppState, plan: DayPlan[]): number {
  * meal slot, swapping in the alternative that closes the most gap for the least loss in meal
  * score. Condition limits weigh 4× guidelines, and may cost more meal score to fix.
  */
-function repairRotation(state: AppState, plan: DayPlan[]): DayPlan[] {
+function repairRotation(state: AppState, plan: DayPlan[], opts: PlanOptions): DayPlan[] {
   const p = state.profile
   const rules = activeRules(p)
   const budget = p.weeklyBudget
@@ -340,7 +377,7 @@ function repairRotation(state: AppState, plan: DayPlan[]): DayPlan[] {
       for (const pos of positions) {
         const current = getEntry(plan, pos)
         if (!current || current.locked) continue
-        const ranked = rankCandidates(state, plan, day, pos.slot)
+        const ranked = rankCandidates(state, plan, day, pos.slot, opts)
         const currentScore = ranked.find((c) => c.recipe.id === current.recipe)?.score ?? 0
         for (const c of ranked.slice(0, 12)) {
           if (c.recipe.id === current.recipe) continue
@@ -375,15 +412,51 @@ export function shoppingCost(state: AppState, plan: DayPlan[]): number {
  * retry with cost (and ingredient reuse) weighted more heavily. Finally, swap
  * meals to meet the weekly food-frequency guidelines.
  */
-export function generatePlan(state: AppState, seed = Date.now()): DayPlan[] {
-  let best = buildOnce(state, seed, 1)
+export function generatePlan(state: AppState, seed = Date.now(), opts: PlanOptions = {}): DayPlan[] {
+  let best = buildOnce(state, seed, 1, opts)
   let bestCost = shoppingCost(state, best)
   for (let w = 2; w <= 6 && bestCost > state.profile.weeklyBudget; w++) {
-    const p = buildOnce(state, seed + w, w)
+    const p = buildOnce(state, seed + w, w, opts)
     const c = shoppingCost(state, p)
     if (c < bestCost) { best = p; bestCost = c }
   }
-  return enforceLimits(state, repairRotation(state, best))
+  return enforceLimits(state, repairRotation(state, best, opts), opts)
+}
+
+/**
+ * "Magic plan": a week built mostly from what's already in the pantry, favoring what spoils
+ * first. It runs the same pipeline as any week, so every condition limit, diet rule, food
+ * rotation guideline and the budget still apply; pantry use is only a stronger preference.
+ */
+export function magicPlan(state: AppState, seed = Date.now()): DayPlan[] {
+  return generatePlan(state, seed, { pantryFirst: true })
+}
+
+export interface PantryReport {
+  /** Pantry foods (with stock) the plan uses. */
+  used: { food: string; grams: number; spoilsSoon: boolean }[]
+  /** Pantry foods the plan doesn't touch. */
+  unused: string[]
+  /** Share of the plan's ingredient weight that comes from the pantry. */
+  fromPantry: number
+  /** What's still left to buy. */
+  toBuy: number
+}
+
+export function pantryReport(state: AppState, plan: DayPlan[]): PantryReport {
+  const need = weeklyNeeds(plan)
+  const stock = state.pantry.filter((p) => p.grams > 0)
+  const used: PantryReport['used'] = []
+  const unused: string[] = []
+  let covered = 0
+  for (const p of stock) {
+    const g = Math.min(p.grams, need[p.food] ?? 0)
+    if (g >= 1) used.push({ food: p.food, grams: g, spoilsSoon: (FOOD_BY_ID[p.food]?.shelfDays ?? 99) <= 7 })
+    else unused.push(p.food)
+    covered += g
+  }
+  const total = Object.values(need).reduce((a, b) => a + b, 0)
+  return { used, unused, fromPantry: total ? covered / total : 0, toBuy: shoppingCost(state, plan) }
 }
 
 /**
@@ -391,7 +464,7 @@ export function generatePlan(state: AppState, seed = Date.now()): DayPlan[] {
  * cap, saturated fat over its share…), swap meals for whichever eligible option reduces the
  * violation most, ignoring taste and cost, until the plan is within limits.
  */
-function enforceLimits(state: AppState, plan: DayPlan[]): DayPlan[] {
+function enforceLimits(state: AppState, plan: DayPlan[], opts: PlanOptions): DayPlan[] {
   const p = state.profile
   const hard = (x: DayPlan[]) => planViolations(p, x).length
   for (let round = 0; round < 40 && hard(plan) > 0; round++) {
@@ -405,7 +478,7 @@ function enforceLimits(state: AppState, plan: DayPlan[]): DayPlan[] {
       for (const pos of positions) {
         const entry = getEntry(plan, pos)
         if (!entry || entry.locked) continue
-        for (const c of rankCandidates(state, plan, day, pos.slot)) {
+        for (const c of rankCandidates(state, plan, day, pos.slot, opts)) {
           for (const portion of [c.portion, Math.max(0.5, c.portion - 0.5)]) {
             const next = setEntry(plan, pos, { recipe: c.recipe.id, portion })
             const g = safetyGap(p, next)

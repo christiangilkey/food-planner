@@ -1,10 +1,10 @@
 import { CONDITION_BY_ID, CONDITIONS, type AvoidEntry, type Claim, type Condition, type Limits } from '../data/conditions'
 import { DIET_BY_ID, DIETS, dietAllowsFood, type Diet } from '../data/diets'
-import { FOODS } from '../data/foods'
+import { FOOD_BY_ID, FOODS } from '../data/foods'
 import { RECIPE_BY_ID } from '../data/recipes'
 import { ROTATION_RULES, type RotationRule } from '../data/rotation'
 import { dailyTarget } from '../data/nutrients'
-import type { ConditionId, DayPlan, NutrientKey, Profile, Recipe } from '../types'
+import type { ConditionId, DayPlan, Food, NutrientKey, Profile, Recipe } from '../types'
 import { addInto, crashRisk, EMPTY, servingTotals } from './nutrition'
 import { dayEntries } from './plan-utils'
 
@@ -35,7 +35,51 @@ export function avoidedFoods(p: Profile): Map<string, AvoidReason[]> {
       }
     }
   }
+  // Scanned products: look for the same foods (and any extra trigger words) in the name and ingredients.
+  for (const f of FOODS) {
+    if (!f.scanText) continue
+    const hits = productTriggers(f, p, out)
+    if (hits.length) out.set(f.id, hits)
+  }
   return out
+}
+
+/** Whole-word, plural-tolerant match that skips plant butters and milks ("peanut butter" isn't butter). */
+const hasWord = (text: string, word: string) =>
+  new RegExp(`(?<!(?:peanut|almond|cashew|cocoa|shea|apple|nut|seed|sunflower|coconut|oat|soy|rice) )\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:e?s)?\\b`, 'i').test(text)
+
+/** How a food on an avoid list shows up in ingredient lists, when its name alone wouldn't. */
+const SEARCH_TERMS: Record<string, string[]> = {
+  canned_tomatoes: ['tomato'], tomato: ['tomato'], marinara: ['marinara', 'tomato sauce'], clementine: ['clementine', 'mandarin'],
+  orange: ['orange'], lemon: ['lemon'], lime: ['lime'], dark_chocolate: ['chocolate', 'cocoa'], coffee: ['coffee', 'espresso'],
+  green_tea: ['green tea', 'matcha'], soy_sauce: ['soy sauce', 'tamari', 'shoyu'], jerky: ['jerky'], deli_turkey: ['deli turkey', 'turkey breast'],
+}
+/** "Cheddar cheese (aged)" → "cheddar cheese": the part of a food's name worth searching for. */
+const searchTerms = (id: string) => SEARCH_TERMS[id] ?? [FOOD_BY_ID[id].name.replace(/\(.*?\)/g, '').trim().toLowerCase()]
+
+/**
+ * Why a scanned product is unsafe for this person: an avoided food or trigger word in its name
+ * or ingredients. With an MAOI and no ingredient list, it can't be checked, so it's kept out.
+ */
+export function productTriggers(f: Food, p: Profile, avoided: Map<string, AvoidReason[]>): AvoidReason[] {
+  const text = f.scanText ?? ''
+  const hits: AvoidReason[] = []
+  for (const r of activeAvoidEntries(p)) {
+    const foods = r.entry.foods.filter((id) => avoided.get(id)?.some((x) => x.entry === r.entry) && FOOD_BY_ID[id])
+    const words = [...foods.flatMap(searchTerms), ...(r.entry.keywords ?? [])]
+    if (words.some((w) => hasWord(text, w))) hits.push(r)
+    else if (r.entry.onlyIf === 'maoi' && !f.ingredientsKnown) hits.push(r)
+  }
+  return hits
+}
+
+/** Avoid entries that apply to this person (condition on, or medication set), keyword-only entries included. */
+export function activeAvoidEntries(p: Profile): AvoidReason[] {
+  return CONDITIONS.flatMap((condition) =>
+    condition.avoid
+      .filter((entry) => (entry.onlyIf ? medFlag(p, entry.onlyIf) : p.conditions.includes(condition.id)))
+      .map((entry) => ({ condition, entry })),
+  )
 }
 
 export function activeDiets(p: Profile): Diet[] {

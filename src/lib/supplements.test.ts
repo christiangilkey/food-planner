@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { CONDITIONS } from '../data/conditions'
 import { PEPTIDES } from '../data/peptides'
 import { SOURCES } from '../data/sources'
@@ -9,6 +9,9 @@ import { generatePlan } from './planner'
 import { defaultState } from './store'
 import { activeTriggers, assessSupplement, recommendedSupplements, relevantPeptides } from './supplements'
 import type { AppState, MedFlags } from '../types'
+
+// Building plans takes a few seconds per case; under a full parallel run that can pass the 5 s default.
+vi.setConfig({ testTimeout: 60_000 })
 
 const ids = new Set(Object.keys(SOURCES))
 const sourced = (list: string[], where: string) => {

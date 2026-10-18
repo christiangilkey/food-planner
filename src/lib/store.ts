@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppState } from '../types'
 import { emptyPlan } from './plan-utils'
+import { syncProducts } from './products'
 
 const KEY = 'food-planner:v1'
 
@@ -37,6 +38,7 @@ export function defaultState(): AppState {
     },
     equipment: ['stove', 'skillet', 'pot', 'oven', 'sheetpan', 'microwave'],
     pantry: [],
+    products: [],
     stores: [],
     priceOverrides: {},
     preferredStore: null,
@@ -57,7 +59,9 @@ function load(): AppState {
     const profile = { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile?.meds } }
     // Saves from before health conditions existed: carry the old ADHD switch over.
     if (!parsed.profile?.conditions) profile.conditions = parsed.profile?.adhd === false ? [] : ['adhd']
-    return { ...base, ...parsed, profile }
+    const state = { ...base, ...parsed, profile }
+    syncProducts(state.products)
+    return state
   } catch {
     return defaultState()
   }
@@ -67,6 +71,8 @@ export type Update = (fn: (s: AppState) => AppState) => void
 
 export function useAppState(): [AppState, Update] {
   const [state, setState] = useState<AppState>(load)
+  // Scanned products live in the shared food tables; bring them up to date before anything renders.
+  syncProducts(state.products)
   useEffect(() => {
     try {
       localStorage.setItem(KEY, JSON.stringify(state))
@@ -86,5 +92,7 @@ export function importState(json: string): AppState {
   const parsed = JSON.parse(json) as Partial<AppState>
   const base = defaultState()
   if (!parsed.profile || !Array.isArray(parsed.plan)) throw new Error('That file is not a Food Planner backup.')
-  return { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile.meds } } }
+  const state = { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile.meds } } }
+  syncProducts(state.products)
+  return state
 }

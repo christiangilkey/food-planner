@@ -18,6 +18,11 @@ export interface AvoidEntry {
   optIn?: boolean
   /** Only applies when this profile flag is on. */
   onlyIf?: 'maoi' | 'grapefruitMeds'
+  /**
+   * Words to look for in a scanned product's name and ingredient list, on top of these foods'
+   * own names. Covers things the app has no food entry for (seaweed snacks, kelp).
+   */
+  keywords?: string[]
 }
 
 /** Hard limits the planner must respect when the condition is on. */
@@ -115,7 +120,8 @@ export const CONDITIONS: Condition[] = [
     limits: {}, limitReasons: {},
     avoid: [
       {
-        foods: ['cheddar', 'parmesan', 'feta', 'kimchi', 'soy_sauce', 'jerky', 'kombucha'], onlyIf: 'maoi',
+        foods: ['cheddar', 'parmesan', 'feta', 'kimchi', 'sauerkraut', 'soy_sauce', 'jerky', 'kombucha'], onlyIf: 'maoi',
+        keywords: ['salami', 'pepperoni', 'prosciutto', 'soppressata', 'miso', 'blue cheese', 'gorgonzola', 'stilton', 'aged cheese'],
         reason: { text: 'MAOI antidepressants block the breakdown of tyramine, which is high in aged cheese, fermented soy and cabbage, and cured meat. Too much can cause a dangerous spike in blood pressure. As a precaution the app also removes kombucha, a fermented drink whose tyramine content is not well studied.', evidence: 'strong', sources: ['gillman', 'flockhart'] },
       },
     ],
@@ -318,7 +324,12 @@ export const CONDITIONS: Condition[] = [
     id: 'hashimotos', label: 'Hashimoto’s (thyroid)', icon: 'gauge', domains: ['energy', 'mood'],
     blurb: 'Selenium-rich foods, no high-iodine seaweed or kelp, and breakfast timed around levothyroxine.',
     limits: {}, limitReasons: {},
-    avoid: [],
+    avoid: [
+      {
+        foods: [], keywords: ['seaweed', 'kelp', 'dulse', 'nori', 'wakame', 'kombu', 'hijiki', 'arame', 'bladderwrack', 'potassium iodide'],
+        reason: { text: 'Seaweed is the richest food source of iodine: dried seaweeds range from about 16 to 3,000 µg per gram, so one serving can pass the adult upper limit of 1,100 µg a day. People with autoimmune thyroid disease can react to iodine amounts that are safe for others. Scanned products with seaweed or kelp are kept out of your plan.', evidence: 'strong', sources: ['niddk_hashimoto', 'ods_iodine'] },
+      },
+    ],
     rules: [
       rule('hashi_fish', 'Fish & seafood (selenium)', ['seafood'], { min: 3 }, 'emerging', ['huwiler', 'ods_selenium'],
         'Selenium supplements lowered TSH and thyroid antibodies in a meta-analysis of trials in Hashimoto’s. Seafood is one of the richest food sources of selenium.', ['sardines', 'tuna', 'shrimp', 'salmon'],
@@ -329,12 +340,14 @@ export const CONDITIONS: Condition[] = [
       { text: 'Celiac disease is several times more common in autoimmune thyroid disease (about 1 in 60). Ask your doctor about a celiac blood test before changing what you eat; a gluten-free diet is only proven to help if you have celiac disease.', evidence: 'moderate', sources: ['roy_celiac'] },
       { text: 'A gluten-free diet lowered thyroid antibodies in one small pilot study of women without celiac disease. This is too little evidence to recommend it to everyone.', evidence: 'limited', sources: ['krysiak'] },
       { text: 'The autoimmune protocol (AIP) diet improved quality of life and symptoms in a small, uncontrolled study of 16 women with Hashimoto’s, but did not change thyroid hormone levels. You can choose it under Diet.', evidence: 'limited', sources: ['abbott_aip'] },
+      { text: 'Broccoli, kale, cabbage and other cruciferous vegetables stay in your plan. Their goitrogens matter mainly when iodine intake is low; for people who get enough iodine and eat a varied diet, normal amounts are not a concern.', evidence: 'strong', sources: ['ods_iodine'] },
     ],
     guidance: [
       { text: 'Take levothyroxine with water 30 to 60 minutes before breakfast. Espresso coffee, grapefruit juice, soy, and supplements with iron or calcium can reduce how much you absorb.', evidence: 'strong', sources: ['niddk_hashimoto', 'jonklaas'] },
       { text: 'Coffee within an hour of levothyroxine reduced its absorption in a study. Wait at least 30 to 60 minutes before your morning coffee.', evidence: 'moderate', sources: ['benvenga', 'niddk_hashimoto'] },
       { text: 'Large amounts of iodine (kelp, dulse and other seaweed, iodine supplements) can cause or worsen hypothyroidism in Hashimoto’s. Normal amounts from iodized salt, dairy, eggs and fish are fine.', evidence: 'strong', sources: ['niddk_hashimoto'] },
       { text: 'Tiredness that won’t go away can mean your thyroid dose needs adjusting. Ask your doctor about checking your TSH.', evidence: 'strong', sources: ['niddk_hashimoto', 'jonklaas'] },
+      { text: 'High-dose biotin (in many hair, skin and nail supplements) can make thyroid blood tests read falsely high or low; even a single 10 mg dose has interfered with tests done within 24 hours. Tell your doctor if you take it, and ask whether to pause it before blood work.', evidence: 'strong', sources: ['ods_biotin'] },
     ],
     suppressTips: [],
   },

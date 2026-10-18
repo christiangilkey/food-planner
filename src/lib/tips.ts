@@ -118,6 +118,14 @@ export function weeklyTips(state: AppState, nutrients = analyzeWeek(state).repor
       because: `Your plan gives about ${Math.round(vitD.pct * 100)}% of your vitamin D target.`,
     })
   }
+  if (hasCondition(p, 'hashimotos')) {
+    const se = nutrients.find((r) => r.info.key === 'selenium')
+    tips.push({
+      id: 'hashi_selenium', category: 'supplements', evidence: 'moderate', title: 'Selenium: food first, one Brazil nut at most', sources: ['huwiler', 'ods_selenium'],
+      text: 'Selenium lowered thyroid antibodies in Hashimoto’s trials. Seafood, eggs and sunflower seeds supply it. One Brazil nut has about 95 µg, so a handful a day, or nuts plus a supplement, can pass the 400 µg upper limit.',
+      because: se ? `You have Hashimoto’s; your plan gives about ${Math.round(se.pct * 100)}% of your selenium target.` : 'You have Hashimoto’s.',
+    })
+  }
   const fish = rule('fatty_fish')
   const omega = low(nutrients, 'omega3')
   if ((fish && fish.status === 'short') || omega) {

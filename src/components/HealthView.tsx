@@ -5,7 +5,7 @@ import { DOMAINS, SODIUM_SOURCES } from '../data/nutrients'
 import { PLANT_SOURCES, PLANT_TARGET, PROTEIN_VARIETY_TARGET } from '../data/rotation'
 import { SOURCES, type SourceKind } from '../data/sources'
 import { analyzeWeek, type NutrientReport, type WeekAnalysis } from '../lib/analysis'
-import { activeConditions, activeDiets, avoidedFoods, limitReasons, mergedLimits, netCarbLimits, planViolations } from '../lib/conditions'
+import { activeAvoidEntries, activeConditions, activeDiets, avoidedFoods, limitReasons, mergedLimits, netCarbLimits, planViolations } from '../lib/conditions'
 import { DietCard } from './DietFields'
 import { Hormones } from './HormonesView'
 import { DAYS } from '../lib/plan-utils'
@@ -274,6 +274,7 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
       {conditions.map((c) => {
         const ruleStatus = c.rules.map((r) => rules.find((x) => x.rule.id === r.id)).filter((x): x is RuleStatus => !!x)
         const removed = c.avoid.flatMap((entry) => entry.foods.filter((f) => avoided.get(f)?.some((x) => x.condition.id === c.id && x.entry === entry)).map((f) => ({ f, entry })))
+        const scanned = activeAvoidEntries(p).filter((x) => x.condition.id === c.id && x.entry.keywords?.length && !x.entry.foods.length)
         return (
           <section key={c.id} className="card">
             <h2 className="with-icon"><Icon name={c.icon} /> {c.label}</h2>
@@ -292,6 +293,18 @@ function Conditions({ state, a, rules }: { state: AppState; a: WeekAnalysis; rul
                 {[...new Set(removed.map((x) => x.entry))].map((entry, i) => (
                   <div key={i}>
                     <p className="small"><strong>{removed.filter((x) => x.entry === entry).map((x) => FOOD_BY_ID[x.f]?.name).join(', ')}</strong></p>
+                    <ClaimLine c={entry.reason} />
+                  </div>
+                ))}
+              </>
+            )}
+
+            {scanned.length > 0 && (
+              <>
+                <h3>Kept out of scanned products</h3>
+                {scanned.map(({ entry }, i) => (
+                  <div key={i}>
+                    <p className="small"><strong>Anything listing {entry.keywords!.slice(0, -1).join(', ')} or {entry.keywords!.at(-1)}</strong></p>
                     <ClaimLine c={entry.reason} />
                   </div>
                 ))}

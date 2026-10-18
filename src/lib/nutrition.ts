@@ -37,6 +37,11 @@ export function itemsTotals(items: { food: string; grams: number }[], scale = 1)
 /** Nutrition for one plan entry: one serving × portion. */
 const totalsCache = new Map<string, Readonly<Totals>>()
 
+/** Forget cached meal nutrition, after scanned products change what a food contains. */
+export function clearTotalsCache() {
+  totalsCache.clear()
+}
+
 /** Nutrition for one plan entry: one serving × portion. Cached; treat the result as read-only. */
 export function servingTotals(r: Recipe, portion = 1): Readonly<Totals> {
   const key = `${r.id}|${portion}`
