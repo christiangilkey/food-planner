@@ -1,7 +1,7 @@
 import type { Claim } from '../data/conditions'
 import { RECIPE_BY_ID } from '../data/recipes'
-import { ACCESS, CONDITION_TRAINING, EXERCISE_BY_ID, EXERCISES, FUEL, MUSCLE_LABEL, MUSCLES, type Exercise, type Muscle, type TrainingGoal } from '../data/training'
-import type { Activity, AppState, FitnessSettings, Profile } from '../types'
+import { ACCESS, CONDITION_TRAINING, EXERCISE_BY_ID, EXERCISES, FUEL, MUSCLE_LABEL, MUSCLES, VTAPER, type Exercise, type Muscle, type TrainingGoal } from '../data/training'
+import type { Activity, AppState, BodyCheckIn, FitnessSettings, Profile } from '../types'
 import { hasCondition } from './conditions'
 import { computeTargets, lbToKg } from './energy'
 import { servingTotals } from './nutrition'
@@ -116,7 +116,8 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
   const minRir = Math.max(0, ...rules.map((r) => r.minRir ?? 0))
   const noSupine = rules.some((r) => r.noSupine)
   const targets = weeklyTargets(f)
-  const usable = EXERCISES.filter((e) => e.gear.every((g) => gear.has(g)) && !(noSupine && e.supine) && e.id !== 'wall_sit')
+  const usable = EXERCISES.filter((e) => e.gear.every((g) => gear.has(g)) && !(noSupine && e.supine) && e.id !== 'wall_sit' && e.id !== 'nordic')
+  const prefer = f.preset === 'vtaper' ? VTAPER.prefer : {}
 
   const hits = {} as Record<Muscle, number>
   for (const { id } of MUSCLES) hits[id] = split.kinds.filter((k) => DAY_MUSCLES[k].includes(id)).length
@@ -131,8 +132,10 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       for (const q of e.primary) credit[q] = (credit[q] ?? 0) + sets
       for (const q of e.secondary) credit[q] = (credit[q] ?? 0) + sets / 2
     }
-    // Priorities first, so they get the session's freshest effort.
-    const order = [...DAY_MUSCLES[kind]].sort((a, b) => Number(f.priorities.includes(b)) - Number(f.priorities.includes(a)))
+    // Priorities first, so they get the session's freshest effort; abs and calves always last,
+    // so a tired core or calves never comes before squats and deadlifts.
+    const rank = (m: Muscle) => (m === 'abs' || m === 'calves' ? 2 : f.priorities.includes(m) ? 0 : 1)
+    const order = [...DAY_MUSCLES[kind]].sort((a, b) => rank(a) - rank(b))
     for (const m of order) {
       const want = targets[m] / Math.max(1, hits[m])
       let remaining = want - (credit[m] ?? 0)
@@ -145,15 +148,19 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       const pool = usable.filter((e) => e.primary[0] === m && !list.some((x) => x.exercise.id === e.id))
       const compounds = pool.filter((e) => e.compound)
       const isolations = pool.filter((e) => !e.compound)
-      const first = (big ? compounds : isolations)[occurrence % Math.max(1, (big ? compounds : isolations).length)] ?? pool[occurrence % Math.max(1, pool.length)]
+      // A preset's favorite exercises come first, rotating across the week.
+      const liked = (prefer[m] ?? []).map((id) => pool.find((e) => e.id === id)).filter((e): e is Exercise => !!e)
+      const first = liked[occurrence % Math.max(1, liked.length)]
+        ?? (big ? compounds : isolations)[occurrence % Math.max(1, (big ? compounds : isolations).length)] ?? pool[occurrence % Math.max(1, pool.length)]
       if (!first) continue
       const s1 = Math.max(2, Math.min(4, Math.round(remaining > 4.5 ? remaining / 2 : remaining)))
       add(first, s1, m)
       remaining -= s1
       if (remaining >= 1.5) {
         // A different movement for the second pick: an isolation if there is one (Fonseca 2014).
+        const likedOther = liked.filter((e) => e.id !== first.id)
         const others = isolations.filter((e) => e.id !== first.id)
-        const rest = others.length ? others : compounds.filter((e) => e.id !== first.id)
+        const rest = likedOther.length ? likedOther : others.length ? others : compounds.filter((e) => e.id !== first.id)
         const second = rest[occurrence % Math.max(1, rest.length)]
         if (second) add(second, Math.max(2, Math.min(4, Math.round(remaining))), m)
       }
@@ -166,6 +173,12 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
     for (const s of sessions.slice(0, 3)) s.exercises.push({ exercise: EXERCISE_BY_ID.wall_sit, sets: 4, reps: '2 min hold', rir: '—', rest: '2 min', for: 'quads', note: `For blood pressure, about ${WALL_SIT_MIN} minutes on top of the session (or at home on another day): hold at an effort you could just keep up for 2 minutes. Breathe throughout.` })
   }
 
+  // Tendon add-on: Nordic hamstring curls once a week, on the first day that trains hamstrings.
+  if (f.addOns?.includes('tendon')) {
+    const day = sessions[split.kinds.findIndex((k) => DAY_MUSCLES[k].includes('hamstrings'))]
+    day?.exercises.push({ exercise: EXERCISE_BY_ID.nordic, sets: 2, reps: '4–6 slow', rir: '1–3', rest: '2 min', for: 'hamstrings', note: 'For injury-proofing: lower as slowly as you can. Expect sore hamstrings for the first two weeks.' })
+  }
+
   // Fit each session into the time available: trim non-priority sets first, then priority, never below 2.
   let trimmed = false
   for (const s of sessions) {
@@ -175,8 +188,10 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       const cut = [...s.exercises].filter((x) => x.sets > 2 && !x.exercise.isometric).sort((a, b) => Number(pri(a)) - Number(pri(b)) || b.sets - a.sets)[0]
       if (cut) { cut.sets--; trimmed = true; continue }
       // Everything at 2 sets: drop the last non-priority extra exercise for a muscle that has two.
-      const extras = s.exercises.filter((x, i) => !x.exercise.isometric && s.exercises.findIndex((y) => y.for === x.for) !== i)
-      const drop = extras.sort((a, b) => Number(pri(a)) - Number(pri(b)))[0] ?? [...s.exercises].reverse().find((x) => !pri(x) && !x.exercise.isometric)
+      // Add-ons (wall sits, Nordic curls) are kept: the user asked for them.
+      const keep = (x: PlannedExercise) => x.exercise.isometric || x.exercise.id === 'nordic'
+      const extras = s.exercises.filter((x, i) => !keep(x) && s.exercises.findIndex((y) => y.for === x.for) !== i)
+      const drop = extras.sort((a, b) => Number(pri(a)) - Number(pri(b)))[0] ?? [...s.exercises].reverse().find((x) => !pri(x) && !keep(x))
       if (!drop) break
       s.exercises.splice(s.exercises.indexOf(drop), 1)
       trimmed = true
@@ -323,6 +338,43 @@ export function fuelAdvice(state: AppState): FuelAdvice[] {
       goTo: 'sleep',
     })
   }
+  return out
+}
+
+// ── Body check-ins ─────────────────────────────────────────────
+
+export interface BodyTrend {
+  /** Average weight over the last 7 days and the 7 before, lb. */
+  thisWeek?: number
+  lastWeek?: number
+  waistToHeight?: number
+  whtrBand?: 'healthy' | 'increased' | 'high'
+  grip?: { latest: number; first: number }
+  hang?: { latest: number; first: number }
+}
+
+const dayDiff = (a: string, b: string) => Math.round((new Date(`${a}T12:00`).getTime() - new Date(`${b}T12:00`).getTime()) / 86_400_000)
+
+/** Weekly weight averages, waist-to-height band (NICE), and grip and hang progress. */
+export function bodyTrend(log: BodyCheckIn[], p: Profile, today = new Date()): BodyTrend {
+  const now = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const sorted = [...log].sort((a, b) => a.date.localeCompare(b.date))
+  const avg = (from: number, to: number) => {
+    const xs = sorted.filter((e) => e.weightLb !== undefined && dayDiff(now, e.date) >= from && dayDiff(now, e.date) < to).map((e) => e.weightLb!)
+    return xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : undefined
+  }
+  const out: BodyTrend = { thisWeek: avg(0, 7), lastWeek: avg(7, 14) }
+  const waist = [...sorted].reverse().find((e) => e.waistIn !== undefined)?.waistIn
+  if (waist && p.heightIn > 0) {
+    out.waistToHeight = waist / p.heightIn
+    out.whtrBand = out.waistToHeight < 0.5 ? 'healthy' : out.waistToHeight < 0.6 ? 'increased' : 'high'
+  }
+  const series = (k: 'gripKg' | 'hangSec') => {
+    const xs = sorted.filter((e) => e[k] !== undefined).map((e) => e[k]!)
+    return xs.length ? { first: xs[0], latest: xs[xs.length - 1] } : undefined
+  }
+  out.grip = series('gripKg')
+  out.hang = series('hangSec')
   return out
 }
 

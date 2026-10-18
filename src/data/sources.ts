@@ -350,6 +350,20 @@ export const SOURCES = {
   liftmor: s('LIFTMOR 2018', 'High-intensity resistance and impact training improves bone density in postmenopausal women with low bone mass', 'J Bone Miner Res', 2018, pm(28975661), 'trial'),
   heiwe: s('Heiwe 2011 (Cochrane)', 'Exercise training for adults with chronic kidney disease', 'Cochrane Database Syst Rev', 2011, pm(21975737), 'meta-analysis'),
   acog_exercise: s('ACOG 2020 exercise', 'Physical activity and exercise during pregnancy and the postpartum period (Committee Opinion 804)', 'Obstet Gynecol', 2020, pm(32217980), 'guideline'),
+
+  // ── Looks (training & sleep) ────────────────────────────
+  axelsson: s('Axelsson 2010', 'Beauty sleep: perceived health and attractiveness of sleep deprived people', 'BMJ', 2010, pm(21156746), 'trial'),
+  sundelin: s('Sundelin 2017', 'Negative effects of restricted sleep on facial appearance and social appeal', 'R Soc Open Sci', 2017, pm(28572989), 'trial'),
+  gollwitzer: s('Gollwitzer & Sheeran 2006', 'Implementation intentions and goal achievement: a meta-analysis of effects and processes', 'Adv Exp Soc Psychol', 2006, 'https://doi.org/10.1016/S0065-2601(06)38002-1', 'meta-analysis'),
+  van_dyk: s('van Dyk 2019', 'Including the Nordic hamstring exercise in injury prevention programmes halves hamstring injuries: meta-analysis', 'Br J Sports Med', 2019, pm(30808663), 'meta-analysis'),
+  shaw_gelatin: s('Shaw 2017', 'Vitamin C–enriched gelatin before intermittent activity augments collagen synthesis', 'Am J Clin Nutr', 2017, pm(27852613), 'trial'),
+  leong_grip: s('Leong 2015 (PURE)', 'Prognostic value of grip strength: Prospective Urban Rural Epidemiology study', 'Lancet', 2015, pm(25982160), 'cohort'),
+  sepehri: s('Sepehri 2024', 'Therapeutic exercises for forward head posture, rounded shoulders and hyperkyphosis: meta-analysis', 'BMC Musculoskelet Disord', 2024, pm(38302926), 'meta-analysis'),
+  nice_whtr: s('NICE NG246', 'Overweight and obesity management: waist-to-height ratio', 'National Institute for Health and Care Excellence', 2025, 'https://www.nice.org.uk/guidance/ng246/chapter/Identifying-and-assessing-overweight-obesity-and-central-adiposity', 'guideline'),
+  reed_soy: s('Reed 2021', 'Neither soy nor isoflavone intake affects male reproductive hormones: meta-analysis', 'Reprod Toxicol', 2021, pm(33383165), 'meta-analysis'),
+  pope_aas: s('Endocrine Society 2014 (Pope)', 'Adverse health consequences of performance-enhancing drugs: Endocrine Society scientific statement', 'Endocr Rev', 2014, pm(24423981), 'guideline'),
+  fda_bodybuilding: s('FDA: bodybuilding products', 'Caution: bodybuilding products can be risky', 'U.S. Food & Drug Administration', 2024, 'https://www.fda.gov/consumers/consumer-updates/caution-bodybuilding-products-can-be-risky', 'regulation'),
+  melville_daa: s('Melville 2015', 'Three and six grams supplementation of D-aspartic acid in resistance-trained men', 'J Int Soc Sports Nutr', 2015, pm(25844073), 'trial'),
 } satisfies Record<string, Source>
 
 export type SourceId = keyof typeof SOURCES

@@ -330,9 +330,26 @@ export interface AppState {
   exportTarget: ExportTarget
   onyx: OnyxSettings
   fitness: FitnessSettings
+  /** Weekly body check-ins (weight, waist, grip), newest last. */
+  bodyLog: BodyCheckIn[]
 }
 
 // ── Training ──────────────────────────────────────────────
+
+/** One check-in; any measurement can be left out. */
+export interface BodyCheckIn {
+  /** YYYY-MM-DD. */
+  date: string
+  weightLb?: number
+  waistIn?: number
+  /** Best grip-strength reading, kg (hand dynamometer). */
+  gripKg?: number
+  /** Longest dead hang, seconds. */
+  hangSec?: number
+}
+
+/** Extra blocks added to the training week. */
+export type TrainingAddOn = 'tendon' | 'posture'
 
 export interface FitnessSettings {
   /** The user has set up a training plan. */
@@ -348,6 +365,9 @@ export interface FitnessSettings {
   priorities: Muscle[]
   /** Let the training plan raise protein and set activity in the meal plan. */
   feedMealPlan: boolean
+  /** "V-taper": picks exercises for shoulders, lats, upper chest, biceps and abs. */
+  preset?: 'vtaper'
+  addOns?: TrainingAddOn[]
 }
 
 // ── Sleep and exports ─────────────────────────────────────

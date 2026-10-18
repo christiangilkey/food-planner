@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import type { Tab } from '../App'
-import { ACCESS, EXPERIENCE, MUSCLES, PRINCIPLES, TRAINING_GOALS, type Muscle } from '../data/training'
-import { buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Session } from '../lib/training'
+import { ACCESS, CHECKINS, EXPERIENCE, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
+import { hasCondition } from '../lib/conditions'
+import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Session } from '../lib/training'
 import { DAYS } from '../lib/plan-utils'
-import type { FitnessSettings, Profile } from '../types'
+import type { BodyCheckIn, FitnessSettings, Profile, TrainingAddOn } from '../types'
 import { Icon } from './Icon'
 import { Bar, Cite, EvidenceChip, Sourced, type ViewProps } from './ui'
 
@@ -64,6 +65,31 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) 
                 <button key={m.id} type="button" className={`toggle-chip ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => togglePriority(m.id)}>
                   {on && <Icon name="check" size={14} />} {m.label}
                 </button>
+              )
+            })}
+          </div>
+
+          <label className="toggle">
+            <input type="checkbox" checked={f.preset === 'vtaper'} onChange={(e) => setFit(e.target.checked ? { preset: 'vtaper', priorities: VTAPER.priorities } : { preset: undefined })} />
+            <span>
+              <strong>V-taper preset</strong>
+              <small>
+                Extra work for side delts, lats, upper chest, biceps and abs, with exercises chosen for them.
+                {hasCondition(p, 'looks') && ' Fits your Skin & looks goal.'}{' '}
+                <Sourced evidence={VTAPER.claim.evidence} ids={VTAPER.claim.sources} convention={VTAPER.claim.convention} />
+              </small>
+            </span>
+          </label>
+
+          <h3>Add-ons</h3>
+          <div className="check-grid">
+            {([['tendon', 'Injury-proofing', TENDON.dose], ['posture', 'Posture routine', '10 minutes, 2–3 times a week, any time']] as [TrainingAddOn, string, string][]).map(([id, label, detail]) => {
+              const on = !!f.addOns?.includes(id)
+              return (
+                <label key={id} className={`check-card ${on ? 'on' : ''}`}>
+                  <input type="checkbox" checked={on} onChange={() => setFit({ addOns: on ? (f.addOns ?? []).filter((x) => x !== id) : [...(f.addOns ?? []), id] })} />
+                  <span><strong>{label}</strong><small className="muted"> {detail}</small></span>
+                </label>
               )
             })}
           </div>
@@ -132,6 +158,31 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) 
 
           {program.sessions.map((s, i) => <SessionCard key={i} s={s} />)}
 
+          {f.addOns?.includes('posture') && (
+            <section className="card">
+              <h2>Posture routine</h2>
+              <p className="muted small">About 10 minutes, 2–3 times a week. <Sourced evidence={POSTURE.claim.evidence} ids={POSTURE.claim.sources} convention={POSTURE.convention} /></p>
+              <p className="small">{POSTURE.claim.text}</p>
+              <ol className="lift-list">
+                {POSTURE.drills.map((d) => (
+                  <li key={d.name}>
+                    <div className="row-between"><strong>{d.name}</strong><span className="lift-dose">{d.dose}</span></div>
+                    <span className="small lift-cue">{d.cue}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+          {f.addOns?.includes('tendon') && (
+            <section className="card">
+              <h2>Injury-proofing</h2>
+              <p className="small">{TENDON.dose}</p>
+              {TENDON.claims.map((c) => <div key={c.text} className="claim"><span className="small">{c.text}</span> <Sourced evidence={c.evidence} ids={c.sources} /></div>)}
+            </section>
+          )}
+
+          <CheckIns state={state} update={update} />
+
           <section className="card">
             <h2>Weekly sets per muscle</h2>
             <p className="muted small">Hard sets a week, counting helper muscles in compound lifts as half a set. Priorities aim higher. <Cite ids={['schoenfeld_volume', 'bickel']} convention="The half-set credit for helper muscles and the targets per experience level are this app’s choices." /></p>
@@ -162,6 +213,24 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) 
           <section className="card">
             <h2 className="with-icon"><Icon name="meal" /> What this changes in your meals</h2>
             {advice.map((a) => <AdviceRow key={a.id} a={a} onApply={(patch) => setProfile(patch)} goTo={goTo} />)}
+          </section>
+
+          {(p.sex === 'male' || hasCondition(p, 'looks')) && (
+            <section className="card">
+              <h2>Testosterone: what actually moves it</h2>
+              {HORMONE_CUES.map((c) => <div key={c.text} className="claim"><span className="small">{c.text}</span> <Sourced evidence={c.evidence} ids={c.sources} /></div>)}
+            </section>
+          )}
+
+          <section className="card">
+            <h2 className="with-icon"><Icon name="shield" /> Not for you</h2>
+            <p className="muted small">Sold for muscle or looks, but harmful or backfiring. The app never plans these or gives doses.</p>
+            {NOT_FOR_YOU.map((x) => (
+              <div key={x.name} className="claim">
+                <p className="small"><strong>{x.name}</strong></p>
+                <p className="small">{x.claim.text} <Sourced evidence={x.claim.evidence} ids={x.claim.sources} /></p>
+              </div>
+            ))}
           </section>
 
           <section className="card">
@@ -229,5 +298,79 @@ function AdviceRow({ a, onApply, goTo }: { a: FuelAdvice; onApply: (patch: Parti
         {a.goTo && <button className="ghost small" onClick={() => goTo(a.goTo!)}>{a.goTo === 'plan' ? 'Open the plan' : 'Open sleep'}</button>}
       </div>
     </div>
+  )
+}
+
+const BAND_TEXT = { healthy: 'Healthy range', increased: 'Increased risk', high: 'High risk' } as const
+
+/** Weekly check-ins: weight (as a weekly average), waist, grip strength and dead-hang time. */
+function CheckIns({ state, update }: ViewProps) {
+  const today = new Date()
+  const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  const [draft, setDraft] = useState<Record<'weightLb' | 'waistIn' | 'gripKg' | 'hangSec', string>>({ weightLb: '', waistIn: '', gripKg: '', hangSec: '' })
+  const [saved, setSaved] = useState('')
+  const t = bodyTrend(state.bodyLog, state.profile)
+  const save = () => {
+    const entry: BodyCheckIn = { date: iso }
+    for (const k of Object.keys(draft) as (keyof typeof draft)[]) {
+      const n = Number(draft[k])
+      if (draft[k].trim() !== '' && Number.isFinite(n) && n > 0) entry[k] = n
+    }
+    if (Object.keys(entry).length === 1) return
+    update((s) => {
+      const old = s.bodyLog.find((e) => e.date === iso)
+      const merged = { ...old, ...entry }
+      return { ...s, bodyLog: [...s.bodyLog.filter((e) => e.date !== iso), merged].sort((a, b) => a.date.localeCompare(b.date)).slice(-400) }
+    })
+    setDraft({ weightLb: '', waistIn: '', gripKg: '', hangSec: '' })
+    setSaved('Saved today’s check-in.')
+  }
+  const field = (k: keyof typeof draft, label: string, suffix: string) => (
+    <label className="field">
+      <span>{label}</span>
+      <span className="input-wrap">
+        <input type="number" inputMode="decimal" min={0} value={draft[k]} onChange={(e) => setDraft((d) => ({ ...d, [k]: e.target.value }))} />
+        <span className="suffix">{suffix}</span>
+      </span>
+    </label>
+  )
+  const change = t.thisWeek !== undefined && t.lastWeek !== undefined ? t.thisWeek - t.lastWeek : undefined
+  return (
+    <section className="card">
+      <h2 className="with-icon"><Icon name="scale" /> Check-ins</h2>
+      <p className="muted small">Fill in whatever you measured today; anything left blank is skipped.</p>
+      <div className="add-row">
+        {field('weightLb', 'Weight', 'lb')}
+        {field('waistIn', 'Waist (at the navel)', 'in')}
+        {field('gripKg', 'Grip strength', 'kg')}
+        {field('hangSec', 'Dead hang', 's')}
+      </div>
+      <div className="add-row">
+        <button className="primary" onClick={save}>Save check-in</button>
+        {saved && <span className="good-text small" role="status">{saved}</span>}
+      </div>
+      <ul className="explain small">
+        {t.thisWeek !== undefined && (
+          <li>
+            Weight: {t.thisWeek.toFixed(1)} lb this week{change !== undefined ? ` (${change >= 0 ? '+' : ''}${change.toFixed(1)} vs last week)` : ''}.{' '}
+            <Cite ids={CHECKINS.trend.sources} convention={CHECKINS.trend.convention} />
+          </li>
+        )}
+        {t.waistToHeight !== undefined && (
+          <li className={t.whtrBand === 'healthy' ? 'good-text' : 'warn-text'}>
+            Waist-to-height {t.waistToHeight.toFixed(2)}: {BAND_TEXT[t.whtrBand!].toLowerCase()}. <Cite ids={CHECKINS.waist.sources} />
+          </li>
+        )}
+        {t.grip && <li>Grip: {t.grip.latest} kg{t.grip.latest !== t.grip.first ? ` (started at ${t.grip.first})` : ''}. <Cite ids={CHECKINS.grip.sources} /></li>}
+        {t.hang && <li>Dead hang: {t.hang.latest} s{t.hang.latest !== t.hang.first ? ` (started at ${t.hang.first} s)` : ''}.</li>}
+      </ul>
+      <details className="methods">
+        <summary>Why these four</summary>
+        {(['trend', 'waist', 'grip'] as const).map((k) => (
+          <div key={k} className="claim"><span className="small">{CHECKINS[k].text}</span> <Sourced evidence={CHECKINS[k].evidence} ids={CHECKINS[k].sources} convention={CHECKINS[k].convention} /></div>
+        ))}
+        <p className="muted small">Dead-hang time is tracked as a simple grip and shoulder benchmark; there’s no research target for it.</p>
+      </details>
+    </section>
   )
 }

@@ -10,9 +10,9 @@ import { Cite, EvidenceChip, type ViewProps } from './ui'
 const isoDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
 const AREA_TITLE: Record<ImpactArea, string> = {
-  body: 'Your body', brain: 'Your brain', food: 'Your eating and your goal', condition: 'With your conditions', habit: 'What helps',
+  body: 'Your body', brain: 'Your brain', food: 'Your eating and your goal', looks: 'How you look', condition: 'With your conditions', habit: 'What helps',
 }
-const AREA_ORDER: ImpactArea[] = ['food', 'brain', 'body', 'condition', 'habit']
+const AREA_ORDER: ImpactArea[] = ['food', 'looks', 'brain', 'body', 'condition', 'habit']
 
 export function SleepView({ state, update, goTo }: ViewProps & { goTo: (t: Tab) => void }) {
   const p = state.profile

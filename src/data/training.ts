@@ -109,6 +109,12 @@ export const EXERCISES: Exercise[] = [
   ex('plank', 'Plank', ['bodyweight'], ['abs'], [], false, 'Forearms down, body in a straight line, squeeze the glutes.', { isometric: true }),
   ex('dead_bug', 'Dead bug', ['bodyweight'], ['abs'], [], false, 'Lower back pressed down while opposite arm and leg reach out.', { supine: true }),
   ex('hanging_raise', 'Hanging knee raise', ['pullup_bar'], ['abs'], [], false, 'Curl the hips up, not just the knees.'),
+  // Looks-focused and tendon work
+  ex('preacher', 'Preacher curl', ['dumbbell', 'bench'], ['biceps'], [], false, 'Upper arm flat on an inclined bench back; lower all the way without bouncing.'),
+  ex('straight_arm', 'Straight-arm pulldown', ['cable'], ['back'], [], false, 'Arms nearly straight, sweep the bar to the thighs; feel it in the lats, not the arms.'),
+  ex('low_high_fly', 'Low-to-high cable fly', ['cable'], ['chest'], ['shoulders'], false, 'Cables low, sweep the hands up to chin height: aims at the upper chest.'),
+  ex('leg_raise', 'Lying leg raise', ['bodyweight'], ['abs'], [], false, 'Lower back pressed down; bend the knees to make it easier, lower slowly to make it harder.', { supine: true }),
+  ex('nordic', 'Nordic hamstring curl', ['bodyweight'], ['hamstrings'], [], false, 'Kneel with the ankles anchored, lower the body forward as slowly as you can, catch yourself with the hands, push back up.'),
   // Isometrics for blood pressure
   ex('wall_sit', 'Wall sit', ['bodyweight'], ['quads'], ['glutes'], false, 'Back flat on a wall, knees bent to a level you can hold for 2 minutes. Breathe throughout.', { isometric: true }),
 ]
@@ -267,3 +273,82 @@ export const FUEL: Record<'protein' | 'deficit' | 'perMeal' | 'timing' | 'creati
 
 export const evidenceOrder: Evidence[] = ['strong', 'moderate', 'emerging', 'limited']
 export const TRAINING_SOURCES: SourceId[] = ['schoenfeld_volume', 'schoenfeld_freq', 'acsm_progression', 'who_activity']
+
+// ── Looks, longevity and posture ───────────────────────────
+
+/** The "V-taper" look: broad shoulders and lats, upper chest, arms and abs. */
+export const VTAPER: {
+  priorities: Muscle[]
+  /** Exercises picked first for each muscle when the preset is on. */
+  prefer: Partial<Record<Muscle, string[]>>
+  claim: Claim & { convention: string }
+} = {
+  priorities: ['shoulders', 'back', 'chest', 'biceps', 'abs'],
+  prefer: {
+    shoulders: ['cable_lateral', 'lateral'],
+    back: ['pulldown', 'pullup', 'straight_arm'],
+    chest: ['incline_db', 'low_high_fly'],
+    biceps: ['preacher', 'incline_curl'],
+    abs: ['cable_crunch', 'hanging_raise', 'leg_raise'],
+  },
+  claim: {
+    text: 'More weekly sets grow a muscle more, so the preset gives extra sets to the side delts, lats, upper chest, biceps and abs, each trained twice a week.',
+    evidence: 'moderate', sources: ['schoenfeld_volume', 'schoenfeld_freq'],
+    convention: 'Which muscles make a “V-taper” look is a matter of taste, not science; the choice of muscles and exercises is this app’s.',
+  },
+}
+
+export const TENDON: { claims: Claim[]; dose: string } = {
+  dose: 'Nordic hamstring curls, 2 sets of 4–6 slow reps, once a week on a leg day.',
+  claims: [
+    { text: 'Programs that included Nordic hamstring curls cut hamstring injuries by about half in a meta-analysis of 15 studies.', evidence: 'strong', sources: ['van_dyk'] },
+    { text: 'Taking 15 g of gelatin with vitamin C an hour before exercise raised a marker of collagen synthesis in a small trial. Whether that makes tendons stronger isn’t known yet.', evidence: 'emerging', sources: ['shaw_gelatin'] },
+  ],
+}
+
+export const POSTURE: { claim: Claim; drills: { name: string; dose: string; cue: string }[]; convention: string } = {
+  claim: { text: 'In people with forward head, rounded shoulders or a rounded upper back, programs of strengthening and stretching improved those angles in a meta-analysis of small trials.', evidence: 'emerging', sources: ['sepehri'] },
+  convention: 'The drill list and the 10-minute dose are this app’s choice; the trials combined strengthening and stretching like this.',
+  drills: [
+    { name: 'Chin tucks', dose: '2 × 10, 3-second hold', cue: 'Glide the head straight back, making a double chin, without tilting.' },
+    { name: 'Wall angels', dose: '2 × 10', cue: 'Back, head and arms against a wall; slide the arms up and down without arching.' },
+    { name: 'Y-W-T raises', dose: '2 × 8 of each', cue: 'Face down on an incline or bent over, lift the arms into Y, W and T shapes with the shoulder blades squeezed.' },
+    { name: 'Doorway chest stretch', dose: '2 × 30 s each side', cue: 'Forearm on the door frame, step through until the front of the shoulder stretches.' },
+    { name: 'Upper-back extension over a foam roller', dose: '1 × 10', cue: 'Roller across the upper back, hands behind the head, extend over it.' },
+    { name: 'Dead hang', dose: '2–3 holds', cue: 'Hang from a bar with relaxed shoulders, then pull the shoulders down slightly; build time week by week.' },
+  ],
+}
+
+/** What strength and body measurements say about health. */
+export const CHECKINS: Record<'grip' | 'waist' | 'trend', Claim & { convention?: string }> = {
+  grip: { text: 'In about 140,000 adults across 17 countries, every 5 kg lower grip strength was linked to 16% higher risk of death, a stronger predictor than blood pressure.', evidence: 'moderate', sources: ['leong_grip'] },
+  waist: { text: 'NICE advises keeping your waist to less than half your height: a waist-to-height ratio under 0.5. From 0.5 to 0.59 means increased health risk, and 0.6 or more means high risk.', evidence: 'strong', sources: ['nice_whtr'] },
+  trend: {
+    text: 'Day-to-day weight swings with water and food in the gut, so compare weekly averages. During a modest surplus, a slow rise alongside better gym numbers suggests muscle rather than fat.',
+    evidence: 'moderate', sources: ['iraki'],
+    convention: 'Comparing 7-day averages is this app’s method.',
+  },
+}
+
+/** Testosterone: what moves it, and a myth. Shown on the Train tab for men or a looks goal. */
+export const HORMONE_CUES: Claim[] = [
+  { text: 'One week of 5-hour nights lowered daytime testosterone by 10–15% in young men. Sleep is the cheapest lever.', evidence: 'moderate', sources: ['leproult_t'] },
+  { text: 'In men with obesity, losing weight raised testosterone, more so with larger losses.', evidence: 'moderate', sources: ['corona'] },
+  { text: 'Soy foods and isoflavones did not change testosterone or other male reproductive hormones in a meta-analysis of 41 clinical studies. Tofu and soy milk stay in the plan.', evidence: 'strong', sources: ['reed_soy'] },
+]
+
+/** Promoted for muscle or looks, but harmful or backfiring. Never planned; doses never given. */
+export const NOT_FOR_YOU: { name: string; claim: Claim }[] = [
+  {
+    name: 'Anabolic steroids and “steroid-like” supplements (including SARMs)',
+    claim: { text: 'The FDA warns that bodybuilding products sold as supplements may illegally contain steroids or steroid-like substances. These have been linked to liver injury, severe acne, hair loss, mood changes, testicular shrinkage and blood clots. The Endocrine Society lists heart, hormone and psychiatric harms from performance-enhancing drugs.', evidence: 'strong', sources: ['fda_bodybuilding', 'pope_aas'] },
+  },
+  {
+    name: 'D-aspartic acid',
+    claim: { text: 'Sold to raise testosterone, but 6 g a day lowered testosterone in resistance-trained men in a randomized trial.', evidence: 'moderate', sources: ['melville_daa'] },
+  },
+  {
+    name: 'Vitamin C megadoses',
+    claim: { text: 'Men taking vitamin C supplements had about twice the rate of kidney stones in a large cohort. The adult upper limit is 2,000 mg a day; food gives plenty.', evidence: 'moderate', sources: ['thomas_vitc', 'ods_vitC'] },
+  },
+]

@@ -52,6 +52,7 @@ export function defaultState(): AppState {
     exportTarget: 'google',
     onyx: { url: 'http://127.0.0.1:4747', token: '' },
     fitness: { enabled: false, goal: 'hypertrophy', days: 3, sessionMin: 60, experience: 'new', access: 'gym', priorities: [], feedMealPlan: true },
+    bodyLog: [],
   }
 }
 

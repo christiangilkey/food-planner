@@ -115,7 +115,7 @@ export function analyzeSleep(log: SleepEntry[], p: Profile, today = new Date()):
   }
 }
 
-export type ImpactArea = 'body' | 'brain' | 'food' | 'condition' | 'habit'
+export type ImpactArea = 'body' | 'brain' | 'food' | 'looks' | 'condition' | 'habit'
 
 export interface SleepImpact {
   id: string
@@ -170,6 +170,13 @@ export function sleepImpacts(a: SleepAnalysis, p: Profile): SleepImpact[] {
       id: 'heart', area: 'body', tone: 'warn', title: 'Linked to heart disease and stroke', evidence: 'moderate', sources: ['cappuccio_cvd', 'cappuccio_mort'],
       text: 'In pooled studies of almost 475,000 people, habitual short sleep was linked to 48% higher risk of coronary heart disease and 15% higher risk of stroke, and to slightly higher mortality overall (12%). These are associations, not proof that sleep is the cause.',
       because,
+    })
+  }
+  if (short) {
+    out.push({
+      id: 'looks', area: 'looks', tone: 'bad', title: 'You look more tired and less attractive', evidence: 'moderate', sources: ['axelsson', 'sundelin'],
+      text: 'Strangers rated photos of people after a night of sleep loss as less healthy, more tired and less attractive. After two nights of 4 hours, people were also rated less trustworthy, and others were less willing to socialize with them.',
+      because: hasCondition(p, 'looks') ? `${because} You set a looks goal.` : because,
     })
   }
   if (has && a.under6 > 0) {
@@ -271,6 +278,10 @@ export function sleepImpacts(a: SleepAnalysis, p: Profile): SleepImpact[] {
     out.push({
       id: 'light', area: 'habit', tone: 'good', title: 'Morning light, dim evenings', evidence: 'moderate', sources: ['blume', 'chang_ereader'],
       text: 'Daylight soon after waking is the strongest signal setting your body clock. Bright screens before bed delayed sleep and next-morning alertness in a controlled trial, so dim them in the last hour.',
+    })
+    out.push({
+      id: 'ifthen', area: 'habit', tone: 'good', title: 'Plan the moment, not just the goal', evidence: 'moderate', sources: ['gollwitzer'],
+      text: 'If-then plans (“If it’s 10:30 and I’m on my phone, then I put it on the charger outside the bedroom”) helped people reach their goals more than intentions alone, with a medium-to-large effect across 94 studies. Making the unwanted habit a little harder, like charging the phone in another room, works the same way.',
     })
     out.push({
       id: 'exercise', area: 'habit', tone: 'good', title: 'Regular exercise improves sleep', evidence: 'moderate', sources: ['kredlow'],

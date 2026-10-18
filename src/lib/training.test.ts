@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { SOURCES } from '../data/sources'
-import { ACCESS, CONDITION_TRAINING, FUEL, MUSCLES, PRINCIPLES, type Access, type Muscle } from '../data/training'
+import { ACCESS, CHECKINS, CONDITION_TRAINING, FUEL, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
 import type { ConditionId, FitnessSettings, Profile } from '../types'
 import { computeTargets, lbToKg } from './energy'
-import { activityFor, buildProgram, fuelAdvice } from './training'
+import { activityFor, bodyTrend, buildProgram, fuelAdvice } from './training'
 import { defaultState } from './store'
 
 const fit = (patch: Partial<FitnessSettings> = {}): FitnessSettings => ({ ...defaultState().fitness, enabled: true, ...patch })
@@ -115,5 +115,51 @@ describe('training and the meal plan', () => {
     s.fitness = fit()
     s.profile = { ...s.profile, conditions: ['ckd'] }
     expect(fuelAdvice(s).some((a) => a.id === 'creatine')).toBe(false)
+  })
+})
+
+describe('looks, tendons, posture and check-ins', () => {
+  it('every new claim cites real sources', () => {
+    const claims = [VTAPER.claim, ...TENDON.claims, POSTURE.claim, ...Object.values(CHECKINS), ...HORMONE_CUES, ...NOT_FOR_YOU.map((x) => x.claim)]
+    for (const c of claims) {
+      expect(c.sources.length, c.text).toBeGreaterThan(0)
+      for (const s of c.sources) expect(SOURCES[s], `${c.text.slice(0, 40)}: ${s}`).toBeDefined()
+    }
+  })
+
+  it('the V-taper preset picks its exercises for the priority muscles', () => {
+    const prog = buildProgram(fit({ days: 4, sessionMin: 90, experience: 'some', preset: 'vtaper', priorities: VTAPER.priorities }), person())
+    const ids = prog.sessions.flatMap((s) => s.exercises.map((x) => x.exercise.id))
+    expect(ids).toEqual(expect.arrayContaining(['cable_lateral', 'preacher', 'pulldown', 'incline_db']))
+    expect(prog.weekly.shoulders.sets).toBeGreaterThan(prog.weekly.quads.sets)
+  })
+
+  it('the tendon add-on puts Nordic curls on one leg day, and only then', () => {
+    for (const days of [2, 3, 4, 5, 6]) {
+      const withIt = buildProgram(fit({ days, sessionMin: 45, addOns: ['tendon'] }), person())
+      const hits = withIt.sessions.filter((s) => s.exercises.some((x) => x.exercise.id === 'nordic'))
+      expect(hits, `${days} days`).toHaveLength(1)
+      expect(['Full body', 'Lower body', 'Legs']).toContain(hits[0].name)
+      expect(buildProgram(fit({ days }), person()).sessions.some((s) => s.exercises.some((x) => x.exercise.id === 'nordic'))).toBe(false)
+    }
+  })
+
+  it('check-ins: weekly averages and NICE waist-to-height bands', () => {
+    const today = new Date('2026-10-18T12:00')
+    const day = (n: number) => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10) }
+    const log = [
+      { date: day(10), weightLb: 180, gripKg: 40, hangSec: 30 },
+      { date: day(8), weightLb: 182 },
+      { date: day(3), weightLb: 182, waistIn: 36 },
+      { date: day(1), weightLb: 184, gripKg: 43, hangSec: 45 },
+    ]
+    const t = bodyTrend(log, person([], { heightIn: 70 }), today)
+    expect(t.lastWeek).toBe(181)
+    expect(t.thisWeek).toBe(183)
+    expect(t.waistToHeight).toBeCloseTo(36 / 70)
+    expect(t.whtrBand).toBe('increased')
+    expect(t.grip).toEqual({ first: 40, latest: 43 })
+    expect(bodyTrend([{ date: day(0), waistIn: 33 }], person([], { heightIn: 70 }), today).whtrBand).toBe('healthy')
+    expect(bodyTrend([{ date: day(0), waistIn: 43 }], person([], { heightIn: 70 }), today).whtrBand).toBe('high')
   })
 })

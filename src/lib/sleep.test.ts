@@ -146,3 +146,15 @@ describe('Onyx export', () => {
     await expect(exportToOnyx({ url: 'http://127.0.0.1:4747', token: ' ' }, list)).rejects.toThrow(/Paste the token/)
   })
 })
+
+describe('sleep and looks', () => {
+  it('short sleep shows the appearance effect, and the if-then habit helps', () => {
+    const p = profile({}, ['looks' as ConditionId])
+    const list = sleepImpacts(analyzeSleep(nights(7, '01:00', '06:30'), p, TODAY), p)
+    const looks = list.find((x) => x.id === 'looks')!
+    expect(looks.sources).toEqual(['axelsson', 'sundelin'])
+    expect(looks.because).toMatch(/looks goal/)
+    expect(list.some((x) => x.id === 'ifthen')).toBe(true)
+    expect(sleepImpacts(analyzeSleep(nights(7, '23:00', '07:00'), p, TODAY), p).some((x) => x.id === 'looks')).toBe(false)
+  })
+})
