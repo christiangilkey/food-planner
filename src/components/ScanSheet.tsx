@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { DietTag } from '../data/diets'
 import { FOOD_BY_ID, FOODS } from '../data/foods'
 import { AISLE_ORDER } from '../lib/shopping'
-import { avoidedFoods, dietBlocked, productTriggers } from '../lib/conditions'
+import { avoidedFoods, avoidLabel, dietBlocked, productTriggers } from '../lib/conditions'
 import { packageGramsFrom, parseNutritionLabel } from '../lib/label'
 import { lookupBarcode } from '../lib/openfoodfacts'
 import { blankProduct, defaultMatch, inferTags, LABEL_FIELDS, plausibleMatch, productFoodId, stockProduct, suggestMatches } from '../lib/products'
@@ -265,8 +265,8 @@ function ProductForm({
       {check.triggers.length > 0 && (
         <div className="banner card" role="alert">
           <strong>Not for you: this stays in the pantry but won’t be planned</strong>
-          {check.triggers.map(({ condition, entry }, i) => (
-            <p key={i} className="small">{condition.label}: {entry.onlyIf === 'maoi' && !draft.ingredients.trim() ? 'with an MAOI, products without an ingredient list can’t be checked for tyramine. ' : ''}{entry.reason.text} <Sourced evidence={entry.reason.evidence} ids={entry.reason.sources} /></p>
+          {check.triggers.map((r, i) => (
+            <p key={i} className="small">{avoidLabel(r)}: {r.entry.onlyIf === 'maoi' && !draft.ingredients.trim() ? 'with an MAOI, products without an ingredient list can’t be checked for tyramine. ' : ''}{r.entry.reason.text} <Sourced evidence={r.entry.reason.evidence} ids={r.entry.reason.sources} /></p>
           ))}
         </div>
       )}

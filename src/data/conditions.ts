@@ -9,6 +9,9 @@ export interface Claim {
   sources: SourceId[]
 }
 
+/** Profile settings (not conditions) that can rule foods out. */
+export type AvoidFlag = 'maoi' | 'grapefruitMeds' | 'pregnant'
+
 export interface AvoidEntry {
   foods: string[]
   reason: Claim
@@ -17,7 +20,7 @@ export interface AvoidEntry {
   /** Off by default; the user turns it on if it's one of their triggers. */
   optIn?: boolean
   /** Only applies when this profile flag is on. */
-  onlyIf?: 'maoi' | 'grapefruitMeds'
+  onlyIf?: AvoidFlag
   /**
    * Words to look for in a scanned product's name and ingredient list, on top of these foods'
    * own names. Covers things the app has no food entry for (seaweed snacks, kelp).
@@ -392,6 +395,18 @@ export const CONDITIONS: Condition[] = [
       { text: 'Vitamin C megadoses for “anti-aging” aren’t needed. Food covers your needs, and men taking vitamin C supplements had about twice as many kidney stones in a large Swedish study.', evidence: 'moderate', sources: ['thomas_vitc', 'ods_vitC'] },
     ],
     suppressTips: [],
+  },
+]
+
+/**
+ * Food rules that come from a profile setting rather than a condition, so they apply whatever
+ * conditions are on. (MAOI and grapefruit rules live with the condition they usually go with.)
+ */
+export const FLAG_AVOIDS: AvoidEntry[] = [
+  {
+    foods: ['deli_turkey'], onlyIf: 'pregnant',
+    keywords: ['deli meat', 'lunch meat', 'cold cuts', 'hot dog', 'salami', 'pepperoni', 'prosciutto', 'soppressata', 'smoked salmon', 'lox', 'pâté', 'pate', 'meat spread', 'raw milk', 'unpasteurized', 'queso fresco', 'queso blanco'],
+    reason: { text: 'Listeria is a bigger risk in pregnancy. The CDC advises avoiding unheated deli meat, cold cuts, hot dogs and dry sausages (heat them until steaming hot instead), refrigerated smoked fish and pâté, raw milk, and queso fresco–style or unpasteurized cheeses. Pasteurized feta, mozzarella, cottage cheese and hard cheeses are fine.', evidence: 'strong', sources: ['cdc_listeria'] },
   },
 ]
 

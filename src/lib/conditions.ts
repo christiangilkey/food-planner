@@ -1,4 +1,4 @@
-import { CONDITION_BY_ID, CONDITIONS, type AvoidEntry, type Claim, type Condition, type Limits } from '../data/conditions'
+import { CONDITION_BY_ID, CONDITIONS, FLAG_AVOIDS, type AvoidEntry, type AvoidFlag, type Claim, type Condition, type Limits } from '../data/conditions'
 import { DIET_BY_ID, DIETS, dietAllowsFood, type Diet } from '../data/diets'
 import { FOOD_BY_ID, FOODS } from '../data/foods'
 import { RECIPE_BY_ID } from '../data/recipes'
@@ -10,13 +10,19 @@ import { dayEntries } from './plan-utils'
 
 export const hasCondition = (p: Profile, id: ConditionId) => p.conditions.includes(id)
 
-const medFlag = (p: Profile, flag: 'maoi' | 'grapefruitMeds') => (flag === 'maoi' ? p.maoi : p.meds.grapefruitMeds)
+const medFlag = (p: Profile, flag: AvoidFlag) => (flag === 'maoi' ? p.maoi : flag === 'pregnant' ? p.meds.pregnant : p.meds.grapefruitMeds)
+
+const FLAG_LABEL: Record<AvoidFlag, string> = { maoi: 'MAOI', grapefruitMeds: 'Grapefruit-warning medicine', pregnant: 'Pregnancy' }
+
+/** What to call the reason a food is ruled out: the condition, or the setting behind a medication or pregnancy rule. */
+export const avoidLabel = (r: AvoidReason) => (r.entry.onlyIf ? FLAG_LABEL[r.entry.onlyIf] : r.condition?.label ?? '')
 
 export function activeConditions(p: Profile): Condition[] {
   return CONDITIONS.filter((c) => p.conditions.includes(c.id))
 }
 
-export interface AvoidReason { condition: Condition; entry: AvoidEntry }
+/** Why a food is ruled out. condition is missing for rules that come from a setting alone (pregnancy). */
+export interface AvoidReason { condition?: Condition; entry: AvoidEntry }
 
 /**
  * Every food the active conditions remove from the plan, with the reasons. Medication-based
@@ -34,6 +40,10 @@ export function avoidedFoods(p: Profile): Map<string, AvoidReason[]> {
         out.set(food, [...(out.get(food) ?? []), { condition, entry }])
       }
     }
+  }
+  for (const entry of FLAG_AVOIDS) {
+    if (!entry.onlyIf || !medFlag(p, entry.onlyIf)) continue
+    for (const food of entry.foods) out.set(food, [...(out.get(food) ?? []), { entry }])
   }
   // Scanned products: look for the same foods (and any extra trigger words) in the name and ingredients.
   for (const f of FOODS) {
@@ -78,8 +88,8 @@ export function activeAvoidEntries(p: Profile): AvoidReason[] {
   return CONDITIONS.flatMap((condition) =>
     condition.avoid
       .filter((entry) => (entry.onlyIf ? medFlag(p, entry.onlyIf) : p.conditions.includes(condition.id)))
-      .map((entry) => ({ condition, entry })),
-  )
+      .map((entry): AvoidReason => ({ condition, entry })),
+  ).concat(FLAG_AVOIDS.filter((entry) => entry.onlyIf && medFlag(p, entry.onlyIf)).map((entry) => ({ entry })))
 }
 
 export function activeDiets(p: Profile): Diet[] {

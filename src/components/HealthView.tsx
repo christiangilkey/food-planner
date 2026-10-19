@@ -6,7 +6,7 @@ import { DOMAINS, SODIUM_SOURCES } from '../data/nutrients'
 import { PLANT_SOURCES, PLANT_TARGET, PROTEIN_VARIETY_TARGET } from '../data/rotation'
 import { SOURCES, type SourceKind } from '../data/sources'
 import { analyzeWeek, type NutrientReport, type WeekAnalysis } from '../lib/analysis'
-import { activeAvoidEntries, activeConditions, activeDiets, avoidedFoods, limitReasons, mergedLimits, netCarbLimits, planViolations, type Violation } from '../lib/conditions'
+import { activeAvoidEntries, activeConditions, avoidLabel, activeDiets, avoidedFoods, limitReasons, mergedLimits, netCarbLimits, planViolations, type Violation } from '../lib/conditions'
 import { hormoneSystems } from '../lib/hormones'
 import { DAYS } from '../lib/plan-utils'
 import { analyzeRotation, type RotationReport, type RuleStatus } from '../lib/rotation'
@@ -443,6 +443,8 @@ function Conditions({ state, a, rules, violations }: { state: ViewProps['state']
   const conditions = activeConditions(p)
   const limits = mergedLimits(p)
   const avoided = avoidedFoods(p)
+  // Rules from a medication or pregnancy whose usual condition isn't on, so they'd otherwise go unexplained.
+  const settingRules = activeAvoidEntries(p).filter((r) => r.entry.onlyIf && !(r.condition && p.conditions.includes(r.condition.id)))
   const reasons = limitReasons(p)
   const diets = activeDiets(p)
   const carbs = netCarbLimits(p)
@@ -484,6 +486,18 @@ function Conditions({ state, a, rules, violations }: { state: ViewProps['state']
         </ul>
       </section>
 
+      {settingRules.length > 0 && (
+        <section className="card">
+          <h2 className="with-icon"><Icon name="pill" /> From your medications &amp; pregnancy</h2>
+          {settingRules.map((r, i) => (
+            <div key={i}>
+              <p className="small"><strong>{avoidLabel(r)}: {r.entry.foods.map((f) => FOOD_BY_ID[f]?.name ?? f).join(', ')}{r.entry.keywords?.length ? ', and scanned products listing these' : ''}</strong></p>
+              <p className="small">{r.entry.reason.text} <Why evidence={r.entry.reason.evidence} ids={r.entry.reason.sources} /></p>
+            </div>
+          ))}
+        </section>
+      )}
+
       {diets.map((d) => (
         <details key={d.id} className="more card-details">
           <summary className="with-icon"><Icon name={d.icon} /> {d.label} diet: what the research shows</summary>
@@ -493,8 +507,8 @@ function Conditions({ state, a, rules, violations }: { state: ViewProps['state']
 
       {conditions.map((c) => {
         const ruleStatus = c.rules.map((r) => rules.find((x) => x.rule.id === r.id)).filter((x): x is RuleStatus => !!x)
-        const removed = c.avoid.flatMap((entry) => entry.foods.filter((f) => avoided.get(f)?.some((x) => x.condition.id === c.id && x.entry === entry)).map((f) => ({ f, entry })))
-        const scanned = activeAvoidEntries(p).filter((x) => x.condition.id === c.id && x.entry.keywords?.length && !x.entry.foods.length)
+        const removed = c.avoid.flatMap((entry) => entry.foods.filter((f) => avoided.get(f)?.some((x) => x.condition?.id === c.id && x.entry === entry)).map((f) => ({ f, entry })))
+        const scanned = activeAvoidEntries(p).filter((x) => x.condition?.id === c.id && x.entry.keywords?.length && !x.entry.foods.length)
         const own = reasons.filter((r) => r.condition.id === c.id)
         return (
           <section key={c.id} className="card">

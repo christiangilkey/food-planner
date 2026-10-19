@@ -84,6 +84,7 @@ export const SOURCES = {
 
   // ── Food groups and rotation ─────────────────────────────
   rimm: s('AHA 2018 seafood advisory', 'Seafood long-chain n-3 PUFAs and cardiovascular disease: AHA science advisory', 'Circulation', 2018, pm(29773586), 'guideline'),
+  cdc_listeria: s('CDC: preventing Listeria', 'Preventing Listeria infection', 'U.S. Centers for Disease Control and Prevention', 2025, 'https://www.cdc.gov/listeria/prevention/index.html', 'guideline'),
   fda_fish: s('FDA/EPA fish advice', 'Advice about eating fish', 'U.S. Food & Drug Administration', 2024, 'https://www.fda.gov/food/consumers/advice-about-eating-fish', 'guideline'),
   wcrf_meat: s('WCRF: red & processed meat', 'Limit red and processed meat', 'World Cancer Research Fund', 2018, 'https://www.wcrf.org/research-policy/evidence-for-our-recommendations/limit-red-processed-meat/', 'guideline'),
   iarc: s('IARC 2015', 'Carcinogenicity of consumption of red and processed meat', 'Lancet Oncol', 2015, pm(26514947), 'review'),
