@@ -92,7 +92,7 @@ export function KitchenView(props: ViewProps) {
     <>
       <section className="card hero pantry-hero">
         <h1>Pantry, fridge & freezer</h1>
-        <p className="muted small">What's at home. Your list skips it, and meals use it up first.</p>
+        <p className="muted small">What's at home. To Buy skips it, and meals use it up first.</p>
         <button className="primary with-icon pantry-scan" onClick={() => setScan({})}><Icon name="scan" /> Scan a product</button>
         <div className="add-row">
           <select value={adding} onChange={(e) => setAdding(e.target.value)} aria-label="Food to add">

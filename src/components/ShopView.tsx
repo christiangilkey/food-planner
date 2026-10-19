@@ -9,13 +9,14 @@ import { KitchenView } from './KitchenView'
 import { PricesView } from './PricesView'
 
 type Section = 'list' | 'pantry' | 'prices'
-const SECTIONS: [Section, string][] = [['list', 'List'], ['pantry', 'Pantry'], ['prices', 'Prices']]
+// Pantry first: what you have matters more than what you still need to buy.
+const SECTIONS: [Section, string][] = [['pantry', 'Pantry'], ['list', 'To Buy'], ['prices', 'Prices']]
 
 type ShopProps = ViewProps & { goTo: (t: Tab, section?: string) => void; section?: string }
 
 /** Shop: the shopping list, what's at home, and store prices, behind one switch. */
 export function ShopView({ state, update, goTo, section }: ShopProps) {
-  const [view, setView] = useState<Section>(section === 'pantry' || section === 'prices' ? section : 'list')
+  const [view, setView] = useState<Section>(section === 'list' || section === 'prices' ? section : 'pantry')
   const show = (s: Section) => { setView(s); window.scrollTo(0, 0) }
 
   return (
@@ -85,7 +86,7 @@ function ShopList({ state, update, goTo, show }: ViewProps & { goTo: ShopProps['
             <div className="summary-label"><span><strong>{money(total)}</strong> of your {money(budget)} budget</span>
               <span className={over > 0 ? 'warn-text' : 'good-text'}>{over > 0 ? `${money(over)} over` : `${money(-over)} under`}</span>
             </div>
-            <Bar value={total} max={budget} tone={over > 0 ? 'warn' : 'accent'} label="List total against weekly budget" />
+            <Bar value={total} max={budget} tone={over > 0 ? 'warn' : 'accent'} label="To Buy total against weekly budget" />
             {over > 0 && (
               <p className="small">
                 Mark what you have in <button className="link" onClick={() => show('pantry')}>Pantry</button>, or plan a new week: the planner picks cheaper meals when you're over.
