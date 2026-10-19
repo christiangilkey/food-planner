@@ -1,19 +1,25 @@
-import { useState } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import { DisclaimerAcknowledge } from './Disclaimer'
+import { Icon } from './Icon'
 import { LogoMark } from './Logo'
 import { computeTargets } from '../lib/energy'
 import { generatePlan } from '../lib/planner'
 import { ConditionFields } from './ConditionFields'
 import { DietFields } from './DietFields'
 import { MedFields } from './MedFields'
-import { BodyFields, EquipmentFields, LifestyleFields } from './ProfileFields'
+import { ActivityGoalFields, BodyBasicsFields, BudgetFields, EquipmentFields, RhythmFields } from './ProfileFields'
 import type { ViewProps } from './ui'
 
-const STEPS = [
-  { title: 'About you', blurb: 'Used to work out how much energy and protein you need, and your vitamin and mineral targets.' },
-  { title: 'Your kitchen', blurb: "Check what you own. You'll only get meals you can actually make. A knife and cutting board are assumed." },
-  { title: 'Health', blurb: 'Turn on any conditions you have and any diet you follow. The plan will avoid foods that could worsen them and favor foods with evidence of helping. You can change this any time.' },
-  { title: 'How you eat', blurb: 'Time, money and daily rhythm. You can change any of these later.' },
+/** One topic per step. Optional steps say so, and Next works as skip. */
+const STEPS: { title: string; blurb: string; Fields: ComponentType<ViewProps> }[] = [
+  { title: 'About you', blurb: 'Used to work out how much energy and protein you need.', Fields: BodyBasicsFields },
+  { title: 'Activity & goal', blurb: 'How active you are, and what you want from your meals.', Fields: ActivityGoalFields },
+  { title: 'Your kitchen', blurb: 'Tick what you own. A knife and cutting board are assumed.', Fields: EquipmentFields },
+  { title: 'Health conditions', blurb: 'Optional. Tap any you have; the plan avoids foods that could worsen them.', Fields: ConditionFields },
+  { title: 'Diet', blurb: 'Optional. Choose any eating pattern you follow.', Fields: DietFields },
+  { title: 'Medications', blurb: 'Optional. Used to screen supplements and foods for interactions.', Fields: MedFields },
+  { title: 'Your day', blurb: 'Used to time your meals, water and caffeine cutoff.', Fields: RhythmFields },
+  { title: 'Budget & time', blurb: 'What you want to spend and how long you want to cook.', Fields: BudgetFields },
 ]
 
 export function Onboarding(props: ViewProps) {
@@ -21,6 +27,7 @@ export function Onboarding(props: ViewProps) {
   const [step, setStep] = useState(0)
   const last = step === STEPS.length - 1
   const t = computeTargets(state.profile)
+  useEffect(() => { window.scrollTo(0, 0) }, [step, state.disclaimerAccepted])
 
   const finish = () =>
     update((s) => {
@@ -44,46 +51,32 @@ export function Onboarding(props: ViewProps) {
     )
   }
 
+  const { title, blurb, Fields } = STEPS[step]
   return (
-    <div className="onboarding">
-      <div className="onboarding-head">
-        <LogoMark size={56} />
-        <h1 className="wordmark big">Food Planner</h1>
-        <p className="muted">Meals that keep you full, fit your kitchen, your budget and your brain.</p>
-        <ol className="steps" aria-label="Setup progress">
-          {STEPS.map((s, i) => (
-            <li key={s.title} className={i === step ? 'current' : i < step ? 'done' : ''}>{s.title}</li>
-          ))}
-        </ol>
+    <div className="onboarding pf-ob">
+      <div className="pf-ob-top">
+        <div className="pf-ob-brand"><LogoMark size={28} /><span className="wordmark">Food Planner</span></div>
+        <p className="pf-ob-count">Step {step + 1} of {STEPS.length}</p>
+        <div className="pf-ob-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1} aria-valuetext={`Step ${step + 1} of ${STEPS.length}: ${title}`}>
+          {STEPS.map((s, i) => <span key={s.title} className={i <= step ? 'on' : ''} />)}
+        </div>
       </div>
 
-      <section className="card">
-        <h2>{STEPS[step].title}</h2>
-        <p className="muted">{STEPS[step].blurb}</p>
-        {step === 0 && (
-          <>
-            <BodyFields {...props} />
-            <p className="target-preview">
-              About <strong>{t.kcal} kcal</strong> and <strong>{t.protein} g protein</strong> a day.
-            </p>
-          </>
-        )}
-        {step === 1 && <EquipmentFields {...props} />}
-        {step === 2 && (
-          <>
-            <ConditionFields {...props} />
-            <h3>Diet</h3>
-            <DietFields {...props} />
-            <h3>Medications & pregnancy</h3>
-            <p className="muted small">Used to screen supplements and foods for interactions.</p>
-            <MedFields {...props} />
-          </>
-        )}
-        {step === 3 && <LifestyleFields {...props} />}
-      </section>
+      <div>
+        <h1>{title}</h1>
+        <p className="muted">{blurb}</p>
+      </div>
+      <Fields {...props} />
+      {step <= 1 && (
+        <p className="target-preview">
+          About <strong>{t.kcal.toLocaleString()} calories</strong> and <strong>{t.protein} g protein</strong> a day.
+        </p>
+      )}
 
-      <div className="actions">
-        {step > 0 && <button className="secondary" onClick={() => setStep(step - 1)}>Back</button>}
+      <div className="pf-ob-actions">
+        {step > 0 && (
+          <button className="ghost with-icon" onClick={() => setStep(step - 1)}><Icon name="chevronLeft" size={18} /> Back</button>
+        )}
         {last ? (
           <button className="primary" onClick={finish}>Build my week</button>
         ) : (

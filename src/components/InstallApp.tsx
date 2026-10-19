@@ -65,13 +65,12 @@ export function InstallSheet({ platform, onClose }: { platform: Platform; onClos
   )
 }
 
-/** Profile card version, always visible so it can be found again. */
-export function InstallCard() {
+/** Install status and button, for the Profile settings page. */
+export function InstallFields() {
   const install = useInstall()
   const [open, setOpen] = useState(false)
   return (
-    <section className="card">
-      <h2 className="with-icon"><Icon name="smartphone" /> Home screen app</h2>
+    <>
       {install.installed ? (
         <p className="good-text with-icon"><Icon name="check" /> You’re using the installed app.</p>
       ) : (
@@ -83,6 +82,16 @@ export function InstallCard() {
         </>
       )}
       {open && <InstallSheet platform={install.platform} onClose={() => setOpen(false)} />}
+    </>
+  )
+}
+
+/** Card version, always visible so it can be found again. */
+export function InstallCard() {
+  return (
+    <section className="card">
+      <h2 className="with-icon"><Icon name="smartphone" /> Home screen app</h2>
+      <InstallFields />
     </section>
   )
 }
