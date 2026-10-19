@@ -33,7 +33,7 @@ const ALIAS: Record<Exclude<Tab, Main>, [Main, string]> = {
 
 const TABS: { id: Main; label: string; icon: IconName }[] = [
   { id: 'today', label: 'Today', icon: 'sun' },
-  { id: 'week', label: 'Plan', icon: 'calendar' },
+  { id: 'week', label: 'Food', icon: 'apple' },
   { id: 'shop', label: 'Shop', icon: 'cart' },
   { id: 'health', label: 'Health', icon: 'activity' },
   { id: 'train', label: 'Train', icon: 'dumbbell' },

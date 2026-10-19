@@ -6,7 +6,7 @@ import {
   Beef, Egg, WheatOff, Footprints, Coffee, Bed, Smartphone, Sunrise, Thermometer, type LucideIcon,
 } from 'lucide-react'
 import { Camera, Pencil, ScanBarcode, Trash2, WandSparkles } from 'lucide-react'
-import { ChevronLeft, CircleUserRound } from 'lucide-react'
+import { Apple, ChevronLeft, CircleUserRound } from 'lucide-react'
 import { Clock } from 'lucide-react'
 import { BookOpen, CircleAlert, CircleCheck, FlaskConical } from 'lucide-react'
 import { Ban, HardDrive, Search } from 'lucide-react'
@@ -24,7 +24,7 @@ const ICONS = {
   // Pantry scanner and magic plan
   scan: ScanBarcode, camera: Camera, wand: WandSparkles, trash: Trash2, pencil: Pencil,
   // Navigation
-  user: CircleUserRound, chevronLeft: ChevronLeft,
+  user: CircleUserRound, chevronLeft: ChevronLeft, apple: Apple,
   // Shop
   clock: Clock,
   // Health

@@ -418,7 +418,7 @@ function NutrientRow({ r, focus }: { r: NutrientReport; focus: Domain | null }) 
                       </li>
                     ))}
                   </ul>
-                  <p className="muted small">Swap one of these into your week from the Plan tab.</p>
+                  <p className="muted small">Swap one of these into your week from the Food tab.</p>
                 </>
               )}
             </>
@@ -456,7 +456,7 @@ function Conditions({ state, a, rules, violations }: { state: ViewProps['state']
           <p className="good-text with-icon"><Icon name="check" /> This week’s plan is within every limit set by your {what}.</p>
         ) : (
           <>
-            <p className="warn-text">This week breaks {plural(violations.length, 'rule')}. Make a new week on the Plan tab.</p>
+            <p className="warn-text">This week breaks {plural(violations.length, 'rule')}. Make a new week on the Food tab.</p>
             <ul className="explain">{violations.slice(0, 3).map((v, i) => <li key={i}>{v.day !== undefined ? `${DAYS[v.day]}: ` : ''}{v.message}</li>)}</ul>
             {violations.length > 3 && (
               <details className="more inline">

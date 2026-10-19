@@ -130,7 +130,7 @@ function NewWeekNote({ goTo }: { goTo?: Props['goTo'] }) {
   return (
     <p className="pf-foot muted small">
       Changes apply when you make a new week.{' '}
-      {goTo && <button type="button" className="link" onClick={() => goTo('week')}>Open Plan</button>}
+      {goTo && <button type="button" className="link" onClick={() => goTo('week')}>Open Food</button>}
     </p>
   )
 }
@@ -189,7 +189,7 @@ function SettingsPage({ page, ...props }: Props & { page: Page }) {
     case 'exports':
       return (
         <>
-          <p className="muted pf-intro">Where the export buttons on Plan and Sleep send your meals, groceries, prep day and sleep schedule.</p>
+          <p className="muted pf-intro">Where the export buttons on Food and Sleep send your meals, groceries, prep day and sleep schedule.</p>
           <div className="radio-list">
             {([['google', 'Google Tasks', 'Task lists in your Google account. Needs a one-time Google Cloud client ID.'], ['onyx', 'Onyx Calendar', 'Time blocks and tasks on your Onyx calendar, sent to the Onyx app on your computer.']] as [ExportTarget, string, string][]).map(([id, label, detail]) => (
               <label key={id} className={`radio-card ${state.exportTarget === id ? 'on' : ''}`}>

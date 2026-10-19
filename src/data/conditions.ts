@@ -388,7 +388,7 @@ export const CONDITIONS: Condition[] = [
       { text: 'People judge health and attractiveness partly from facial fat. If you have weight to lose, the calorie target does more for your face than any single food.', evidence: 'moderate', sources: ['dejager_face'] },
     ],
     guidance: [
-      { text: 'Morning puffiness after a salty day is mostly water, not fat. Keep sodium moderate and eat potassium-rich foods (beans, potatoes, leafy greens, bananas); the Plan tab shows each day’s balance. With kidney disease or a potassium-raising blood-pressure drug, follow your doctor’s potassium advice instead.', evidence: 'moderate', sources: ['nasem_sodium', 'ods_potassium', 'aha_sodium'] },
+      { text: 'Morning puffiness after a salty day is mostly water, not fat. Keep sodium moderate and eat potassium-rich foods (beans, potatoes, leafy greens, bananas); the Food tab shows each day’s balance. With kidney disease or a potassium-raising blood-pressure drug, follow your doctor’s potassium advice instead.', evidence: 'moderate', sources: ['nasem_sodium', 'ods_potassium', 'aha_sodium'] },
       { text: 'Vitamin C megadoses for “anti-aging” aren’t needed. Food covers your needs, and men taking vitamin C supplements had about twice as many kidney stones in a large Swedish study.', evidence: 'moderate', sources: ['thomas_vitc', 'ods_vitC'] },
     ],
     suppressTips: [],
