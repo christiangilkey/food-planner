@@ -9,7 +9,6 @@ import { PlanView } from './components/PlanView'
 import { ProfileView } from './components/ProfileView'
 import { RecipeViewerProvider } from './components/RecipeViewer'
 import { ShopView } from './components/ShopView'
-import { SleepView } from './components/SleepView'
 import { TodayView } from './components/TodayView'
 import { TrainView } from './components/TrainView'
 import { useAppState } from './lib/store'
@@ -87,7 +86,7 @@ export default function App() {
                 {tab === 'today' && <TodayView {...props} />}
                 {tab === 'week' && <PlanView {...props} />}
                 {tab === 'shop' && <ShopView {...props} section={section} />}
-                {tab === 'health' && section === 'sleep' ? <SleepView {...props} /> : tab === 'health' && <HealthView state={state} />}
+                {tab === 'health' && <HealthView {...props} section={section} />}
                 {tab === 'train' && <TrainView {...props} />}
                 {tab === 'profile' && <ProfileView {...props} />}
               </motion.div>

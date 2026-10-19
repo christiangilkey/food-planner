@@ -5,7 +5,7 @@ import type { NutrientReport } from '../lib/analysis'
 import { assessPeptide, assessSupplement, recommendedSupplements, relevantPeptides, type Assessment } from '../lib/supplements'
 import type { AppState, Domain } from '../types'
 import { Icon } from './Icon'
-import { Chip, Cite, EvidenceChip, Sourced } from './ui'
+import { Chip, EvidenceChip, Why } from './ui'
 
 type Mode = 'supplements' | 'peptides'
 
@@ -35,8 +35,9 @@ function Supplements({ state, reports }: { state: AppState; reports: NutrientRep
     <>
       <section className="card hero">
         <h1>Supplements</h1>
+        <p className="lead">{forYou.length ? `${forYou.length} suggested for you this week.` : 'Nothing specific needed right now.'}</p>
         <p className="muted small">
-          Food comes first; supplements fill specific gaps. Each option shows the dose used in research, how strong the evidence is, and its sources. Anything unsafe for your conditions or medications is marked <strong>Not for you</strong> and never recommended. Set your medications in Profile so these checks are complete.
+          Food comes first; supplements fill specific gaps. Each option shows the dose used in research; tap <strong>Why?</strong> for the evidence and sources. Anything unsafe for your conditions or medications is marked <strong>Not for you</strong> and never recommended. Set your medications in Profile so these checks are complete.
         </p>
         {p.meds.pregnant && <p className="warn-text small">You’re marked as pregnant or breastfeeding: check every supplement with your clinician.</p>}
       </section>
@@ -44,7 +45,7 @@ function Supplements({ state, reports }: { state: AppState; reports: NutrientRep
       <section className="card">
         <h2>Recommended for you</h2>
         <p className="muted small">Matched to your health conditions and this week’s nutrient gaps.</p>
-        {forYou.length === 0 && <p className="muted">Nothing specific: your plan covers your targets and you have no conditions that a supplement clearly helps. Browse by goal below.</p>}
+        {forYou.length === 0 && <p className="muted small">Your plan covers your targets and you have no conditions that a supplement clearly helps. Browse by goal below.</p>}
       </section>
       {forYou.map((r) => <SupplementCard key={r.supplement.id} s={r.supplement} assessment={r.assessment} highlight={r.reasons} />)}
 
@@ -68,7 +69,7 @@ function Supplements({ state, reports }: { state: AppState; reports: NutrientRep
             {notRec.map((n) => (
               <li key={n.id}>
                 <div className="row-between"><strong>{n.name}</strong><Chip tone="bad">For {n.claim.toLowerCase()}</Chip></div>
-                <p className="small">{n.why} <Sourced evidence={n.evidence} ids={n.sources} /></p>
+                <p className="small">{n.why} <Why evidence={n.evidence} ids={n.sources} /></p>
               </li>
             ))}
           </ul>
@@ -94,27 +95,26 @@ function SupplementCard({ s, assessment, highlight }: { s: Supplement; assessmen
       </button>
       {blocked && (
         <div className="not-for-you">
-          <strong>Not for you.</strong> {assessment.blocks.map((b) => <span key={b.text}>{b.text} <Cite ids={b.sources} /> </span>)}
+          <strong>Not for you.</strong> {assessment.blocks.map((b) => <span key={b.text}>{b.text} <Why ids={b.sources} /> </span>)}
         </div>
       )}
       <ul className="effect-list">
         {highlight.map((u) => (
           <li key={u.text}>
-            <span className="small">{u.text}</span>
-            <Sourced evidence={u.evidence} ids={u.sources} />
+            <span className="small">{u.text} <Why evidence={u.evidence} ids={u.sources} /></span>
           </li>
         ))}
       </ul>
       {open && (
         <div className="nutrient-body">
           <h3>Dose used in research</h3>
-          <p className="small">{s.dose.text} <Cite ids={s.dose.sources} /></p>
+          <p className="small">{s.dose.text} <Why ids={s.dose.sources} /></p>
           {others.length > 0 && (
             <>
               <h3>Also studied for</h3>
               <ul className="effect-list">
                 {others.map((u) => (
-                  <li key={u.text}><span className="small">{u.text}</span><Sourced evidence={u.evidence} ids={u.sources} /></li>
+                  <li key={u.text}><span className="small">{u.text} <Why evidence={u.evidence} ids={u.sources} /></span></li>
                 ))}
               </ul>
             </>
@@ -123,14 +123,14 @@ function SupplementCard({ s, assessment, highlight }: { s: Supplement; assessmen
             <>
               <h3>Cautions</h3>
               <ul className="effect-list">
-                {assessment.cautions.map((c) => <li key={c.text} className="small">{c.text} <Cite ids={c.sources} /></li>)}
+                {assessment.cautions.map((c) => <li key={c.text} className="small">{c.text} <Why ids={c.sources} /></li>)}
               </ul>
             </>
           )}
           {s.doesntHelp && (
             <>
               <h3>Doesn’t help with</h3>
-              {s.doesntHelp.map((d) => <p key={d.text} className="small">{d.text} <Cite ids={d.sources} /></p>)}
+              {s.doesntHelp.map((d) => <p key={d.text} className="small">{d.text} <Why ids={d.sources} /></p>)}
             </>
           )}
         </div>
@@ -166,7 +166,7 @@ function Peptides({ state }: { state: AppState }) {
       <section className="card hero">
         <h1>Peptides</h1>
         <p className="muted small">
-          Peptides are short chains of amino acids. Some are proven prescription medicines; many popular ones are unapproved and untested in people. Here is what the evidence actually shows for the ones people commonly use. <Cite ids={['fda_cat2', 'wada']} />
+          Peptides are short chains of amino acids. Some are proven prescription medicines; many popular ones are unapproved and untested in people. Here is what the evidence actually shows for the ones people commonly use. <Why ids={['fda_cat2', 'wada']} />
         </p>
         {relevant.length > 0 && (
           <p className="small">
@@ -202,18 +202,17 @@ function PeptideCard({ x, assessment, relevant }: { x: Peptide; assessment: Asse
       </div>
       {blocked && (
         <div className="not-for-you">
-          <strong>Not for you.</strong> {assessment.blocks.map((b) => <span key={b.text}>{b.text} <Cite ids={b.sources} /> </span>)}
+          <strong>Not for you.</strong> {assessment.blocks.map((b) => <span key={b.text}>{b.text} <Why ids={b.sources} /> </span>)}
         </div>
       )}
       <p className="small"><strong>Used for:</strong> {x.usedFor}</p>
       <p className="small"><strong>Evidence:</strong> {x.evidence}</p>
-      <p className="small"><strong>Risks:</strong> {x.risks}</p>
+      <p className="small"><strong>Risks:</strong> {x.risks} <Why evidence={x.humanEvidence === 'strong' ? 'strong' : 'limited'} ids={x.sources} /></p>
       {assessment.cautions.length > 0 && (
         <ul className="effect-list">
-          {assessment.cautions.map((c) => <li key={c.text} className="small warn-text">{c.text} <Cite ids={c.sources} /></li>)}
+          {assessment.cautions.map((c) => <li key={c.text} className="small warn-text">{c.text} <Why ids={c.sources} /></li>)}
         </ul>
       )}
-      <p className="small"><EvidenceChip level={x.humanEvidence === 'strong' ? 'strong' : 'limited'} /> <Cite ids={x.sources} /></p>
     </section>
   )
 }
@@ -245,10 +244,9 @@ export function DomainOptions({ domain, label, state }: { domain: Domain; label:
   const peps = PEPTIDES.filter((x) => x.goals.some((g) => goals.includes(g)))
   return (
     <>
-      <section className="card hero">
-        <h2>Supplements & peptides for {label.toLowerCase()}</h2>
+      <section className="card">
         <p className="muted small">
-          Food comes first: see the nutrients for this area below. These are options people use for this area, strongest evidence first. Ones marked <EvidenceChip level="limited" /> are popular but largely unproven. Anything unsafe for your conditions or medications is marked <strong>Not for you</strong>. Check every one with your doctor before starting.
+          Food comes first: see the nutrients for {label.toLowerCase()} above. These are options people use for this area, strongest evidence first. Ones rated <EvidenceChip level="limited" /> under <strong>Why?</strong> are popular but largely unproven. Anything unsafe for your conditions or medications is marked <strong>Not for you</strong>. Check every one with your doctor before starting.
         </p>
       </section>
       {supps.map((s) => <SupplementCard key={s.id} s={s} assessment={assessSupplement(s, p)} highlight={matching(s)} />)}
@@ -259,7 +257,7 @@ export function DomainOptions({ domain, label, state }: { domain: Domain; label:
             {notRec.map((n) => (
               <li key={n.id}>
                 <div className="row-between"><strong>{n.name}</strong><Chip tone="bad">For {n.claim.toLowerCase()}</Chip></div>
-                <p className="small">{n.why} <Sourced evidence={n.evidence} ids={n.sources} /></p>
+                <p className="small">{n.why} <Why evidence={n.evidence} ids={n.sources} /></p>
               </li>
             ))}
           </ul>
