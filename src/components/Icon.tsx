@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Camera, Pencil, ScanBarcode, Trash2, WandSparkles } from 'lucide-react'
 import { ChevronLeft, CircleUserRound } from 'lucide-react'
+import { BookOpen, CircleAlert, CircleCheck, FlaskConical } from 'lucide-react'
 
 const ICONS = {
   activity: Activity, swap: ArrowLeftRight, bean: Bean, bone: Bone, brain: Brain, calendar: CalendarDays, check: Check,
@@ -22,6 +23,8 @@ const ICONS = {
   scan: ScanBarcode, camera: Camera, wand: WandSparkles, trash: Trash2, pencil: Pencil,
   // Navigation
   user: CircleUserRound, chevronLeft: ChevronLeft,
+  // Health
+  flask: FlaskConical, book: BookOpen, alert: CircleAlert, checkCircle: CircleCheck,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
