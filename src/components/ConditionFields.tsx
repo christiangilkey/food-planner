@@ -65,16 +65,8 @@ export function ConditionFields({ state, update }: ViewProps) {
         </label>
       )}
 
-      {p.conditions.includes('hashimotos') && (
-        <label className="toggle">
-          <input type="checkbox" checked={p.meds.thyroid} onChange={(e) => set({ meds: { ...p.meds, thyroid: e.target.checked } })} />
-          <span>
-            <strong>I take levothyroxine or other thyroid hormone</strong>
-            <small>
-              Puts your dose on waking with breakfast 30–60 minutes later, keeps coffee back, and warns about iron and calcium supplements taken too close to it. <Cite ids={['niddk_hashimoto', 'jonklaas', 'benvenga']} />
-            </small>
-          </span>
-        </label>
+      {p.conditions.includes('hashimotos') && !p.meds.thyroid && (
+        <p className="muted small">Taking levothyroxine? Tick it under Medications so your dose and breakfast are timed around it.</p>
       )}
 
       {CONDITIONS.filter((c) => p.conditions.includes(c.id)).flatMap((c) =>

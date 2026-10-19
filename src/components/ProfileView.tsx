@@ -79,7 +79,7 @@ export function ProfileView(props: ViewProps) {
 
       <section className="card">
         <h2>Medications & pregnancy</h2>
-        <p className="muted small">Used only to screen supplements, peptides and foods for interactions. Stored on this device only.</p>
+        <p className="muted small">Used to screen supplements, peptides and foods for interactions, and to time meals around doses. Stored on this device only.</p>
         <MedFields {...props} />
       </section>
 
