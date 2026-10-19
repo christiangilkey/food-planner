@@ -573,3 +573,41 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .sheet-section .portion { margin: 0; }
 .toggle.compact { padding: 8px 10px; }
 .toggle.compact small { display: block; color: var(--muted); }
+
+/* ── Train & Sleep redesign ── */
+/* "Why?" disclosure: evidence folded away until asked for. */
+.why-wrap { display: inline; }
+.why-btn { background: none; border: 0; padding: 0 2px; font-size: 0.8rem; font-weight: 650; color: var(--accent); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.why-body { display: block; margin-top: 6px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 0.85rem; color: var(--text); }
+.why-claim { display: block; }
+.why-claim + .why-claim { margin-top: 6px; }
+/* Train: the week as compact rows, details on tap. */
+.week-list { padding-top: 4px; padding-bottom: 8px; }
+.week-row { border-top: 1px solid var(--border); }
+.week-row:first-child { border-top: 0; }
+.week-row-head { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px; width: 100%; padding: 10px 0; background: none; border: 0; text-align: left; color: inherit; }
+.week-row-head .icon-svg { color: var(--muted); }
+.week-day { font-weight: 700; font-size: 0.85rem; color: var(--muted); }
+.week-row.is-next .week-day { color: var(--accent); }
+.week-name { display: flex; flex-direction: column; min-width: 0; }
+.week-row .lift-list { margin-top: 0; }
+.week-cardio { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--border); }
+.week-cardio .icon-svg { vertical-align: -2px; margin-right: 4px; }
+.lift-foot { margin-top: 4px; }
+.next-session .next-open { width: 100%; margin-top: 10px; justify-content: center; }
+/* Train: everything else as tiles that open a sheet. */
+.tile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tile { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 12px 14px; min-height: 96px; text-align: left; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.tile .icon-svg { color: var(--accent); margin-bottom: 4px; }
+.tile:hover { border-color: var(--accent); }
+.setup h3 { margin: 10px 0 0; }
+.advice { display: flex; flex-direction: column; gap: 2px; padding: 10px 0; border-top: 1px solid var(--border); }
+.advice:first-of-type { border-top: 0; }
+.advice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+/* Sleep: impacts as short rows, schedule export as a quiet button. */
+.sleep-impact { display: flex; flex-direction: column; gap: 2px; margin: 0 0 12px; padding-left: 10px; border-left: 3px solid var(--border); }
+.schedule-export { margin-top: 12px; width: 100%; justify-content: center; }
+.routine-toggle { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+@media (max-width: 380px) {
+  .tile { min-height: 88px; padding: 10px 12px; }
+}

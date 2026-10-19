@@ -307,9 +307,9 @@ export function fuelAdvice(state: AppState): FuelAdvice[] {
   out.push({
     id: 'per_meal', title: `About ${Math.round(0.4 * kg)} g protein per meal`,
     text: !counted
-      ? 'Build a week on the Plan tab and this checks the protein in each meal.'
+      ? 'Plan a week on the Week tab and this checks the protein in each meal.'
       : short.length
-        ? `${short.length} of this week’s main meals are under ${Math.round(floor)} g. Swap them on the Plan tab, or add Greek yogurt, eggs or a protein shake.`
+        ? `${short.length} of this week’s main meals are under ${Math.round(floor)} g. Swap them on the Week tab, or add Greek yogurt, eggs or a protein shake.`
         : 'Every main meal this week has enough protein.',
     claim: FUEL.perMeal,
     meals: short.slice(0, 6),
