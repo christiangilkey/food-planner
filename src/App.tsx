@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { DisclaimerGate } from './components/Disclaimer'
 import { HealthView } from './components/HealthView'
 import { Icon, type IconName } from './components/Icon'
+import { InstallButton } from './components/InstallApp'
 import { Logo } from './components/Logo'
 import { Onboarding } from './components/Onboarding'
 import { PlanView } from './components/PlanView'
@@ -32,7 +33,7 @@ const ALIAS: Record<Exclude<Tab, Main>, [Main, string]> = {
 
 const TABS: { id: Main; label: string; icon: IconName }[] = [
   { id: 'today', label: 'Today', icon: 'sun' },
-  { id: 'week', label: 'Week', icon: 'calendar' },
+  { id: 'week', label: 'Plan', icon: 'calendar' },
   { id: 'shop', label: 'Shop', icon: 'cart' },
   { id: 'health', label: 'Health', icon: 'activity' },
   { id: 'train', label: 'Train', icon: 'dumbbell' },
@@ -75,6 +76,7 @@ export default function App() {
           <header className="topbar">
             <Logo />
             <div className="topbar-actions">
+              <InstallButton />
               <ShareButton />
               <button className={`avatar-btn ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')} aria-label="Profile and settings" title="Profile and settings">
                 {initial ? <span className="avatar">{initial}</span> : <Icon name="user" size={20} />}

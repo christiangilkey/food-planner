@@ -201,7 +201,8 @@ function nutrientLine(reports: NutrientReport[]): { text: string; tone: Tone } {
   const close = reports.filter((r) => r.status === 'borderline' && !r.info.notFoodAlone)
   const hard = reports.filter((r) => r.status !== 'ok' && r.info.notFoodAlone)
   if (low.length) return { text: `Low in ${names(low.map((r) => r.info.label))}`, tone: 'bad' }
-  if (close.length) return { text: `Nearly there on ${names(close.map((r) => r.info.label))}`, tone: 'warn' }
+  // Nearly there isn't counted as a problem in the summary, so it isn't shown as a warning either.
+  if (close.length) return { text: `Nearly there on ${names(close.map((r) => r.info.label))}`, tone: 'muted' }
   if (hard.length) return { text: `On track · ${names(hard.map((r) => r.info.label))} is hard from food alone`, tone: 'muted' }
   return { text: 'Every target met', tone: 'good' }
 }
@@ -417,7 +418,7 @@ function NutrientRow({ r, focus }: { r: NutrientReport; focus: Domain | null }) 
                       </li>
                     ))}
                   </ul>
-                  <p className="muted small">Swap one of these into your week from the Week tab.</p>
+                  <p className="muted small">Swap one of these into your week from the Plan tab.</p>
                 </>
               )}
             </>
@@ -455,7 +456,7 @@ function Conditions({ state, a, rules, violations }: { state: ViewProps['state']
           <p className="good-text with-icon"><Icon name="check" /> This week’s plan is within every limit set by your {what}.</p>
         ) : (
           <>
-            <p className="warn-text">This week breaks {plural(violations.length, 'rule')}. Make a new week on the Week tab.</p>
+            <p className="warn-text">This week breaks {plural(violations.length, 'rule')}. Make a new week on the Plan tab.</p>
             <ul className="explain">{violations.slice(0, 3).map((v, i) => <li key={i}>{v.day !== undefined ? `${DAYS[v.day]}: ` : ''}{v.message}</li>)}</ul>
             {violations.length > 3 && (
               <details className="more inline">

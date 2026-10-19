@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentType } from 'react'
 import { DisclaimerAcknowledge } from './Disclaimer'
 import { Icon } from './Icon'
-import { LogoMark } from './Logo'
+import { Logo, LogoMark } from './Logo'
 import { computeTargets } from '../lib/energy'
 import { generatePlan } from '../lib/planner'
 import { ConditionFields } from './ConditionFields'
@@ -39,8 +39,8 @@ export function Onboarding(props: ViewProps) {
     return (
       <div className="onboarding">
         <div className="onboarding-head">
-          <LogoMark size={56} />
-          <h1 className="wordmark big">Food Planner</h1>
+          <LogoMark size={112} />
+          <h1 className="wordmark big">Health Tracker</h1>
           <p className="muted">Meals that keep you full, fit your kitchen, your budget and your brain.</p>
         </div>
         <section className="card disclaimer-card">
@@ -55,7 +55,7 @@ export function Onboarding(props: ViewProps) {
   return (
     <div className="onboarding pf-ob">
       <div className="pf-ob-top">
-        <div className="pf-ob-brand"><LogoMark size={28} /><span className="wordmark">Food Planner</span></div>
+        <div className="pf-ob-brand"><Logo height={24} /></div>
         <p className="pf-ob-count">Step {step + 1} of {STEPS.length}</p>
         <div className="pf-ob-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1} aria-valuetext={`Step ${step + 1} of ${STEPS.length}: ${title}`}>
           {STEPS.map((s, i) => <span key={s.title} className={i <= step ? 'on' : ''} />)}

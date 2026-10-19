@@ -97,7 +97,7 @@ export function exportState(state: AppState): string {
 export function importState(json: string): AppState {
   const parsed = JSON.parse(json) as Partial<AppState>
   const base = defaultState()
-  if (!parsed.profile || !Array.isArray(parsed.plan)) throw new Error('That file is not a Food Planner backup.')
+  if (!parsed.profile || !Array.isArray(parsed.plan)) throw new Error('That file is not a Health Tracker backup.')
   const state = { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile.meds } } }
   syncProducts(state.products)
   return state

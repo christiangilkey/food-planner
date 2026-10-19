@@ -80,7 +80,7 @@ export function TodayView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       {violations.length > 0 && (
         <button className="card banner link-card" onClick={() => goTo('week')}>
           <strong>This week doesn’t fit your health settings</strong>
-          <span className="small">Open Week to make a new one ›</span>
+          <span className="small">Open Plan to make a new one ›</span>
         </button>
       )}
 

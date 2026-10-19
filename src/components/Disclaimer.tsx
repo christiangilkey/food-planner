@@ -6,7 +6,7 @@ import { LogoMark } from './Logo'
 export function DisclaimerText() {
   return (
     <div className="disclaimer-text">
-      <p><strong>I’m not a health professional.</strong> Food Planner was made by an individual, not a doctor, dietitian, pharmacist or other licensed clinician.</p>
+      <p><strong>I’m not a health professional.</strong> Health Tracker was made by an individual, not a doctor, dietitian, pharmacist or other licensed clinician.</p>
       <p>Everything in this app (meal plans, calorie and nutrient targets, condition settings, supplements and peptides) is general information drawn from published research. It is <strong>not medical advice</strong> and it can’t account for your full health picture.</p>
       <p><strong>Run everything by your doctor first</strong>, especially before changing your diet, starting any supplement or peptide, or if you have a health condition, take medication, or are pregnant or breastfeeding.</p>
       <p>If you think you’re having a medical emergency, call 911 or your local emergency number.</p>

@@ -36,7 +36,7 @@ export function ShareButton() {
 
   return (
     <span className="share-wrap">
-      <button className="share-btn" onClick={onClick} aria-label="Copy a link to Food Planner to share" title="Copy a link to share">
+      <button className="share-btn" onClick={onClick} aria-label="Copy a link to Health Tracker to share" title="Copy a link to share">
         <Icon name={status === 'copied' ? 'check' : 'share'} size={18} />
       </button>
       <span className="share-toast" role="status" aria-live="polite">
