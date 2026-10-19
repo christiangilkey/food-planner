@@ -1,43 +1,17 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { Tab } from '../App'
-import type { Claim } from '../data/conditions'
-import type { SourceId } from '../data/sources'
 import { ACCESS, CHECKINS, EXPERIENCE, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
 import { hasCondition } from '../lib/conditions'
 import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Program, type Session } from '../lib/training'
 import { DAYS } from '../lib/plan-utils'
 import type { BodyCheckIn, FitnessSettings, Profile, TrainingAddOn } from '../types'
 import { Icon, type IconName } from './Icon'
-import { Bar, Cite, EvidenceChip, Sheet, Sourced, type ViewProps } from './ui'
+import { Bar, Cite, EvidenceChip, Sheet, Sourced, Why, type ViewProps } from './ui'
 
 const SESSION_LENGTHS = [30, 45, 60, 75, 90]
 const FULL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
 type Panel = 'setup' | 'meals' | 'checkins' | 'extras' | 'health' | 'learn'
-
-/**
- * "Why?": the evidence behind a line, folded away until asked for.
- * (Local for now; a shared version is coming to ui.tsx.)
- */
-export function Why({ claims = [], sources, convention, label = 'Why?' }: { claims?: Claim[]; sources?: SourceId[]; convention?: string; label?: string }) {
-  const [open, setOpen] = useState(false)
-  if (!claims.length && !sources?.length) return null
-  return (
-    <span className="why-wrap">
-      <button type="button" className="why-btn" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide' : label}</button>
-      {open && (
-        <span className="why-body">
-          {claims.map((c, i) => (
-            <span key={i} className="why-claim">
-              {c.text} <Sourced evidence={c.evidence} ids={c.sources} convention={i === claims.length - 1 ? convention : undefined} />
-            </span>
-          ))}
-          {sources && <span className="why-claim"><Cite ids={sources} convention={claims.length ? undefined : convention} /></span>}
-        </span>
-      )}
-    </span>
-  )
-}
 
 /** Which session is next: today's if it's still today, else the next day with one. */
 function nextSession(p: Program, today: number): Session | undefined {

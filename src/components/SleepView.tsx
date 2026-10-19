@@ -6,8 +6,7 @@ import { analyzeSleep, formatHours, nightMinutes, scheduleAdvice, sleepImpacts, 
 import type { Profile, SleepEntry } from '../types'
 import { SleepExportSheet } from './ExportSheet'
 import { Icon, type IconName } from './Icon'
-import { Why } from './TrainView'
-import { Sheet, type ViewProps } from './ui'
+import { Sheet, Why, type ViewProps } from './ui'
 
 const isoDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 

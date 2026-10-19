@@ -134,20 +134,37 @@ export function Sourced({ evidence, ids, convention }: { evidence?: Evidence; id
  * A small "Why?" button after a claim. Tapping it shows the evidence level, the sources and any app convention,
  * so every claim keeps its sources without a row of chips under each line.
  */
-export function Why({ evidence, ids, convention, children }: { evidence?: Evidence; ids: SourceId[]; convention?: string; children?: ReactNode }) {
+export function Why({
+  evidence, ids, sources, convention, children, claims = [], label = 'Why?',
+}: {
+  evidence?: Evidence
+  ids?: SourceId[]
+  /** Same as ids. */
+  sources?: SourceId[]
+  convention?: string
+  children?: ReactNode
+  /** Several claims, each with its own evidence level and sources. */
+  claims?: { text: string; evidence: Evidence; sources: SourceId[] }[]
+  /** Button text, e.g. "Source" for a plain citation. */
+  label?: string
+}) {
   const [open, setOpen] = useState(false)
-  if (!evidence && !ids.length && !convention && !children) return null
+  const all = ids ?? sources ?? []
+  if (!evidence && !all.length && !convention && !children && !claims.length) return null
   return (
     <span className="why-wrap">
-      <button type="button" className="why-btn" aria-expanded={open} onClick={() => setOpen(!open)}>Why?</button>
+      <button type="button" className="why-btn" aria-expanded={open} onClick={() => setOpen(!open)}>{label}</button>
       {open && (
         <span className="why-body">
           {children && <span className="why-text">{children}</span>}
+          {claims.map((c, i) => <span key={i} className="why-claim">{c.text} <Sourced evidence={c.evidence} ids={c.sources} /></span>)}
           {convention && <span className="why-text">{convention}</span>}
-          <span className="sourced">
-            {evidence && <EvidenceChip level={evidence} />}
-            <Cite ids={ids} convention={convention} />
-          </span>
+          {(evidence || all.length > 0 || convention) && (
+            <span className="sourced">
+              {evidence && <EvidenceChip level={evidence} />}
+              <Cite ids={all} convention={convention} />
+            </span>
+          )}
         </span>
       )}
     </span>

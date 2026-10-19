@@ -620,10 +620,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .scan-save .save-row .primary { flex: 1 1 auto; }
 
 /* ── Train & Sleep redesign ── */
-/* "Why?" disclosure: evidence folded away until asked for. */
-.why-wrap { display: inline; }
-.why-btn { background: none; border: 0; padding: 0 2px; font-size: 0.8rem; font-weight: 650; color: var(--accent); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
-.why-body { display: block; margin-top: 6px; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 0.85rem; color: var(--text); }
+/* Several claims inside one shared "Why?" (see .why-btn in the Health block). */
 .why-claim { display: block; }
 .why-claim + .why-claim { margin-top: 6px; }
 /* Train: the week as compact rows, details on tap. */
