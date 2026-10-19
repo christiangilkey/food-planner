@@ -12,13 +12,15 @@
     "deploy": "npm test && npm run build && node scripts/deploy.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.131.0",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.6",
     "barcode-detector": "^3.2.2",
     "lucide-react": "^0.511.0",
     "motion": "^12.23.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "tesseract.js": "^7.0.0"
+    "tesseract.js": "^7.0.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",

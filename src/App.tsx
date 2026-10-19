@@ -94,7 +94,7 @@ export default function App() {
                 {tab === 'shop' && <ShopView {...props} section={section} />}
                 {tab === 'health' && <HealthView {...props} section={section} />}
                 {tab === 'train' && <TrainView {...props} />}
-                {tab === 'profile' && <ProfileView {...props} />}
+                {tab === 'profile' && <ProfileView {...props} section={section} />}
               </motion.div>
             </motion.div>
           </main>

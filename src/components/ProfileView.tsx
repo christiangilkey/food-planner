@@ -11,13 +11,15 @@ import { OnyxFields } from './ExportSheet'
 import type { ExportTarget, Profile } from '../types'
 import { Icon, type IconName } from './Icon'
 import { InstallFields } from './InstallApp'
+import { AiKeyFields } from './AiKeyFields'
+import { useAiKey } from '../lib/aiKey'
 import { DisclaimerText } from './Disclaimer'
 import { MedFields, MedSummary } from './MedFields'
 import { BodyFields, EquipmentFields, LifestyleFields, Why } from './ProfileFields'
 import { Cite, type ViewProps } from './ui'
 
-type Page = 'body' | 'conditions' | 'diet' | 'meds' | 'excluded' | 'lifestyle' | 'kitchen' | 'exports' | 'install' | 'about' | 'data'
-type Props = ViewProps & { goTo?: (t: Tab, section?: string) => void }
+type Page = 'body' | 'conditions' | 'diet' | 'meds' | 'excluded' | 'lifestyle' | 'kitchen' | 'exports' | 'ai' | 'install' | 'about' | 'data'
+type Props = ViewProps & { goTo?: (t: Tab, section?: string) => void; section?: string }
 
 const GOAL: Record<Profile['goal'], string> = { lose: 'Lose fat', maintain: 'Maintain', gain: 'Build / gain' }
 
@@ -31,7 +33,9 @@ function clock(t: string) {
 export function ProfileView(props: Props) {
   const { state } = props
   const p = state.profile
-  const [page, setPage] = useState<Page | null>(null)
+  // A link can open a settings page directly (e.g. the craving sheet opens AI suggestions).
+  const [page, setPage] = useState<Page | null>(() => (props.section === 'ai' ? 'ai' : null))
+  const aiKey = useAiKey()
   const install = useInstall()
   // Each settings page starts at the top, and Back returns to the list's top too.
   useEffect(() => { window.scrollTo(0, 0) }, [page])
@@ -58,6 +62,7 @@ export function ProfileView(props: Props) {
       title: 'App',
       items: [
         { id: 'exports', icon: 'share', label: 'Exports', value: state.exportTarget === 'onyx' ? 'Onyx Calendar' : 'Google Tasks' },
+        { id: 'ai', icon: 'sparkles', label: 'AI suggestions', value: aiKey ? 'Using your Anthropic key' : 'Off: suggestions made on your device' },
         { id: 'install', icon: 'smartphone', label: 'Home screen app', value: install.installed ? 'Installed' : 'Not installed' },
         { id: 'about', icon: 'info', label: 'About & disclaimer', value: 'Not medical advice' },
         { id: 'data', icon: 'hardDrive', label: 'Your data', value: 'Backup, restore or erase' },
@@ -202,6 +207,8 @@ function SettingsPage({ page, ...props }: Props & { page: Page }) {
           {state.exportTarget === 'onyx' && <section className="card"><OnyxFields {...props} /></section>}
         </>
       )
+    case 'ai':
+      return <AiKeyFields />
     case 'install':
       return <section className="card"><InstallFields /></section>
     case 'about':

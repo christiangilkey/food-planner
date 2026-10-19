@@ -13,6 +13,7 @@ import { Icon, type IconName } from './Icon'
 import { MealCard, MealSheet } from './MealCard'
 import { SLOT_LABEL } from '../lib/meals'
 import { HungryPanel, LowEnergyPanel } from './QuickHelp'
+import { CravingPanel } from './CravingPanel'
 import { RecipeLink } from './RecipeViewer'
 import { Cite, Sheet, type ViewProps } from './ui'
 
@@ -27,7 +28,7 @@ export function TodayView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
   const day = (opened.getDay() + 6) % 7
   const d = state.plan[day]
   const [open, setOpen] = useState<Pos | null>(null)
-  const [help, setHelp] = useState<'hungry' | 'energy' | 'water' | null>(null)
+  const [help, setHelp] = useState<'hungry' | 'energy' | 'craving' | 'water' | null>(null)
   const [showSchedule, setShowSchedule] = useState(false)
   const targets = computeTargets(state.profile)
   const totals = dayTotals(d)
@@ -94,8 +95,9 @@ export function TodayView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       )}
 
       <div className="quick-actions">
-        <button className="secondary with-icon" onClick={() => setHelp('hungry')}><Icon name="meal" size={18} /> Hungry now?</button>
-        <button className="secondary with-icon" onClick={() => setHelp('energy')}><Icon name="batteryLow" size={18} /> Low energy?</button>
+        <button className="secondary" onClick={() => setHelp('hungry')}><Icon name="meal" size={18} /> Hungry now?</button>
+        <button className="secondary" onClick={() => setHelp('energy')}><Icon name="batteryLow" size={18} /> Low energy?</button>
+        <button className="secondary" onClick={() => setHelp('craving')}><Icon name="sparkles" size={18} /> I’m craving…</button>
       </div>
 
       {rest.length > 0 && <h2 className="section-title">{next ? 'Rest of today' : 'Today’s meals'}</h2>}
@@ -114,6 +116,7 @@ export function TodayView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       {open && <MealSheet pos={open} state={state} onChange={(e) => change(open, e)} onClose={() => setOpen(null)} />}
       {help === 'hungry' && <Sheet title="Hungry right now?" onClose={() => setHelp(null)}><HungryPanel state={state} /></Sheet>}
       {help === 'energy' && <Sheet title="Low on energy?" onClose={() => setHelp(null)}><LowEnergyPanel state={state} /></Sheet>}
+      {help === 'craving' && <Sheet title="I’m craving…" onClose={() => setHelp(null)}><CravingPanel state={state} update={update} goTo={(t, sec) => { setHelp(null); goTo(t, sec) }} day={day} /></Sheet>}
       {help === 'water' && (
         <Sheet title="Your water today" onClose={() => setHelp(null)}>
           <p className="big-number">{(water.drinkMl / 1000).toFixed(1)} L to drink</p>
