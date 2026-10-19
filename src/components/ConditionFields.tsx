@@ -2,6 +2,7 @@ import { CONDITIONS, MENOPAUSE_SOURCES, MENOPAUSE_STAGES } from '../data/conditi
 import { FOOD_BY_ID } from '../data/foods'
 import type { ConditionId, Profile } from '../types'
 import { Icon } from './Icon'
+import { ToggleRow, Why } from './ProfileFields'
 import { Cite, Sourced, type ViewProps } from './ui'
 
 /** Health-condition toggles plus each condition's own options (stage, MAOI, trigger foods). */
@@ -17,81 +18,88 @@ export function ConditionFields({ state, update }: ViewProps) {
     set({ [key]: p[key].includes(food) ? p[key].filter((f) => f !== food) : [...p[key], food] } as Partial<Profile>)
 
   const visible = CONDITIONS.filter((c) => c.id !== 'menopause' || p.sex === 'female')
+  const chosen = visible.filter((c) => p.conditions.includes(c.id))
 
   return (
     <div className="stack">
-      <p className="muted small">
-        Each condition adds hard limits the planner must respect, removes foods that could make it worse, and favors foods with evidence of helping. Every rule links to its source. This doesn’t replace advice from your doctor or dietitian.
-      </p>
-      <div className="condition-grid">
+      <Why label="How this works">
+        <p>Each condition adds hard limits the planner must respect, removes foods that could make it worse, and favors foods with evidence of helping. Every rule links to its source. This doesn’t replace advice from your doctor or dietitian.</p>
+      </Why>
+      <div className="pf-tiles">
         {visible.map((c) => {
           const on = p.conditions.includes(c.id)
           return (
-            <div key={c.id} className={`condition-card ${on ? 'on' : ''}`}>
-              <input type="checkbox" id={`cond-${c.id}`} checked={on} onChange={() => toggle(c.id)} />
-              <label htmlFor={`cond-${c.id}`}>
-                <strong className="with-icon"><Icon name={c.icon} /> {c.label}</strong>
-                <small>{c.blurb}</small>
-              </label>
-            </div>
+            <button key={c.id} type="button" className={`pf-tile ${on ? 'on' : ''}`} aria-pressed={on} onClick={() => toggle(c.id)}>
+              <Icon name={c.icon} />
+              <span>{c.label}</span>
+              {on && <Icon name="check" size={16} className="pf-tile-check" />}
+            </button>
           )
         })}
       </div>
 
-      {p.conditions.includes('menopause') && p.sex === 'female' && (
-        <fieldset className="field">
-          <legend>Menopause stage <Cite ids={MENOPAUSE_SOURCES} /></legend>
-          <div className="radio-list">
-            {MENOPAUSE_STAGES.map((st) => (
-              <label key={st.id} className={`radio-card ${p.menopauseStage === st.id ? 'on' : ''}`}>
-                <input type="radio" name="meno" checked={p.menopauseStage === st.id} onChange={() => set({ menopauseStage: st.id })} />
-                <strong>{st.label}</strong>
-                <small>{st.detail}</small>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      )}
+      {chosen.map((c) => {
+        const triggers = c.avoid.filter((a) => a.tolerable || a.optIn)
+        return (
+          <section key={c.id} className="pf-detail">
+            <h3 className="with-icon"><Icon name={c.icon} /> {c.label}</h3>
+            <p className="small muted">{c.blurb}</p>
 
-      {p.conditions.includes('depression') && (
-        <label className="toggle">
-          <input type="checkbox" checked={p.maoi} onChange={(e) => set({ maoi: e.target.checked })} />
-          <span>
-            <strong>I take an MAOI antidepressant</strong>
-            <small>
-              Phenelzine, tranylcypromine, isocarboxazid, or the selegiline patch at higher doses. Removes tyramine-rich foods (aged cheese, kimchi, soy sauce, cured meat). <Cite ids={['gillman', 'flockhart']} />
-            </small>
-          </span>
-        </label>
-      )}
+            {c.id === 'menopause' && (
+              <fieldset className="field">
+                <legend>Stage</legend>
+                <div className="radio-list">
+                  {MENOPAUSE_STAGES.map((st) => (
+                    <label key={st.id} className={`radio-card ${p.menopauseStage === st.id ? 'on' : ''}`}>
+                      <input type="radio" name="meno" checked={p.menopauseStage === st.id} onChange={() => set({ menopauseStage: st.id })} />
+                      <strong>{st.label}</strong>
+                      <small>{st.detail}</small>
+                    </label>
+                  ))}
+                </div>
+                <Why><p>Based on: <Cite ids={MENOPAUSE_SOURCES} /></p></Why>
+              </fieldset>
+            )}
 
-      {p.conditions.includes('hashimotos') && !p.meds.thyroid && (
-        <p className="muted small">Taking levothyroxine? Tick it under Medications so your dose and breakfast are timed around it.</p>
-      )}
+            {c.id === 'depression' && (
+              <ToggleRow
+                checked={p.maoi} onChange={(v) => set({ maoi: v })}
+                label="I take an MAOI antidepressant"
+                hint="Phenelzine, tranylcypromine, isocarboxazid, or the selegiline patch at higher doses. Removes tyramine-rich foods (aged cheese, kimchi, soy sauce, cured meat)."
+                why={<p>Based on: <Cite ids={['gillman', 'flockhart']} /></p>}
+              />
+            )}
 
-      {CONDITIONS.filter((c) => p.conditions.includes(c.id)).flatMap((c) =>
-        c.avoid
-          .filter((a) => a.tolerable || a.optIn)
-          .map((a, i) => (
-            <div key={`${c.id}-${i}`} className="field">
-              <span>
-                <span className="with-icon"><Icon name={c.icon} /> {c.label}</span>: {a.optIn ? 'tap the foods that trigger you' : 'tap any trigger you tolerate to allow it back'}
-              </span>
-              <p className="small">{a.reason.text} <Sourced evidence={a.reason.evidence} ids={a.reason.sources} /></p>
-              <div className="trigger-list">
-                {a.foods.map((f) => {
-                  const avoided = a.optIn ? p.optInTriggers.includes(f) : !p.toleratedTriggers.includes(f)
-                  return (
-                    <button key={f} type="button" className={`trigger ${avoided ? 'avoided' : ''}`} aria-pressed={avoided}
-                      onClick={() => toggleIn(a.optIn ? 'optInTriggers' : 'toleratedTriggers', f)}>
-                      <Icon name={avoided ? 'x' : 'check'} size={14} /> {FOOD_BY_ID[f]?.name ?? f}
-                    </button>
-                  )
-                })}
+            {c.id === 'hashimotos' && !p.meds.thyroid && (
+              <p className="small">Taking levothyroxine? Tick it under Medications so your dose and breakfast are timed around it.</p>
+            )}
+
+            {triggers.map((a, i) => (
+              <div key={i} className="pf-triggers">
+                <p className="small"><strong>{a.optIn ? 'Tap the foods that trigger you' : 'Tap any trigger you tolerate to allow it back'}</strong></p>
+                <div className="trigger-list">
+                  {a.foods.map((f) => {
+                    const avoided = a.optIn ? p.optInTriggers.includes(f) : !p.toleratedTriggers.includes(f)
+                    return (
+                      <button key={f} type="button" className={`trigger ${avoided ? 'avoided' : ''}`} aria-pressed={avoided}
+                        onClick={() => toggleIn(a.optIn ? 'optInTriggers' : 'toleratedTriggers', f)}>
+                        <Icon name={avoided ? 'x' : 'check'} size={14} /> {FOOD_BY_ID[f]?.name ?? f}
+                      </button>
+                    )
+                  })}
+                </div>
+                <Why><p>{a.reason.text} <Sourced evidence={a.reason.evidence} ids={a.reason.sources} /></p></Why>
               </div>
-            </div>
-          )),
-      )}
+            ))}
+          </section>
+        )
+      })}
     </div>
   )
+}
+
+/** One-line summary of chosen conditions, for the Profile list. */
+export function ConditionSummary({ p }: { p: Profile }) {
+  const on = CONDITIONS.filter((c) => p.conditions.includes(c.id) && (c.id !== 'menopause' || p.sex === 'female'))
+  return <>{on.length ? on.map((c) => c.label).join(', ') : 'None'}</>
 }
