@@ -8,6 +8,7 @@ import { Onboarding } from './components/Onboarding'
 import { PlanView } from './components/PlanView'
 import { ProfileView } from './components/ProfileView'
 import { RecipeViewerProvider } from './components/RecipeViewer'
+import { ShareButton } from './components/ShareButton'
 import { ShopView } from './components/ShopView'
 import { TodayView } from './components/TodayView'
 import { TrainView } from './components/TrainView'
@@ -73,10 +74,13 @@ export default function App() {
         <div className="app">
           <header className="topbar">
             <Logo />
-            <button className={`avatar-btn ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')} aria-label="Profile and settings" title="Profile and settings">
-              {initial ? <span className="avatar">{initial}</span> : <Icon name="user" size={20} />}
-              <span className="avatar-label">Profile</span>
-            </button>
+            <div className="topbar-actions">
+              <ShareButton />
+              <button className={`avatar-btn ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')} aria-label="Profile and settings" title="Profile and settings">
+                {initial ? <span className="avatar">{initial}</span> : <Icon name="user" size={20} />}
+                <span className="avatar-label">Profile</span>
+              </button>
+            </div>
           </header>
 
           <main className="content" ref={mainRef}>

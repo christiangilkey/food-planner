@@ -848,3 +848,11 @@ details.more.card-details > summary .icon-svg { color: var(--accent); }
 .pf-list > .pf-toggle { border: 0; border-top: 1px solid var(--border); border-radius: 0; }
 .pf-list > .pf-toggle:first-child { border-top: 0; }
 .pf-toggle strong { font-size: 0.95rem; }
+
+/* ── Share button ───────────────────────────────── */
+.topbar-actions { gap: 8px; }
+.share-wrap { position: relative; display: inline-flex; }
+.share-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.share-btn:hover { border-color: var(--accent); color: var(--accent); }
+.share-toast:empty { display: none; }
+.share-toast { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; white-space: nowrap; max-width: min(80vw, 320px); overflow-wrap: anywhere; white-space: normal; width: max-content; padding: 6px 10px; border-radius: 10px; background: var(--text); color: var(--bg); font-size: 0.8rem; font-weight: 600; box-shadow: var(--shadow); }
