@@ -55,7 +55,7 @@ export function Onboarding(props: ViewProps) {
   return (
     <div className="onboarding pf-ob">
       <div className="pf-ob-top">
-        <div className="pf-ob-brand"><Logo height={24} /></div>
+        <div className="pf-ob-brand"><Logo height={30} /></div>
         <p className="pf-ob-count">Step {step + 1} of {STEPS.length}</p>
         <div className="pf-ob-progress" role="progressbar" aria-label="Setup progress" aria-valuemin={1} aria-valuemax={STEPS.length} aria-valuenow={step + 1} aria-valuetext={`Step ${step + 1} of ${STEPS.length}: ${title}`}>
           {STEPS.map((s, i) => <span key={s.title} className={i <= step ? 'on' : ''} />)}

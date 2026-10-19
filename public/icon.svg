@@ -1,14 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 2000">
   <rect width="2000" height="2000" fill="#0A0B0A"/>
-  <g fill="#141515">
-    <path d="M582 758H922V983H582Z"/>
-    <path d="M1190 1045L1443 1450L965 1460Z"/>
-  </g>
-  <g fill="#fff">
-    <path d="M33 733H60L243 1238L416 758H115V733H453L243 1310Z"/>
-    <path d="M548 733H910L885 758H573V1284H892V1309H548Z"/>
-    <path d="M623 983H843V1007H599Z"/>
-    <path d="M1021 733H1050L1358 1265V733H1382V1309H1359L1046 775V1309H1021Z"/>
-    <path d="M1688 733L1898 1309H1560V1284H1862L1688 804L1505 1309H1479Z"/>
+  <path d="M582 758L922 758L922 983L582 983Z" fill="#141515"/>
+  <path d="M1190 1045L1443 1450L965 1460Z" fill="#141515"/>
+  <path d="M33 733L60 733L243 1238L416 758L115 758L115 733L453 733L243 1310Z" fill="#fff"/>
+  <path d="M548 733L910 733L885 758L573 758L573 1284L892 1284L892 1309L548 1309Z" fill="#fff"/>
+  <path d="M623 983L843 983L843 1007L599 1007Z" fill="#fff"/>
+  <path d="M1021 733L1050 733L1358 1265L1358 733L1382 733L1382 1309L1359 1309L1046 775L1046 1309L1021 1309Z" fill="#fff"/>
+  <path d="M1688 733L1898 1309L1560 1309L1560 1284L1862 1284L1688 804L1505 1309L1479 1309Z" fill="#fff"/>
+  <path d="M1021 1309L1046 1309L1044 1358L1052 1368L1014 1368L1023 1358Z" fill="#fff"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1022 1366L990 1370L955 1373L925 1381L890 1386L860 1384L835 1389L810 1388L790 1391" stroke-width="7"/>
+    <path d="M860 1384L849 1397L843 1408" stroke-width="3"/>
+    <path d="M890 1386L875 1397L860 1404" stroke-width="3"/>
+    <path d="M935 1379L950 1388" stroke-width="2.5"/>
+    <path d="M1018 1372L1000 1386L985 1405L960 1418L935 1427L920 1431" stroke-width="5"/>
+    <path d="M985 1405L976 1424L968 1436" stroke-width="2.5"/>
+    <path d="M960 1418L946 1439" stroke-width="2.5"/>
+    <path d="M1000 1386L990 1401" stroke-width="2.5"/>
+    <path d="M1025 1375L1015 1401L1005 1429L990 1449L975 1458" stroke-width="4"/>
+    <path d="M1005 1429L1012 1446" stroke-width="2.5"/>
+    <path d="M1046 1366L1080 1370L1120 1374L1150 1381L1185 1385L1215 1392L1245 1390L1280 1388" stroke-width="7"/>
+    <path d="M1150 1381L1168 1376" stroke-width="2.5"/>
+    <path d="M1215 1392L1230 1401L1242 1404" stroke-width="3"/>
+    <path d="M1185 1385L1196 1396" stroke-width="2.5"/>
+    <path d="M1048 1372L1065 1385L1085 1400L1110 1415L1130 1430L1150 1441" stroke-width="5"/>
+    <path d="M1085 1400L1095 1420L1100 1435" stroke-width="2.5"/>
+    <path d="M1110 1415L1118 1440" stroke-width="2.5"/>
+    <path d="M1130 1430L1146 1425" stroke-width="2.5"/>
+    <path d="M1042 1376L1052 1400L1062 1425L1072 1445L1085 1458" stroke-width="4"/>
+    <path d="M1062 1425L1052 1440" stroke-width="2.5"/>
+    <path d="M1034 1368L1036 1400L1033 1430L1028 1455L1036 1480" stroke-width="6"/>
+    <path d="M1036 1480L1046 1500L1042 1525L1035 1548L1033 1572" stroke-width="3.5"/>
+    <path d="M1028 1455L1015 1470L1010 1482" stroke-width="2.5"/>
+    <path d="M1046 1500L1058 1515L1068 1530" stroke-width="2.5"/>
+    <path d="M1036 1480L1022 1500L1020 1512" stroke-width="2.5"/>
+    <path d="M1042 1525L1052 1545" stroke-width="2"/>
+    <path d="M1035 1548L1022 1557" stroke-width="2"/>
   </g>
 </svg>
