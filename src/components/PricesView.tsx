@@ -3,15 +3,18 @@ import { FOODS } from '../data/foods'
 import { priceIndex, STATE_PRICE_INDEX } from '../data/regions'
 import { estimatedPackagePrice } from '../lib/nutrition'
 import { weeklyNeeds } from '../lib/shopping'
-import { type ViewProps } from './ui'
+import { Bar, type ViewProps } from './ui'
 import { money } from '../lib/format'
 import { Icon } from './Icon'
 
+/** Prices: your stores, then shelf prices for the starred one. */
 export function PricesView({ state, update }: ViewProps) {
   const [newStore, setNewStore] = useState('')
   const [filter, setFilter] = useState<'plan' | 'all'>('plan')
   const [query, setQuery] = useState('')
+  const [showEstimates, setShowEstimates] = useState(false)
   const storeId = state.preferredStore
+  const store = state.stores.find((s) => s.id === storeId)
   const region = STATE_PRICE_INDEX[state.profile.state]
   const needs = weeklyNeeds(state.plan)
 
@@ -41,22 +44,50 @@ export function PricesView({ state, update }: ViewProps) {
 
   const foods = FOODS.filter((f) => (filter === 'all' || needs[f.id]) && f.name.toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => a.aisle.localeCompare(b.aisle) || a.name.localeCompare(b.name))
-  const entered = storeId ? Object.keys(state.priceOverrides[storeId] ?? {}).length : 0
+  const overrides = storeId ? state.priceOverrides[storeId] ?? {} : {}
+  const weekFoods = Object.keys(needs).filter((id) => FOODS.some((f) => f.id === id))
+  const weekEntered = weekFoods.filter((id) => overrides[id] !== undefined).length
+  const pct = Math.round((priceIndex(state.profile.state) - 1) * 100)
+  const basis = !region ? 'US averages (set your state in Profile to adjust them)'
+    : pct === 0 ? `US averages, about right for ${region.name}`
+    : `US averages, about ${Math.abs(pct)}% ${pct > 0 ? 'higher' : 'lower'} for ${region.name}`
+  const showList = !!storeId || showEstimates
+
+  const addForm = (main: boolean) => (
+    <form className="add-row" onSubmit={(e) => { e.preventDefault(); addStore() }}>
+      <input value={newStore} onChange={(e) => setNewStore(e.target.value)} placeholder="Store name" aria-label="Store name" />
+      <button className={main ? 'primary' : 'secondary'} disabled={!newStore.trim()}>Add store</button>
+    </form>
+  )
 
   return (
-    <div className="stack">
-      <section className="card">
-        <h1>Stores</h1>
-        <p className="muted small">
-          Estimates start from US averages
-          {region ? `, adjusted ${priceIndex(state.profile.state) >= 1 ? '+' : ''}${Math.round((priceIndex(state.profile.state) - 1) * 100)}% for ${region.name}` : ' (set your state in Profile to adjust them)'}.
-          Add the stores you use and type in real shelf prices as you shop. The shopping list will use them and point out where something is cheaper.
-        </p>
-        <div className="add-row">
-          <input value={newStore} onChange={(e) => setNewStore(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && addStore()} placeholder="Store name, e.g. Trader Joe's" aria-label="Store name" />
-          <button className="primary" onClick={addStore} disabled={!newStore.trim()}>Add store</button>
-        </div>
-        {state.stores.length > 0 && (
+    <>
+      <section className="card hero">
+        <h1>Prices</h1>
+        {store ? (
+          <>
+            <p>Your list uses prices from <strong>{store.name}</strong>.</p>
+            {weekFoods.length > 0 && (
+              <>
+                <div className="summary-label"><span>Real prices for this week's foods</span><span>{weekEntered} of {weekFoods.length}</span></div>
+                <Bar value={weekEntered} max={weekFoods.length} tone="accent" label="This week's foods with a real price" />
+              </>
+            )}
+            <p className="muted small">The rest use estimates: {basis}.</p>
+          </>
+        ) : (
+          <>
+            <p>Your list uses estimates: {basis}.</p>
+            <p className="muted small">Add the store you use and type real shelf prices as you shop. The list will use them and point out where something's cheaper.</p>
+            {addForm(true)}
+          </>
+        )}
+      </section>
+
+      {state.stores.length > 0 && (
+        <section className="card">
+          <h2>Your stores</h2>
+          <p className="muted small">The starred store is the one your list adds up. Tap another to switch.</p>
           <div className="store-list">
             {state.stores.map((s) => (
               <div key={s.id} className={`store ${s.id === storeId ? 'on' : ''}`}>
@@ -67,37 +98,40 @@ export function PricesView({ state, update }: ViewProps) {
               </div>
             ))}
           </div>
-        )}
-        {storeId && <p className="muted small">The starred store is your main store: the shopping list totals use its prices. Tap another store to edit its prices.</p>}
-      </section>
+          {addForm(false)}
+        </section>
+      )}
 
       <section className="card">
-        <div className="row-between">
-          <h2>{storeId ? `Prices at ${state.stores.find((s) => s.id === storeId)?.name}` : 'Estimated prices'}</h2>
-          {storeId && <span className="muted small">{entered} entered</span>}
-        </div>
-        <div className="add-row">
-          <div className="segmented">
-            <button className={filter === 'plan' ? 'on' : ''} onClick={() => setFilter('plan')}>This week</button>
-            <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')}>All foods</button>
-          </div>
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" aria-label="Search foods" />
-        </div>
-        {!storeId && <p className="muted small">Add a store above to enter your own prices.</p>}
-        <table className="price-table">
-          <thead>
-            <tr><th>Food</th><th>Package</th><th>Estimate</th>{storeId && <th>Your price</th>}</tr>
-          </thead>
-          <tbody>
-            {foods.map((f) => {
-              const override = storeId ? state.priceOverrides[storeId]?.[f.id] : undefined
-              return (
-                <tr key={f.id}>
-                  <td>{f.name}</td>
-                  <td className="muted small">{f.packageLabel}</td>
-                  <td className="num">{money(estimatedPackagePrice(f.id, state))}</td>
+        {store ? (
+          <>
+            <h2>Prices at {store.name}</h2>
+            <p className="muted small">Type the shelf price for one package. Leave it blank to use the estimate.</p>
+          </>
+        ) : (
+          <button className="disclosure full" onClick={() => setShowEstimates(!showEstimates)} aria-expanded={showEstimates}>
+            <Icon name={showEstimates ? 'chevronDown' : 'chevronRight'} /> See estimated prices
+          </button>
+        )}
+        {showList && (
+          <>
+            <div className="add-row">
+              <div className="segmented">
+                <button className={filter === 'plan' ? 'on' : ''} onClick={() => setFilter('plan')} aria-pressed={filter === 'plan'}>This week</button>
+                <button className={filter === 'all' ? 'on' : ''} onClick={() => setFilter('all')} aria-pressed={filter === 'all'}>All foods</button>
+              </div>
+              <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search" aria-label="Search foods" />
+            </div>
+            {foods.length === 0 && <p className="muted small">{query ? 'No foods match that search.' : 'No meals planned this week. Try All foods.'}</p>}
+            <ul className="price-list">
+              {foods.map((f) => (
+                <li key={f.id} className="price-row">
+                  <span className="price-name">
+                    <span>{f.name}</span>
+                    <span className="muted small">{f.packageLabel} · est. {money(estimatedPackagePrice(f.id, state))}</span>
+                  </span>
                   {storeId && (
-                    <td>
+                    <span className="input-wrap price-field">
                       <input
                         key={`${storeId}-${f.id}`}
                         className="price-input"
@@ -105,19 +139,20 @@ export function PricesView({ state, update }: ViewProps) {
                         inputMode="decimal"
                         step="0.01"
                         min="0"
-                        defaultValue={override ?? ''}
+                        defaultValue={overrides[f.id] ?? ''}
                         placeholder="—"
                         onBlur={(e) => setPrice(f.id, e.target.value)}
-                        aria-label={`${f.name} price`}
+                        aria-label={`${f.name} price at ${store?.name ?? 'your store'}`}
                       />
-                    </td>
+                      <span className="suffix">$</span>
+                    </span>
                   )}
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
-    </div>
+    </>
   )
 }

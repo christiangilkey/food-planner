@@ -3,11 +3,9 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { DisclaimerGate } from './components/Disclaimer'
 import { HealthView } from './components/HealthView'
 import { Icon, type IconName } from './components/Icon'
-import { KitchenView } from './components/KitchenView'
 import { Logo } from './components/Logo'
 import { Onboarding } from './components/Onboarding'
 import { PlanView } from './components/PlanView'
-import { PricesView } from './components/PricesView'
 import { ProfileView } from './components/ProfileView'
 import { RecipeViewerProvider } from './components/RecipeViewer'
 import { ShopView } from './components/ShopView'
@@ -88,9 +86,7 @@ export default function App() {
               <motion.div key={`${tab}-${section}`} initial={dir ? { x: dir * 40, opacity: 0 } : false} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
                 {tab === 'today' && <TodayView {...props} />}
                 {tab === 'week' && <PlanView {...props} />}
-                {tab === 'shop' && section === 'pantry' && <KitchenView {...props} />}
-                {tab === 'shop' && section === 'prices' && <PricesView {...props} />}
-                {tab === 'shop' && section !== 'pantry' && section !== 'prices' && <ShopView {...props} />}
+                {tab === 'shop' && <ShopView {...props} section={section} />}
                 {tab === 'health' && section === 'sleep' ? <SleepView {...props} /> : tab === 'health' && <HealthView state={state} />}
                 {tab === 'train' && <TrainView {...props} />}
                 {tab === 'profile' && <ProfileView {...props} />}
