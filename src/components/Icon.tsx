@@ -6,6 +6,7 @@ import {
   Beef, Egg, WheatOff, Footprints, Coffee, Bed, Smartphone, Sunrise, Thermometer, type LucideIcon,
 } from 'lucide-react'
 import { Camera, Pencil, ScanBarcode, Trash2, WandSparkles } from 'lucide-react'
+import { ChevronLeft, CircleUserRound } from 'lucide-react'
 
 const ICONS = {
   activity: Activity, swap: ArrowLeftRight, bean: Bean, bone: Bone, brain: Brain, calendar: CalendarDays, check: Check,
@@ -19,6 +20,8 @@ const ICONS = {
   coffee: Coffee, bed: Bed, smartphone: Smartphone, sunrise: Sunrise, thermometer: Thermometer,
   // Pantry scanner and magic plan
   scan: ScanBarcode, camera: Camera, wand: WandSparkles, trash: Trash2, pencil: Pencil,
+  // Navigation
+  user: CircleUserRound, chevronLeft: ChevronLeft,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS

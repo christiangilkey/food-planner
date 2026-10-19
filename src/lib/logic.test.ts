@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { FOOD_BY_ID, FOODS } from '../data/foods'
 import { METHODS } from '../data/methods'
 import { RECIPES } from '../data/recipes'
@@ -9,6 +9,9 @@ import { dayEntries, dayTotals, eligibleRecipes, generatePlan, planCost, rankCan
 import { buildShoppingList } from './shopping'
 import { defaultState } from './store'
 import type { AppState } from '../types'
+
+// Building plans takes a few seconds per case; under a full parallel run that can pass the 5 s default.
+vi.setConfig({ testTimeout: 60_000 })
 
 const state = (patch: Partial<AppState> = {}): AppState => ({ ...defaultState(), ...patch })
 

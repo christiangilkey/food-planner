@@ -548,3 +548,28 @@ button:active:not(:disabled) { transform: scale(0.97); }
 .lift-list li:first-child { border-top: 0; }
 .lift-dose { font-weight: 700; white-space: nowrap; }
 .lift-cue { color: var(--muted); }
+
+/* ── Navigation & Today redesign ────────────────── */
+.avatar-btn { display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px 4px 4px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-weight: 600; min-height: 40px; }
+.avatar-btn:hover, .avatar-btn.active { border-color: var(--accent); color: var(--accent); }
+.avatar { width: 30px; height: 30px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 0.9rem; }
+.avatar-btn > .icon-svg { margin-left: 4px; }
+.avatar-label { font-size: 0.88rem; }
+.eyebrow { margin: 0; font-size: 0.78rem; font-weight: 600; color: var(--muted); }
+.section-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 10px 2px -4px; font-weight: 700; }
+.today-hero .water-row { margin-top: 10px; }
+.quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick-actions button { justify-content: center; }
+.empty-state p:not(.muted) { margin: 8px 0 14px; }
+.link-card { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; width: 100%; color: inherit; font: inherit; cursor: pointer; }
+.meal .meal-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; }
+.meal .meal-foot .chips { margin: 0; }
+.meal.empty .row-between { margin-top: 4px; }
+.kept { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+.hero-links { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 4px; }
+.hero-links .rotation-pill { flex: 1 1 auto; }
+.day-tabs button.is-today:not(.on) { border-color: var(--accent); }
+.sheet-section { display: flex; flex-direction: column; gap: 8px; padding-bottom: 12px; margin-bottom: 4px; border-bottom: 1px solid var(--border); }
+.sheet-section .portion { margin: 0; }
+.toggle.compact { padding: 8px 10px; }
+.toggle.compact small { display: block; color: var(--muted); }

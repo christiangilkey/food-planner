@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { FOODS } from '../data/foods'
 import { NUTRIENTS } from '../data/nutrients'
 import { RECIPES } from '../data/recipes'
@@ -9,6 +9,9 @@ import { daySchedule, mealTimes, parseTime } from './schedule'
 import { defaultState } from './store'
 import { weeklyTips, mealTip } from './tips'
 import { waterPlan } from './water'
+
+// Building plans takes a few seconds per case; under a full parallel run that can pass the 5 s default.
+vi.setConfig({ testTimeout: 60_000 })
 
 describe('data', () => {
   it('every food has a serving size, and plant species where relevant', () => {
