@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { Tab } from '../App'
-import { ACCESS, CHECKINS, EXPERIENCE, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
+import { ACCESS, CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
 import { hasCondition } from '../lib/conditions'
 import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Program, type Session } from '../lib/training'
 import { DAYS } from '../lib/plan-utils'
@@ -64,7 +64,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
     { id: 'setup', icon: 'target', title: 'Goal & schedule', detail: `${goal.label} · ${f.days} days` },
     { id: 'meals', icon: 'meal', title: 'Meals for training', detail: mealTodos ? `${mealTodos} suggestion${mealTodos > 1 ? 's' : ''}` : 'All set' },
     { id: 'checkins', icon: 'scale', title: 'Check-ins', detail: latest ? `Last: ${new Date(`${latest.date}T12:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'Weight, waist, grip' },
-    { id: 'extras', icon: 'sparkles', title: 'Extras', detail: addOnCount ? `${addOnCount} on` : 'Posture, injury-proofing' },
+    { id: 'extras', icon: 'sparkles', title: 'Extras', detail: addOnCount ? `${addOnCount} on` : 'Mobility, posture, injuries' },
     ...(program.conditionNotes.length ? [{ id: 'health' as Panel, icon: 'heartPulse' as IconName, title: 'With your health', detail: `${program.conditionNotes.length} note${program.conditionNotes.length > 1 ? 's' : ''}` }] : []),
     { id: 'learn', icon: 'lightbulb', title: 'How it works', detail: 'Sets, effort, myths' },
   ]
@@ -294,8 +294,26 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
   }
   const tendon = !!f.addOns?.includes('tendon')
   const posture = !!f.addOns?.includes('posture')
+  const fascia = !!f.addOns?.includes('fascia')
   return (
     <div className="stack tight">
+      <label className={`toggle compact ${fascia ? 'on' : ''}`}>
+        <input type="checkbox" checked={fascia} onChange={() => toggle('fascia')} />
+        <span><strong>Fascia & mobility</strong><small>Rolling, short stretches and foot work: about 10 minutes, after training or on rest days. <Why claims={FASCIA.claims} convention={FASCIA.convention} /></small></span>
+      </label>
+      {fascia && (
+        <>
+          <ol className="lift-list">
+            {FASCIA.drills.map((d) => (
+              <li key={d.name}>
+                <div className="row-between"><strong>{d.name}</strong><span className="lift-dose">{d.dose}</span></div>
+                <span className="small lift-cue">{d.cue}</span>
+              </li>
+            ))}
+          </ol>
+          <p className="muted small">Standing tall: your spine is about 2 cm shorter by evening and gets it back overnight; after your teens, posture is what changes how tall you stand. <Why claims={FASCIA.height} /></p>
+        </>
+      )}
       <label className={`toggle compact ${tendon ? 'on' : ''}`}>
         <input type="checkbox" checked={tendon} onChange={() => toggle('tendon')} />
         <span><strong>Injury-proofing</strong><small>{TENDON.dose} <Why claims={TENDON.claims} /></small></span>

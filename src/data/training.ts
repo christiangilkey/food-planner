@@ -319,6 +319,34 @@ export const POSTURE: { claim: Claim; drills: { name: string; dose: string; cue:
   ],
 }
 
+/**
+ * Fascia & mobility: rolling, short stretches, foot strength and rest lying down, with what the
+ * research does and doesn't show. Popular "fascia for height" ideas (adhesions compressing the
+ * spine, growing taller as an adult, weighted hanging) have no studies behind them, so the app
+ * sticks to what is measured: range of motion, soreness, foot strength and daily stature.
+ */
+export const FASCIA: { claims: Claim[]; height: Claim[]; drills: { name: string; dose: string; cue: string }[]; convention: string } = {
+  claims: [
+    { text: 'Rolling with a foam roller or ball increased range of motion right away, about as much as stretching, in a meta-analysis of 26 high-quality trials.', evidence: 'strong', sources: ['wilke_rolling'] },
+    { text: 'Rolling after hard training reduced muscle soreness and helped sprint and strength recover; rolling before training gave small gains in flexibility and sprinting.', evidence: 'moderate', sources: ['wiewelhove', 'pearcey_rolling'] },
+    { text: 'Stretches held under 60 seconds barely affected performance, and the extra range from one session typically faded within 30 minutes.', evidence: 'strong', sources: ['behm_stretch'] },
+    { text: 'Foot exercises like the short-foot drill increased foot strength in a meta-analysis, though the certainty of the evidence was low.', evidence: 'emerging', sources: ['peters_dickie'] },
+  ],
+  height: [
+    { text: 'Your spine shortens by about 1% of your height (about 2 cm) over the day as its discs compress, over half of it in the first hour after getting up, and you regain it lying down at night. Resting reclined brought it back faster than recovering standing up.', evidence: 'moderate', sources: ['tyrrell_stature'] },
+    { text: 'Height from bone growth stops when the growth plates close, sometime during adolescence. After that, posture and these daily disc changes are what change how tall you stand.', evidence: 'strong', sources: ['niams_growth', 'sepehri'] },
+  ],
+  convention: 'The drill list, durations and 10-minute dose are this app’s choice.',
+  drills: [
+    { name: 'Roll the soles of your feet', dose: '60 s each foot', cue: 'Stand and roll a tennis or lacrosse ball from heel to toes with steady pressure.' },
+    { name: 'Foam roll calves, thighs and glutes', dose: '30–60 s each area', cue: 'Slow passes; pause on tender spots, but keep it at a 6–7 out of 10, never sharp pain.' },
+    { name: 'Short-foot drill', dose: '2 × 10, 5-second hold', cue: 'Seated or standing, pull the ball of the foot toward the heel to lift the arch without curling the toes.' },
+    { name: 'Hip flexor stretch', dose: '2 × 30 s each side', cue: 'Half-kneeling, squeeze the back glute and shift forward until the front of the hip stretches.' },
+    { name: 'Hamstring and calf stretch', dose: '2 × 30 s each side', cue: 'Heel on a low step, hips back, back flat; then a wall calf stretch with the back heel down.' },
+    { name: 'Rest lying down, legs supported', dose: '5 minutes after heavy lifting', cue: 'On your back with your calves on a chair or your legs up a wall, breathing slowly.' },
+  ],
+}
+
 /** What strength and body measurements say about health. */
 export const CHECKINS: Record<'grip' | 'waist' | 'trend', Claim & { convention?: string }> = {
   grip: { text: 'In about 140,000 adults across 17 countries, every 5 kg lower grip strength was linked to 16% higher risk of death, a stronger predictor than blood pressure.', evidence: 'moderate', sources: ['leong_grip'] },

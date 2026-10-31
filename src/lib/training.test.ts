@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SOURCES } from '../data/sources'
-import { ACCESS, CHECKINS, CONDITION_TRAINING, FUEL, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
+import { ACCESS, CHECKINS, CONDITION_TRAINING, FASCIA, FUEL, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
 import type { ConditionId, FitnessSettings, Profile } from '../types'
 import { computeTargets, lbToKg } from './energy'
 import { activityFor, bodyTrend, buildProgram, fuelAdvice } from './training'
@@ -120,11 +120,21 @@ describe('training and the meal plan', () => {
 
 describe('looks, tendons, posture and check-ins', () => {
   it('every new claim cites real sources', () => {
-    const claims = [VTAPER.claim, ...TENDON.claims, POSTURE.claim, ...Object.values(CHECKINS), ...HORMONE_CUES, ...NOT_FOR_YOU.map((x) => x.claim)]
+    const claims = [VTAPER.claim, ...TENDON.claims, POSTURE.claim, ...FASCIA.claims, ...FASCIA.height, ...Object.values(CHECKINS), ...HORMONE_CUES, ...NOT_FOR_YOU.map((x) => x.claim)]
     for (const c of claims) {
       expect(c.sources.length, c.text).toBeGreaterThan(0)
       for (const s of c.sources) expect(SOURCES[s], `${c.text.slice(0, 40)}: ${s}`).toBeDefined()
     }
+  })
+
+  it('fascia & mobility is its own routine, and never promises an adult height gain', () => {
+    const base = buildProgram(fit({ days: 4 }), person())
+    const withFascia = buildProgram(fit({ days: 4, addOns: ['fascia'] }), person())
+    expect(withFascia.sessions).toEqual(base.sessions)
+    expect(FASCIA.drills.length).toBeGreaterThanOrEqual(5)
+    const text = [...FASCIA.claims, ...FASCIA.height].map((c) => c.text).join(' ') + FASCIA.drills.map((d) => d.cue).join(' ')
+    expect(text).not.toMatch(/grow taller|gain height|add height|inches taller/i)
+    expect(text).toMatch(/growth plates close/)
   })
 
   it('the V-taper preset picks its exercises for the priority muscles', () => {

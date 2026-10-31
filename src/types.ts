@@ -349,7 +349,7 @@ export interface BodyCheckIn {
 }
 
 /** Extra blocks added to the training week. */
-export type TrainingAddOn = 'tendon' | 'posture'
+export type TrainingAddOn = 'tendon' | 'posture' | 'fascia'
 
 export interface FitnessSettings {
   /** The user has set up a training plan. */

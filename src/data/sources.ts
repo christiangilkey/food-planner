@@ -365,6 +365,15 @@ export const SOURCES = {
   pope_aas: s('Endocrine Society 2014 (Pope)', 'Adverse health consequences of performance-enhancing drugs: Endocrine Society scientific statement', 'Endocr Rev', 2014, pm(24423981), 'guideline'),
   fda_bodybuilding: s('FDA: bodybuilding products', 'Caution: bodybuilding products can be risky', 'U.S. Food & Drug Administration', 2024, 'https://www.fda.gov/consumers/consumer-updates/caution-bodybuilding-products-can-be-risky', 'regulation'),
   melville_daa: s('Melville 2015', 'Three and six grams supplementation of D-aspartic acid in resistance-trained men', 'J Int Soc Sports Nutr', 2015, pm(25844073), 'trial'),
+
+  // ── Fascia & mobility ───────────────────────────────────
+  wilke_rolling: s('Wilke 2020', 'Acute effects of foam rolling on range of motion in healthy adults: multilevel meta-analysis', 'Sports Med', 2020, pm(31628662), 'meta-analysis'),
+  wiewelhove: s('Wiewelhove 2019', 'A meta-analysis of the effects of foam rolling on performance and recovery', 'Front Physiol', 2019, pm(31024339), 'meta-analysis'),
+  pearcey_rolling: s('Pearcey 2015', 'Foam rolling for delayed-onset muscle soreness and recovery of dynamic performance measures', 'J Athl Train', 2015, pm(25415413), 'trial'),
+  behm_stretch: s('Behm 2016', 'Acute effects of muscle stretching on performance, range of motion and injury incidence: systematic review', 'Appl Physiol Nutr Metab', 2016, pm(26642915), 'review'),
+  peters_dickie: s('Peters-Dickie 2025', 'Foot core exercises and minimalist footwear: foot muscle size, foot strength and biomechanics (meta-analysis)', 'Clin Biomech', 2025, pm(39709752), 'meta-analysis'),
+  tyrrell_stature: s('Tyrrell 1985', 'Circadian variation in stature and the effects of spinal loading', 'Spine', 1985, pm(4002039), 'trial'),
+  niams_growth: s('NIAMS: growth plates', 'Growth plate injuries', 'NIH National Institute of Arthritis and Musculoskeletal and Skin Diseases', 2024, 'https://www.niams.nih.gov/health-topics/growth-plate-injuries', 'reference'),
 } satisfies Record<string, Source>
 
 export type SourceId = keyof typeof SOURCES
