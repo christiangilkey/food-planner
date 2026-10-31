@@ -1,6 +1,6 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { Tab } from '../App'
-import { ACCESS, CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
+import { ACCESS, CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
 import { hasCondition } from '../lib/conditions'
 import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Program, type Session } from '../lib/training'
 import { DAYS } from '../lib/plan-utils'
@@ -299,7 +299,7 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
     <div className="stack tight">
       <label className={`toggle compact ${fascia ? 'on' : ''}`}>
         <input type="checkbox" checked={fascia} onChange={() => toggle('fascia')} />
-        <span><strong>Fascia & mobility</strong><small>Rolling, short stretches and foot work: about 10 minutes, after training or on rest days. <Why claims={FASCIA.claims} convention={FASCIA.convention} /></small></span>
+        <span><strong>Fascia & mobility</strong><small>Full-range lifting, short comfortable stretches, rolling after hard sessions and foot work. <Why label="What works" claims={FASCIA.claims} convention={FASCIA.convention} /></small></span>
       </label>
       {fascia && (
         <>
@@ -311,7 +311,9 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
               </li>
             ))}
           </ol>
-          <p className="muted small">Standing tall: your spine is about 2 cm shorter by evening and gets it back overnight; after your teens, posture is what changes how tall you stand. <Why claims={FASCIA.height} /></p>
+          <p className="muted small">It works by your body tolerating more stretch, not by “releasing” fascia, so keep it regular: the gains fade within weeks of stopping. <Why claims={[FASCIA.mechanism, { text: 'Flexibility gains partly faded within 2–6 weeks of stopping.', evidence: 'limited', sources: ['konrad_detrain'] }]} /></p>
+          <p className="muted small">{FASCIA.safety.text} <Why sources={FASCIA.safety.sources} label="Source" /></p>
+          <p className="muted small">Standing tall: you’re 1–2 cm shorter by evening and get it back lying down; after your teens, no routine makes bones longer. <Why claims={FASCIA.height} /></p>
         </>
       )}
       <label className={`toggle compact ${tendon ? 'on' : ''}`}>
@@ -362,6 +364,15 @@ function Learn({ program, f, p }: { program: Program; f: FitnessSettings; p: Pro
         </div>
       ))}
 
+      <h3>Mobility, fascia and height myths</h3>
+      <p className="muted small">Popular claims, checked against the research.</p>
+      {MOBILITY_MYTHS.map((m) => (
+        <div key={m.myth} className="claim">
+          <p className="small"><strong>“{m.myth}”</strong></p>
+          <p className="small">{m.claim.text} <Sourced evidence={m.claim.evidence} ids={m.claim.sources} /></p>
+        </div>
+      ))}
+
       {(p.sex === 'male' || hasCondition(p, 'looks')) && (
         <>
           <h3>Testosterone: what actually moves it</h3>
@@ -407,7 +418,7 @@ function CheckIns({ state, update }: ViewProps) {
     const today = new Date()
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   })
-  const [draft, setDraft] = useState<Record<'weightLb' | 'waistIn' | 'gripKg' | 'hangSec', string>>({ weightLb: '', waistIn: '', gripKg: '', hangSec: '' })
+  const [draft, setDraft] = useState<Record<'weightLb' | 'waistIn' | 'gripKg' | 'hangSec' | 'heightIn', string>>({ weightLb: '', waistIn: '', gripKg: '', hangSec: '', heightIn: '' })
   const [saved, setSaved] = useState('')
   const t = bodyTrend(state.bodyLog, state.profile)
   const save = () => {
@@ -422,7 +433,7 @@ function CheckIns({ state, update }: ViewProps) {
       const merged = { ...old, ...entry }
       return { ...s, bodyLog: [...s.bodyLog.filter((e) => e.date !== iso), merged].sort((a, b) => a.date.localeCompare(b.date)).slice(-400) }
     })
-    setDraft({ weightLb: '', waistIn: '', gripKg: '', hangSec: '' })
+    setDraft({ weightLb: '', waistIn: '', gripKg: '', hangSec: '', heightIn: '' })
     setSaved('Saved.')
   }
   const field = (k: keyof typeof draft, label: string, suffix: string) => (
@@ -440,6 +451,18 @@ function CheckIns({ state, update }: ViewProps) {
   if (t.waistToHeight !== undefined) rows.push(<li key="h" className={t.whtrBand === 'healthy' ? 'good-text' : 'warn-text'}>Waist is {Math.round(t.waistToHeight * 100)}% of your height: {BAND_TEXT[t.whtrBand!]}. <Why claims={[CHECKINS.waist]} /></li>)
   if (t.grip) rows.push(<li key="g">Grip: <strong>{t.grip.latest} kg</strong>{t.grip.latest !== t.grip.first ? ` (from ${t.grip.first})` : ''}. <Why claims={[CHECKINS.grip]} /></li>)
   if (t.hang) rows.push(<li key="d">Dead hang: <strong>{t.hang.latest} s</strong>{t.hang.latest !== t.hang.first ? ` (from ${t.hang.first} s)` : ''}. <span className="muted">A simple grip and shoulder benchmark; there’s no research target for it.</span></li>)
+  if (t.height) {
+    const lost = Math.max(t.height.recentLossCm, t.height.tallestLossCm)
+    rows.push(
+      <li key="ht" className={t.height.flag ? 'warn-text' : undefined}>
+        Height: <strong>{t.height.latestIn} in</strong>
+        {t.height.flag
+          ? `, about ${lost.toFixed(1)} cm below your tallest. That’s more than usual; mention it to your doctor, who may check your bones.`
+          : lost >= 0.5 ? `, ${lost.toFixed(1)} cm below your tallest: within the normal range.` : '.'}{' '}
+        <Why claims={[CHECKINS.height]} convention={CHECKINS.height.convention} />
+      </li>,
+    )
+  }
   return (
     <div className="stack tight">
       {rows.length > 0 ? <ul className="explain small">{rows}</ul> : <p className="muted small">Nothing logged yet. A weekly check-in shows your trend better than the scale on any one day.</p>}
@@ -450,6 +473,7 @@ function CheckIns({ state, update }: ViewProps) {
         {field('waistIn', 'Waist at the navel', 'in')}
         {field('gripKg', 'Grip strength', 'kg')}
         {field('hangSec', 'Dead hang', 's')}
+        {field('heightIn', 'Height, in the morning', 'in')}
       </div>
       <div className="add-row">
         <button className="primary" onClick={save}>Save check-in</button>

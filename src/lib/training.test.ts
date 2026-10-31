@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { SOURCES } from '../data/sources'
-import { ACCESS, CHECKINS, CONDITION_TRAINING, FASCIA, FUEL, HORMONE_CUES, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
+import { ACCESS, CHECKINS, CONDITION_TRAINING, FASCIA, FUEL, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
 import type { ConditionId, FitnessSettings, Profile } from '../types'
 import { computeTargets, lbToKg } from './energy'
 import { activityFor, bodyTrend, buildProgram, fuelAdvice } from './training'
@@ -135,6 +135,38 @@ describe('looks, tendons, posture and check-ins', () => {
     const text = [...FASCIA.claims, ...FASCIA.height].map((c) => c.text).join(' ') + FASCIA.drills.map((d) => d.cue).join(' ')
     expect(text).not.toMatch(/grow taller|gain height|add height|inches taller/i)
     expect(text).toMatch(/growth plates close/)
+  })
+
+  it('mobility research: every claim, myth and safety note is sourced, and nothing claims to "release" fascia', () => {
+    const claims = [...FASCIA.claims, FASCIA.mechanism, FASCIA.safety, ...FASCIA.height, ...MOBILITY_MYTHS.map((m) => m.claim), CHECKINS.height]
+    for (const c of claims) {
+      expect(c.sources.length, c.text).toBeGreaterThan(0)
+      for (const s of c.sources) expect(SOURCES[s], `${c.text.slice(0, 40)}: ${s}`).toBeDefined()
+    }
+    // "Release" only ever appears inside quotes, as the myth being corrected.
+    const advice = [...FASCIA.claims, ...FASCIA.height].map((c) => c.text).join(' ') + FASCIA.drills.map((d) => `${d.name} ${d.cue}`).join(' ')
+    expect(advice).not.toMatch(/release|adhesion|break up|hydrat/i)
+    expect(MOBILITY_MYTHS.length).toBeGreaterThanOrEqual(8)
+  })
+
+  it('high blood pressure warns against inversion', () => {
+    const prog = buildProgram(fit(), person(['hypertension']))
+    expect(prog.conditionNotes.some((c) => c.sources.includes('haskvitz_inversion'))).toBe(true)
+  })
+
+  it('height check-ins: flags loss over 2 cm in 3 years or 6 cm from your tallest, and ignores normal readings', () => {
+    const today = new Date('2026-10-30T12:00')
+    const day = (n: number) => { const d = new Date(today); d.setDate(d.getDate() - n); return d.toISOString().slice(0, 10) }
+    const p = person([], { heightIn: 70 })
+    // 0.5 in (1.3 cm) lower than a year ago: normal.
+    expect(bodyTrend([{ date: day(365), heightIn: 70 }, { date: day(0), heightIn: 69.5 }], p, today).height).toMatchObject({ latestIn: 69.5, flag: false })
+    // 1 in (2.5 cm) lower than two years ago: worth raising.
+    expect(bodyTrend([{ date: day(730), heightIn: 70 }, { date: day(0), heightIn: 69 }], p, today).height?.flag).toBe(true)
+    // An old reading beyond 3 years doesn't count toward the 2 cm rule...
+    expect(bodyTrend([{ date: day(2000), heightIn: 70 }, { date: day(0), heightIn: 69 }], p, today).height?.flag).toBe(false)
+    // ...but 2.5 in (6.4 cm) below the profile's height does, against the 6 cm rule.
+    expect(bodyTrend([{ date: day(0), heightIn: 67.5 }], p, today).height?.flag).toBe(true)
+    expect(bodyTrend([{ date: day(0), weightLb: 180 }], p, today).height).toBeUndefined()
   })
 
   it('the V-taper preset picks its exercises for the priority muscles', () => {

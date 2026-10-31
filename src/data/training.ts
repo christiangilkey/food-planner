@@ -174,6 +174,14 @@ export const PRINCIPLES: (Claim & { id: string; title: string; convention?: stri
     convention: 'Four building weeks then an easier week with half the sets is this app’s scheme.',
   },
   {
+    id: 'range', title: 'Full-range reps build flexibility too', evidence: 'strong', sources: ['alizadeh_rom', 'afonso_rom', 'pallares_rom'],
+    text: 'Lifting with added load through a full range of motion improved flexibility about as much as stretching, and full-range reps built more strength and leg muscle than partial ones. That’s why the plan cues a full stretch at the bottom of each rep.',
+  },
+  {
+    id: 'injury', title: 'Strength training, not stretching, prevents injuries', evidence: 'strong', sources: ['lauersen', 'rudisill_hamstring'],
+    text: 'In pooled trials, stretching didn’t reduce sports injuries, while strength training cut them to under a third. Eccentric hamstring work, like Nordic curls, cut hamstring injuries by 57–70%.',
+  },
+  {
     id: 'activity', title: 'Strength plus cardio for health', evidence: 'strong', sources: ['who_activity'],
     text: 'The WHO advises muscle-strengthening work on 2 or more days a week and 150–300 minutes of moderate activity (or 75–150 vigorous). The walks after meals on your schedule count.',
   },
@@ -197,6 +205,7 @@ export const CONDITION_TRAINING: ConditionTraining[] = [
     claims: [
       { text: 'In 270 trials, every type of exercise lowered resting blood pressure, and isometric holds (wall sits, handgrips) lowered it most: about 8/4 mmHg. The plan adds wall sits on three days.', evidence: 'strong', sources: ['edwards_bp'] },
       { text: 'Breathe out during the effort and don’t hold your breath on heavy lifts; straining with a closed throat spikes blood pressure. Compound lifts stop at least 2 reps short of failure.', evidence: 'moderate', sources: ['acsm_htn'] },
+      { text: 'Skip inversion tables and hanging upside down: inversion raised blood pressure in a trial.', evidence: 'moderate', sources: ['haskvitz_inversion'] },
     ],
   },
   {
@@ -302,6 +311,8 @@ export const TENDON: { claims: Claim[]; dose: string } = {
   dose: 'Nordic hamstring curls, 2 sets of 4–6 slow reps, once a week on a leg day.',
   claims: [
     { text: 'Programs that included Nordic hamstring curls cut hamstring injuries by about half in a meta-analysis of 15 studies.', evidence: 'strong', sources: ['van_dyk'] },
+    { text: 'Heavy, slow strength training stiffens healthy tendons over 8–12+ weeks; how heavy the load is matters more than whether the movement is eccentric.', evidence: 'strong', sources: ['bohm_tendon'] },
+    { text: 'Jump training moderately increases tendon stiffness, and about 50 jumps four times a week raised hip bone density by about 1.5% in pooled trials.', evidence: 'moderate', sources: ['plyo_tendon', 'florence_jumps'] },
     { text: 'Taking 15 g of gelatin with vitamin C an hour before exercise raised a marker of collagen synthesis in a small trial. Whether that makes tendons stronger isn’t known yet.', evidence: 'emerging', sources: ['shaw_gelatin'] },
   ],
 }
@@ -320,35 +331,74 @@ export const POSTURE: { claim: Claim; drills: { name: string; dose: string; cue:
 }
 
 /**
- * Fascia & mobility: rolling, short stretches, foot strength and rest lying down, with what the
- * research does and doesn't show. Popular "fascia for height" ideas (adhesions compressing the
- * spine, growing taller as an adult, weighted hanging) have no studies behind them, so the app
- * sticks to what is measured: range of motion, soreness, foot strength and daily stature.
+ * Fascia & mobility, rebuilt on a review of the meta-analyses (see the "Fascia mobility and height
+ * evidence" report): lasting range comes from regular stretching or full-range loaded training,
+ * mostly through stretch tolerance; rolling is a short-term warm-up and soreness aid, not a way to
+ * "release" fascia; nothing lengthens adult bones, and height loss is a bone-health signal.
  */
-export const FASCIA: { claims: Claim[]; height: Claim[]; drills: { name: string; dose: string; cue: string }[]; convention: string } = {
+export const FASCIA: {
+  claims: Claim[]; mechanism: Claim; safety: Claim; height: Claim[]
+  drills: { name: string; dose: string; cue: string }[]; convention: string
+} = {
   claims: [
-    { text: 'Rolling with a foam roller or ball increased range of motion right away, about as much as stretching, in a meta-analysis of 26 high-quality trials.', evidence: 'strong', sources: ['wilke_rolling'] },
-    { text: 'Rolling after hard training reduced muscle soreness and helped sprint and strength recover; rolling before training gave small gains in flexibility and sprinting.', evidence: 'moderate', sources: ['wiewelhove', 'pearcey_rolling'] },
-    { text: 'Stretches held under 60 seconds barely affected performance, and the extra range from one session typically faded within 30 minutes.', evidence: 'strong', sources: ['behm_stretch'] },
-    { text: 'Foot exercises like the short-foot drill increased foot strength in a meta-analysis, though the certainty of the evidence was low.', evidence: 'emerging', sources: ['peters_dickie'] },
+    { text: 'Stretching regularly for several weeks clearly improves flexibility, with moderate-to-large gains in pooled trials, and it works for older adults too.', evidence: 'strong', sources: ['konrad_stretch', 'ingram_dose'] },
+    { text: 'About 10 minutes per muscle group a week (roughly 4 minutes a session, a few days a week) captured most of the gain, and comfortable stretches worked about as well as intense ones.', evidence: 'moderate', sources: ['ingram_dose', 'konrad_stretch'] },
+    { text: 'Lifting with added load through a full range of motion improves flexibility about as much as stretching; if you already train that way, extra stretching adds little range on average.', evidence: 'strong', sources: ['alizadeh_rom', 'afonso_rom'] },
+    { text: 'One session of stretching, rolling or any active warm-up gives a small boost in range that fades within about 10–30 minutes.', evidence: 'strong', sources: ['behm_acute', 'warneke_warmup', 'konrad_bout'] },
+    { text: 'Static holds under about 60 seconds before exercise barely affect performance; longer holds can briefly reduce maximal strength.', evidence: 'strong', sources: ['behm_stretch'] },
+    { text: 'Rolling after hard exercise modestly reduces soreness over the next 1–3 days; about 90 seconds per muscle looked like the minimum that helped.', evidence: 'moderate', sources: ['zhou_doms', 'wiewelhove', 'hughes_rolling'] },
+    { text: 'Rolling for more than 4 weeks also improves range, though stretching works faster, and rolling doesn’t make you faster or stronger.', evidence: 'moderate', sources: ['konrad_rolling', 'konrad_vs', 'konrad_perf'] },
+    { text: 'Moderate pressure (about 4–6 out of 10 discomfort) increased range as much as painful rolling.', evidence: 'emerging', sources: ['grabow_pressure'] },
+    { text: 'Foot exercises, or walking in flexible minimalist shoes with steps added gradually, strengthen the foot muscles.', evidence: 'moderate', sources: ['peters_dickie', 'jaffri_foot', 'ridge_walking'] },
+    { text: 'Switching to minimalist shoes for running too quickly led to foot bone stress and calf or Achilles pain; build up over at least 10–12 weeks, starting with walking.', evidence: 'moderate', sources: ['ridge_edema', 'fuller_minimal'] },
   ],
+  mechanism: {
+    text: 'Rolling and stretching mainly change how your nervous system senses stretch, not the fascia itself: deforming dense fascia takes forces beyond what hands or rollers apply, rolling one leg also loosened the other, and stretching barely lengthens muscle fibres.',
+    evidence: 'moderate', sources: ['chaudhry_fascia', 'behm_wilke', 'krause_sliding', 'kasahara_cross', 'ingram_mech', 'panidi'],
+  },
+  safety: { text: 'Don’t roll over open wounds or fractures, and check with a clinician first if you have a blood clot, local inflammation or an infection.', evidence: 'limited', sources: ['bartsch_delphi'] },
   height: [
-    { text: 'Your spine shortens by about 1% of your height (about 2 cm) over the day as its discs compress, over half of it in the first hour after getting up, and you regain it lying down at night. Resting reclined brought it back faster than recovering standing up.', evidence: 'moderate', sources: ['tyrrell_stature'] },
-    { text: 'Height from bone growth stops when the growth plates close, sometime during adolescence. After that, posture and these daily disc changes are what change how tall you stand.', evidence: 'strong', sources: ['niams_growth', 'sepehri'] },
+    { text: 'You are about 1–2 cm taller when you wake up; most of it is lost in the first hours upright and comes back lying down as your spinal discs regain fluid. Measure your height at the same time of day, ideally the morning.', evidence: 'strong', sources: ['reilly_stature', 'tyrrell_stature'] },
+    { text: 'Hanging, inversion and traction add only a few millimetres for a short time, which normal upright activity reverses, and traction does little for back pain.', evidence: 'limited', sources: ['bridger_traction', 'marcos_float', 'wegner_traction'] },
+    { text: 'Hanging upside down more than doubled eye pressure and raised blood pressure, so avoid inversion with glaucoma, other eye disease or high blood pressure.', evidence: 'moderate', sources: ['friberg_inversion', 'sanborn_inversion', 'haskvitz_inversion'] },
+    { text: 'Exercise, especially back strengthening, modestly improves a rounded upper back and forward-head posture, but no study has measured whether it adds standing height.', evidence: 'moderate', sources: ['ponzano_kyphosis', 'gonzalez_kyphosis', 'katzman_sheaf', 'sepehri'] },
+    { text: 'Once the growth plates close in adolescence, no exercise, stretching, hanging or supplement makes bones longer.', evidence: 'strong', sources: ['niams_growth'] },
+    { text: 'In healthy older adults, growth hormone changed body composition, not height, and caused more side effects such as swelling and joint pain.', evidence: 'moderate', sources: ['liu_gh'] },
   ],
-  convention: 'The drill list, durations and 10-minute dose are this app’s choice.',
+  convention: 'The drill list, holds and weekly schedule are this app’s choice, built around the doses in the cited studies.',
   drills: [
-    { name: 'Roll the soles of your feet', dose: '60 s each foot', cue: 'Stand and roll a tennis or lacrosse ball from heel to toes with steady pressure.' },
-    { name: 'Foam roll calves, thighs and glutes', dose: '30–60 s each area', cue: 'Slow passes; pause on tender spots, but keep it at a 6–7 out of 10, never sharp pain.' },
+    { name: 'Lift through a full range', dose: 'Every session', cue: 'Lower each rep under control to a full stretch. Loaded full-range training builds range as well as strength.' },
+    { name: 'Hip flexor stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Half-kneeling, squeeze the back glute and shift forward until the front of the hip stretches. Comfortable, not painful.' },
+    { name: 'Hamstring and calf stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Heel on a low step, hips back, back flat; then a wall calf stretch with the back heel down.' },
+    { name: 'Foam roll after hard sessions', dose: 'About 90 s per sore muscle', cue: 'Slow passes at a moderate 4–6 out of 10. Never sharp pain, and never over wounds or fresh bruises.' },
     { name: 'Short-foot drill', dose: '2 × 10, 5-second hold', cue: 'Seated or standing, pull the ball of the foot toward the heel to lift the arch without curling the toes.' },
-    { name: 'Hip flexor stretch', dose: '2 × 30 s each side', cue: 'Half-kneeling, squeeze the back glute and shift forward until the front of the hip stretches.' },
-    { name: 'Hamstring and calf stretch', dose: '2 × 30 s each side', cue: 'Heel on a low step, hips back, back flat; then a wall calf stretch with the back heel down.' },
-    { name: 'Rest lying down, legs supported', dose: '5 minutes after heavy lifting', cue: 'On your back with your calves on a chair or your legs up a wall, breathing slowly.' },
+    { name: 'Walk in flexible, flat shoes', dose: 'Add a little each week, over 10–12+ weeks', cue: 'Start with short walks. Switch running shoes slowly, if at all.' },
+    { name: 'Rest lying down, legs supported', dose: '5 minutes after heavy lifting', cue: 'On your back with your calves on a chair, breathing slowly. Lying down restores the day’s spinal compression.' },
   ],
 }
 
+/** Popular mobility, fascia and height claims, checked against the research. Shown under "How it works". */
+export const MOBILITY_MYTHS: { myth: string; claim: Claim }[] = [
+  { myth: 'Foam rollers break up adhesions and “release” fascia', claim: { text: 'Deforming dense fascia takes forces beyond what rollers apply; rolling changes how stretch feels without changing stiffness, and reviewers call the term “misleading”.', evidence: 'moderate', sources: ['chaudhry_fascia', 'behm_wilke', 'krause_sliding'] } },
+  { myth: 'The more it hurts, the better it works', claim: { text: 'Moderate rolling pressure increased range as much as painful pressure.', evidence: 'emerging', sources: ['grabow_pressure'] } },
+  { myth: 'Rolling or “fascia hops” rehydrate fascia', claim: { text: 'Fascia hydration has only been measured in animal tissue in the lab; no exercise trial has tested it in people.', evidence: 'limited', sources: ['schleip_hydration', 'behm_wilke'] } },
+  { myth: 'Stretching makes your muscles longer', claim: { text: 'Muscle fibres barely lengthen; most of the gain is your nervous system tolerating more stretch.', evidence: 'strong', sources: ['ingram_mech', 'panidi'] } },
+  { myth: 'Stretching prevents injuries', claim: { text: 'Stretching didn’t reduce sports injuries in pooled trials, while strength training cut them to under a third, and eccentric hamstring work cut hamstring injuries by 57–70%.', evidence: 'strong', sources: ['lauersen', 'rudisill_hamstring'] } },
+  { myth: 'Stretching prevents soreness', claim: { text: 'Stretching before or after exercise made no meaningful difference to next-day soreness.', evidence: 'strong', sources: ['herbert_doms'] } },
+  { myth: 'Short-foot exercises fix flat feet', claim: { text: 'Arch changes were tiny (about 0.2 mm) or absent, even though foot strength improves.', evidence: 'emerging', sources: ['huang_flatfoot', 'cheng_flatfoot'] } },
+  { myth: 'Barefoot or minimalist running prevents injuries', claim: { text: 'A fast switch raised injury risk, including foot bone stress.', evidence: 'moderate', sources: ['ridge_edema', 'fuller_minimal'] } },
+  { myth: 'Hanging, inversion or decompression makes you permanently taller', claim: { text: 'Gains are millimetres and reverse once you’re upright; the normal daily swing is 1–2 cm.', evidence: 'limited', sources: ['bridger_traction', 'marcos_float', 'reilly_stature'] } },
+  { myth: 'Fixing your posture adds inches', claim: { text: 'Never measured: posture trials changed spinal angles by a few degrees, which implies millimetres.', evidence: 'limited', sources: ['katzman_sheaf', 'ponzano_kyphosis'] } },
+  { myth: 'Adults can grow taller with stretching, supplements or growth hormone', claim: { text: 'Bone length is fixed once growth plates close; growth hormone changes body composition, not height.', evidence: 'strong', sources: ['niams_growth', 'liu_gh'] } },
+]
+
 /** What strength and body measurements say about health. */
-export const CHECKINS: Record<'grip' | 'waist' | 'trend', Claim & { convention?: string }> = {
+export const CHECKINS: Record<'grip' | 'waist' | 'trend' | 'height', Claim & { convention?: string }> = {
+  height: {
+    text: 'Losing about 1 cm of height per decade after 40 is common, but losing more than 2 cm over 1–3 years, or more than 6 cm from your tallest height, can signal spine fractures and is worth raising with a clinician. Measure in the morning, since you’re 1–2 cm shorter by evening.',
+    evidence: 'moderate', sources: ['medline_height', 'siminoski_2005', 'siminoski_2006', 'reilly_stature'],
+    convention: 'Comparing to your tallest logged or profile height is this app’s method.',
+  },
   grip: { text: 'In about 140,000 adults across 17 countries, every 5 kg lower grip strength was linked to 16% higher risk of death, a stronger predictor than blood pressure.', evidence: 'moderate', sources: ['leong_grip'] },
   waist: { text: 'NICE advises keeping your waist to less than half your height: a waist-to-height ratio under 0.5. From 0.5 to 0.59 means increased health risk, and 0.6 or more means high risk.', evidence: 'strong', sources: ['nice_whtr'] },
   trend: {

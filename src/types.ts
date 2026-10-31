@@ -346,6 +346,8 @@ export interface BodyCheckIn {
   gripKg?: number
   /** Longest dead hang, seconds. */
   hangSec?: number
+  /** Standing height, inches, measured in the morning. */
+  heightIn?: number
 }
 
 /** Extra blocks added to the training week. */

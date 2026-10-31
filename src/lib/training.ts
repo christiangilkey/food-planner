@@ -351,7 +351,12 @@ export interface BodyTrend {
   whtrBand?: 'healthy' | 'increased' | 'high'
   grip?: { latest: number; first: number }
   hang?: { latest: number; first: number }
+  /** Latest logged height and how far it is below earlier readings, in cm. */
+  height?: { latestIn: number; recentLossCm: number; tallestLossCm: number; flag: boolean }
 }
+
+/** Height loss worth raising with a clinician: over 2 cm within 3 years, or over 6 cm from your tallest. */
+export const HEIGHT_LOSS_CM = { recent: 2, total: 6 }
 
 const dayDiff = (a: string, b: string) => Math.round((new Date(`${a}T12:00`).getTime() - new Date(`${b}T12:00`).getTime()) / 86_400_000)
 
@@ -375,6 +380,19 @@ export function bodyTrend(log: BodyCheckIn[], p: Profile, today = new Date()): B
   }
   out.grip = series('gripKg')
   out.hang = series('hangSec')
+
+  // Height: compare the latest morning reading with earlier ones (and the profile height, as the
+  // tallest you remember). Loss, not gain, is what carries health meaning.
+  const heights = sorted.filter((e) => e.heightIn !== undefined)
+  const last = heights.at(-1)
+  if (last) {
+    const earlier = heights.slice(0, -1).filter((e) => dayDiff(last.date, e.date) <= 3 * 365).map((e) => e.heightIn!)
+    const recentMax = earlier.length ? Math.max(...earlier) : last.heightIn!
+    const tallest = Math.max(p.heightIn || 0, ...heights.map((e) => e.heightIn!))
+    const recentLossCm = Math.max(0, (recentMax - last.heightIn!) * 2.54)
+    const tallestLossCm = Math.max(0, (tallest - last.heightIn!) * 2.54)
+    out.height = { latestIn: last.heightIn!, recentLossCm, tallestLossCm, flag: recentLossCm > HEIGHT_LOSS_CM.recent || tallestLossCm > HEIGHT_LOSS_CM.total }
+  }
   return out
 }
 
