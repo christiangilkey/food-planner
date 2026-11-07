@@ -950,3 +950,31 @@ details.more.card-details > summary .icon-svg { color: var(--accent); }
 .exercise-diagram .db-end { fill: var(--text); }
 .exercise-diagram.single { grid-template-columns: minmax(0, 60%); justify-content: center; }
 .exercise-diagram .foot-top, .exercise-diagram .foot-sole { fill: none; stroke: var(--accent); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Train: rest timer and stopwatch ── */
+.workout-timer { display: flex; flex-direction: column; gap: 10px; }
+.timer-readout { font-size: 3rem; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; line-height: 1.1; padding-top: 4px; }
+.timer-readout.done { color: var(--accent); font-size: 2.2rem; padding: 10px 0 4px; }
+.timer-bar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.timer-bar span { display: block; height: 100%; background: var(--accent); border-radius: inherit; transition: width 0.25s linear; }
+.timer-presets { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.workout-timer .toggle-chip { display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 0.9rem; font-weight: 600; font-variant-numeric: tabular-nums; min-height: 36px; }
+.workout-timer .toggle-chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.timer-actions { display: flex; gap: 8px; }
+.timer-actions .primary { flex: 1; }
+.timer-actions button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.timer-actions .icon-only { padding-left: 12px; padding-right: 12px; }
+.timer-hint { margin: 0; text-align: center; }
+.timer-laps { list-style: none; margin: 0; padding: 0; font-variant-numeric: tabular-nums; font-size: 0.9rem; }
+.timer-laps li { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; padding: 6px 2px; border-top: 1px dashed var(--border); }
+.timer-laps li:first-child { border-top: 0; }
+.timer-pill {
+  position: fixed; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 11;
+  display: inline-flex; align-items: center; gap: 6px; padding: 9px 14px; border-radius: 999px; border: 0;
+  background: var(--accent); color: var(--accent-text); font-weight: 700; font-variant-numeric: tabular-nums; box-shadow: 0 4px 14px rgb(0 0 0 / 0.25);
+}
+.timer-pill span { font-weight: 500; opacity: 0.85; }
+.lift-rest { background: none; border: 0; padding: 0; color: var(--accent); font: inherit; display: inline-flex; align-items: center; gap: 3px; text-decoration: underline dotted; text-underline-offset: 3px; }
+.lift-rest .icon-svg { vertical-align: -2px; }
+.workout-timer .segmented button { white-space: nowrap; }
+.seg-badge { margin-left: 6px; font-size: 0.78rem; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }

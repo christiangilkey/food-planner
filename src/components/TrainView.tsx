@@ -7,6 +7,8 @@ import { DAYS } from '../lib/plan-utils'
 import type { BodyCheckIn, FitnessSettings, Profile, TrainingAddOn } from '../types'
 import type { Drill } from '../data/training'
 import { DrillSheet, FormSheet, LiftingRules, RuleLine } from './FormGuide'
+import { WorkoutTimer } from './WorkoutTimer'
+import { parseRest, restStart } from '../lib/timer'
 import { Icon, type IconName } from './Icon'
 import { Bar, Cite, EvidenceChip, Sheet, Sourced, Why, type ViewProps } from './ui'
 
@@ -83,6 +85,8 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
           {f.priorities.length > 0 && <> · extra work for {muscleList(f.priorities).toLowerCase()}</>}
         </p>
       </section>
+
+      <WorkoutTimer />
 
       {next && (
         <>
@@ -188,7 +192,7 @@ function LiftList({ s, careful }: { s: Session; careful: boolean }) {
               </button>
               <span className="lift-dose">{x.sets} × {x.reps}</span>
             </div>
-            <span className="muted small">{x.rir !== '—' ? `Stop with ${x.rir} reps left · ` : ''}rest {x.rest}</span>
+            <span className="muted small">{x.rir !== '—' ? `Stop with ${x.rir} reps left · ` : ''}<RestButton rest={x.rest} /></span>
             {x.note && <span className="small lift-cue">{x.note}</span>}
           </li>
         ))}
@@ -328,6 +332,17 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
         <DrillList drills={POSTURE.drills} />
       )}
     </div>
+  )
+}
+
+/** "rest 2–3 min" that starts the rest timer at the low end, without opening the exercise guide. */
+function RestButton({ rest }: { rest: string }) {
+  const sec = parseRest(rest)
+  if (!sec) return <>rest {rest}</>
+  return (
+    <button type="button" className="lift-rest" onClick={(e) => { e.stopPropagation(); restStart(sec) }} aria-label={`Start a ${rest} rest`}>
+      <Icon name="timer" size={13} /> rest {rest}
+    </button>
   )
 }
 
