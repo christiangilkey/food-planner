@@ -1,3 +1,5 @@
+import { FORM_SOURCES } from './formSources'
+
 /**
  * Every source the app cites. PubMed IDs were checked against PubMed's own records
  * (October 2026); web pages were opened to confirm they exist.
@@ -429,6 +431,9 @@ export const SOURCES = {
   siminoski_2005: s('Siminoski 2005', 'Height loss during prospective monitoring for detecting incident vertebral fractures', 'Osteoporos Int', 2005, pm(15309381), 'cohort'),
   siminoski_2006: s('Siminoski 2006', 'Historical height loss for detecting vertebral fractures in postmenopausal women', 'Osteoporos Int', 2006, pm(16143833), 'cohort'),
   medline_height: s('MedlinePlus: aging and body shape', 'Aging changes in body shape', 'NIH National Library of Medicine', 2024, 'https://medlineplus.gov/ency/article/003998.htm', 'reference'),
+
+  // ── Exercise form guides, stretches and lifting rules (generated, see formSources.ts) ──
+  ...FORM_SOURCES,
 } satisfies Record<string, Source>
 
 export type SourceId = keyof typeof SOURCES

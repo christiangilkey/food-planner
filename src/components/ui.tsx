@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import { useEffect, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { SOURCES, type SourceId } from '../data/sources'
 import { Icon } from './Icon'
 import type { AppState, Evidence } from '../types'
@@ -33,13 +34,22 @@ export function Score({ label, value, title }: { label: string; value: number; t
   )
 }
 
+// Open sheets, newest last: Escape closes only the top one when a sheet opens over another.
+const openSheets: symbol[] = []
+
 export function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  const [id] = useState(() => Symbol(title))
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    openSheets.push(id)
+    return () => { openSheets.splice(openSheets.indexOf(id), 1) }
+  }, [id])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && openSheets[openSheets.length - 1] === id && onClose()
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose])
-  return (
+  }, [onClose, id])
+  // Rendered at the page root so a sheet opened from inside another sheet still covers the screen.
+  return createPortal(
     <motion.div className="sheet-backdrop" onClick={onClose} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}>
       <motion.div
         className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}
@@ -51,7 +61,8 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
         </div>
         <div className="sheet-body">{children}</div>
       </motion.div>
-    </motion.div>
+    </motion.div>,
+    document.body,
   )
 }
 

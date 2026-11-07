@@ -5,6 +5,8 @@ import { hasCondition } from '../lib/conditions'
 import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Program, type Session } from '../lib/training'
 import { DAYS } from '../lib/plan-utils'
 import type { BodyCheckIn, FitnessSettings, Profile, TrainingAddOn } from '../types'
+import type { Drill } from '../data/training'
+import { DrillSheet, FormSheet, LiftingRules, RuleLine } from './FormGuide'
 import { Icon, type IconName } from './Icon'
 import { Bar, Cite, EvidenceChip, Sheet, Sourced, Why, type ViewProps } from './ui'
 
@@ -33,6 +35,8 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
 
   const program = useMemo(() => buildProgram(f, p), [f, p])
   const advice = useMemo(() => (f.enabled ? fuelAdvice(state) : []), [f.enabled, state])
+  // Breath-holding spikes blood pressure: breathe through every rep with high blood pressure or in pregnancy.
+  const careful = hasCondition(p, 'hypertension') || p.meds.pregnant
   const close = () => setPanel(null)
 
   if (!f.enabled) {
@@ -83,7 +87,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       {next && (
         <>
           <h2 className="section-title">{next.weekday === today ? 'Today' : `Next · ${FULL_DAYS[next.weekday]}`}</h2>
-          <SessionCard key={nextIdx} s={next} />
+          <SessionCard key={nextIdx} s={next} careful={careful} />
         </>
       )}
 
@@ -96,7 +100,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
               <span className="week-name"><strong>{s.name}</strong><span className="muted small">{s.exercises.length} exercises · {s.minutes} min</span></span>
               <Icon name={open === i ? 'chevronDown' : 'chevronRight'} label={open === i ? `Hide ${DAYS[s.weekday]}` : `Show ${DAYS[s.weekday]}`} />
             </button>
-            {open === i && <LiftList s={s} />}
+            {open === i && <LiftList s={s} careful={careful} />}
           </div>
         ))}
         <p className="muted small week-cardio"><Icon name="heartPulse" size={15} /> {program.cardio} <Cite ids={['who_activity', ...(program.cardio.includes('migraine') ? ['varkey' as const] : [])]} /></p>
@@ -154,7 +158,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
 }
 
 /** The next session: what it trains at a glance, the full list on tap. */
-function SessionCard({ s }: { s: Session }) {
+function SessionCard({ s, careful }: { s: Session; careful: boolean }) {
   const [open, setOpen] = useState(false)
   const names = s.exercises.map((x) => x.exercise.name)
   return (
@@ -164,32 +168,35 @@ function SessionCard({ s }: { s: Session }) {
         <span className="muted small">about {s.minutes} min</span>
       </div>
       {!open && <p className="muted small">{names.slice(0, 4).join(' · ')}{names.length > 4 ? ` · and ${names.length - 4} more` : ''}</p>}
-      {open && <LiftList s={s} />}
+      {open && <LiftList s={s} careful={careful} />}
       <button className="primary next-open" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide the exercises' : `See the ${s.exercises.length} exercises`}</button>
     </section>
   )
 }
 
-function LiftList({ s }: { s: Session }) {
-  const [cues, setCues] = useState(false)
+function LiftList({ s, careful }: { s: Session; careful: boolean }) {
+  const [guide, setGuide] = useState<string | null>(null)
   return (
     <>
       <ol className="lift-list">
         {s.exercises.map((x) => (
-          <li key={x.exercise.id}>
+          // The whole row opens the guide; the name button carries keyboard focus and the label.
+          <li key={x.exercise.id} className="lift-tap" onClick={() => setGuide(x.exercise.id)}>
             <div className="row-between">
-              <strong>{x.exercise.name}</strong>
+              <button type="button" className="lift-name" aria-label={`How to do ${x.exercise.name}`}>
+                <strong>{x.exercise.name}</strong> <Icon name="info" size={15} />
+              </button>
               <span className="lift-dose">{x.sets} × {x.reps}</span>
             </div>
             <span className="muted small">{x.rir !== '—' ? `Stop with ${x.rir} reps left · ` : ''}rest {x.rest}</span>
-            {(cues || x.note) && <span className="small lift-cue">{x.note ?? x.exercise.cue}</span>}
+            {x.note && <span className="small lift-cue">{x.note}</span>}
           </li>
         ))}
       </ol>
       <p className="muted small lift-foot">
-        Warm up with lighter sets of the first exercise. When every set reaches the top of the rep range, add a little weight. <Why sources={['acsm_progression']} label="Source" />
+        Tap an exercise for a diagram, form tips and what to stretch. <RuleLine id="warmup_ramp" /> When every set reaches the top of the rep range, add a little weight. <Why sources={['acsm_progression']} label="Source" />
       </p>
-      <button className="link small" onClick={() => setCues(!cues)}>{cues ? 'Hide' : 'Show'} how to do each</button>
+      {guide && <FormSheet id={guide} careful={careful} onClose={() => setGuide(null)} />}
     </>
   )
 }
@@ -303,14 +310,7 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
       </label>
       {fascia && (
         <>
-          <ol className="lift-list">
-            {FASCIA.drills.map((d) => (
-              <li key={d.name}>
-                <div className="row-between"><strong>{d.name}</strong><span className="lift-dose">{d.dose}</span></div>
-                <span className="small lift-cue">{d.cue}</span>
-              </li>
-            ))}
-          </ol>
+          <DrillList drills={FASCIA.drills} />
           <p className="muted small">It works by your body tolerating more stretch, not by “releasing” fascia, so keep it regular: the gains fade within weeks of stopping. <Why claims={[FASCIA.mechanism, { text: 'Flexibility gains partly faded within 2–6 weeks of stopping.', evidence: 'limited', sources: ['konrad_detrain'] }]} /></p>
           <p className="muted small">{FASCIA.safety.text} <Why sources={FASCIA.safety.sources} label="Source" /></p>
           <p className="muted small">Standing tall: you’re 1–2 cm shorter by evening and get it back lying down; after your teens, no routine makes bones longer. <Why claims={FASCIA.height} /></p>
@@ -325,16 +325,32 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
         <span><strong>Posture routine</strong><small>About 10 minutes, 2–3 times a week, any time. <Why claims={[POSTURE.claim]} convention={POSTURE.convention} /></small></span>
       </label>
       {posture && (
-        <ol className="lift-list">
-          {POSTURE.drills.map((d) => (
-            <li key={d.name}>
-              <div className="row-between"><strong>{d.name}</strong><span className="lift-dose">{d.dose}</span></div>
-              <span className="small lift-cue">{d.cue}</span>
-            </li>
-          ))}
-        </ol>
+        <DrillList drills={POSTURE.drills} />
       )}
     </div>
+  )
+}
+
+/** Posture and mobility drills; tap one for its diagram. */
+function DrillList({ drills }: { drills: Drill[] }) {
+  const [open, setOpen] = useState<Drill | null>(null)
+  return (
+    <>
+      <ol className="lift-list">
+        {drills.map((d) => (
+          <li key={d.id} className="lift-tap" onClick={() => setOpen(d)}>
+            <div className="row-between">
+              <button type="button" className="lift-name" aria-label={`How to do ${d.name}`}>
+                <strong>{d.name}</strong> <Icon name="info" size={15} />
+              </button>
+              <span className="lift-dose">{d.dose}</span>
+            </div>
+            <span className="small lift-cue">{d.cue}</span>
+          </li>
+        ))}
+      </ol>
+      {open && <DrillSheet drill={open} onClose={() => setOpen(null)} />}
+    </>
   )
 }
 
@@ -363,6 +379,8 @@ function Learn({ program, f, p }: { program: Program; f: FitnessSettings; p: Pro
           <span className="small">{x.text} <Cite ids={x.sources} convention={x.convention} /></span>
         </div>
       ))}
+
+      <LiftingRules />
 
       <h3>Mobility, fascia and height myths</h3>
       <p className="muted small">Popular claims, checked against the research.</p>

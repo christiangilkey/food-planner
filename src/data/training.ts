@@ -52,20 +52,20 @@ const ex = (id: string, name: string, gear: Gear[], primary: Muscle[], secondary
 export const EXERCISES: Exercise[] = [
   // Chest
   ex('bench', 'Barbell bench press', ['barbell', 'bench'], ['chest'], ['triceps', 'shoulders'], true, 'Shoulder blades pulled back, bar touches the lower chest, press up and slightly back.', { supine: true }),
-  ex('incline_db', 'Incline dumbbell press', ['dumbbell', 'bench'], ['chest'], ['shoulders', 'triceps'], true, 'Bench at 30–45°, lower until you feel a stretch across the chest.'),
+  ex('incline_db', 'Incline dumbbell press', ['dumbbell', 'bench'], ['chest'], ['shoulders', 'triceps'], true, 'Bench at about 30° (45° at most), lower until you feel a stretch across the chest.'),
   ex('db_bench', 'Dumbbell bench press', ['dumbbell', 'bench'], ['chest'], ['triceps', 'shoulders'], true, 'Lower the dumbbells to chest level with elbows about 45° from your sides.', { supine: true }),
   ex('machine_press', 'Machine chest press', ['machine'], ['chest'], ['triceps', 'shoulders'], true, 'Seat set so the handles line up with mid-chest; control the way back.'),
   ex('cable_fly', 'Cable fly', ['cable'], ['chest'], [], false, 'Slight bend in the elbows, bring the hands together in a wide hug.'),
-  ex('db_fly', 'Incline dumbbell fly', ['dumbbell', 'bench'], ['chest'], [], false, 'Open wide to a deep stretch, then squeeze the chest to bring them up.'),
+  ex('db_fly', 'Incline dumbbell fly', ['dumbbell', 'bench'], ['chest'], [], false, 'Open until the upper arms are level with the bench or you feel a mild stretch, then bring them up.'),
   ex('pushup', 'Push-up', ['bodyweight'], ['chest'], ['triceps', 'shoulders'], true, 'Body in a straight line, chest to just above the floor. Raise the hands on a bench to make it easier, or the feet to make it harder.'),
   ex('dip', 'Dip', ['pullup_bar'], ['chest', 'triceps'], ['shoulders'], true, 'Lean slightly forward and lower until the upper arms are about level.'),
   // Back
   ex('pulldown', 'Lat pulldown', ['cable'], ['back'], ['biceps'], true, 'Pull the bar to the upper chest, driving the elbows down.'),
   ex('pullup', 'Pull-up or chin-up', ['pullup_bar'], ['back'], ['biceps'], true, 'From a full hang, pull until the chin passes the bar. Use a band for help.'),
-  ex('cable_row', 'Seated cable row', ['cable'], ['back'], ['biceps'], true, 'Chest up, pull the handle to the stomach, let the shoulder blades stretch forward.'),
+  ex('cable_row', 'Seated cable row', ['cable'], ['back'], ['biceps'], true, 'Chest up, pull the handle to the stomach, then reach forward slowly without slumping.'),
   ex('db_row', 'One-arm dumbbell row', ['dumbbell', 'bench'], ['back'], ['biceps'], true, 'Hand and knee on the bench, pull the dumbbell toward the hip.'),
   ex('chest_row', 'Chest-supported row', ['machine'], ['back'], ['biceps', 'shoulders'], true, 'Chest against the pad so the back does the work, not momentum.'),
-  ex('band_row', 'Band row', ['band'], ['back'], ['biceps'], true, 'Anchor the band at chest height and squeeze the shoulder blades together.'),
+  ex('band_row', 'Band row', ['band'], ['back'], ['biceps'], true, 'Anchor the band at chest height and pull your elbows back.'),
   ex('inverted_row', 'Inverted row (under a table)', ['bodyweight'], ['back'], ['biceps'], true, 'Lie under a sturdy table, grip the edge and pull your chest up to it. Bend the knees to make it easier.'),
   // Shoulders
   ex('ohp', 'Seated dumbbell shoulder press', ['dumbbell', 'bench'], ['shoulders'], ['triceps'], true, 'Press up and slightly in, without arching the lower back.'),
@@ -88,7 +88,7 @@ export const EXERCISES: Exercise[] = [
   ex('close_pushup', 'Close-grip push-up', ['bodyweight'], ['triceps'], ['chest'], true, 'Hands under the shoulders, elbows tucked to the sides.'),
   ex('bench_dip', 'Bench dip', ['bench'], ['triceps'], [], false, 'Hands on a bench behind you, lower until the elbows reach about 90°.'),
   // Legs
-  ex('squat', 'Barbell back squat', ['barbell'], ['quads', 'glutes'], [], true, 'Brace, sit down between the hips to at least thigh-parallel, drive up.'),
+  ex('squat', 'Barbell back squat', ['barbell'], ['quads', 'glutes'], [], true, 'Brace, sit down between the hips to at least thigh-parallel (or a pain-free box depth), drive up.'),
   ex('leg_press', 'Leg press', ['machine'], ['quads', 'glutes'], [], true, 'Lower until the knees reach about 90° or deeper without the lower back lifting.'),
   ex('goblet', 'Goblet squat', ['dumbbell'], ['quads', 'glutes'], [], true, 'Hold the dumbbell at the chest, elbows inside the knees at the bottom.'),
   ex('split_squat', 'Bulgarian split squat', ['dumbbell', 'bench'], ['quads', 'glutes'], [], true, 'Back foot on the bench, front knee travels forward over the toes.'),
@@ -107,7 +107,7 @@ export const EXERCISES: Exercise[] = [
   // Core
   ex('cable_crunch', 'Cable crunch', ['cable'], ['abs'], [], false, 'Kneel and curl the ribs toward the hips; the hips stay still.'),
   ex('plank', 'Plank', ['bodyweight'], ['abs'], [], false, 'Forearms down, body in a straight line, squeeze the glutes.', { isometric: true }),
-  ex('dead_bug', 'Dead bug', ['bodyweight'], ['abs'], [], false, 'Lower back pressed down while opposite arm and leg reach out.', { supine: true }),
+  ex('dead_bug', 'Dead bug', ['bodyweight'], ['abs'], [], false, 'Brace gently all round and keep breathing while opposite arm and leg reach out.', { supine: true }),
   ex('hanging_raise', 'Hanging knee raise', ['pullup_bar'], ['abs'], [], false, 'Curl the hips up, not just the knees.'),
   // Looks-focused and tendon work
   ex('preacher', 'Preacher curl', ['dumbbell', 'bench'], ['biceps'], [], false, 'Upper arm flat on an inclined bench back; lower all the way without bouncing.'),
@@ -317,16 +317,19 @@ export const TENDON: { claims: Claim[]; dose: string } = {
   ],
 }
 
-export const POSTURE: { claim: Claim; drills: { name: string; dose: string; cue: string }[]; convention: string } = {
+/** A posture or mobility drill; `id` keys its diagram. */
+export interface Drill { id: string; name: string; dose: string; cue: string }
+
+export const POSTURE: { claim: Claim; drills: Drill[]; convention: string } = {
   claim: { text: 'In people with forward head, rounded shoulders or a rounded upper back, programs of strengthening and stretching improved those angles in a meta-analysis of small trials.', evidence: 'emerging', sources: ['sepehri'] },
   convention: 'The drill list and the 10-minute dose are this app’s choice; the trials combined strengthening and stretching like this.',
   drills: [
-    { name: 'Chin tucks', dose: '2 × 10, 3-second hold', cue: 'Glide the head straight back, making a double chin, without tilting.' },
-    { name: 'Wall angels', dose: '2 × 10', cue: 'Back, head and arms against a wall; slide the arms up and down without arching.' },
-    { name: 'Y-W-T raises', dose: '2 × 8 of each', cue: 'Face down on an incline or bent over, lift the arms into Y, W and T shapes with the shoulder blades squeezed.' },
-    { name: 'Doorway chest stretch', dose: '2 × 30 s each side', cue: 'Forearm on the door frame, step through until the front of the shoulder stretches.' },
-    { name: 'Upper-back extension over a foam roller', dose: '1 × 10', cue: 'Roller across the upper back, hands behind the head, extend over it.' },
-    { name: 'Dead hang', dose: '2–3 holds', cue: 'Hang from a bar with relaxed shoulders, then pull the shoulders down slightly; build time week by week.' },
+    { id: 'chin_tuck', name: 'Chin tucks', dose: '2 × 10, 3-second hold', cue: 'Glide the head straight back, making a double chin, without tilting.' },
+    { id: 'wall_angels', name: 'Wall angels', dose: '2 × 10', cue: 'Back, head and arms against a wall; slide the arms up and down without arching.' },
+    { id: 'ywt', name: 'Y-W-T raises', dose: '2 × 8 of each', cue: 'Face down on an incline or bent over, lift the arms into Y, W and T shapes with the shoulder blades squeezed.' },
+    { id: 'doorway_chest', name: 'Doorway chest stretch', dose: '2 × 30 s each side', cue: 'Forearm on the door frame, step through until the front of the shoulder stretches.' },
+    { id: 'thoracic_roller', name: 'Upper-back extension over a foam roller', dose: '1 × 10', cue: 'Roller across the upper back, hands behind the head, extend over it.' },
+    { id: 'dead_hang', name: 'Dead hang', dose: '2–3 holds', cue: 'Hang from a bar with relaxed shoulders, then pull the shoulders down slightly; build time week by week.' },
   ],
 }
 
@@ -338,7 +341,7 @@ export const POSTURE: { claim: Claim; drills: { name: string; dose: string; cue:
  */
 export const FASCIA: {
   claims: Claim[]; mechanism: Claim; safety: Claim; height: Claim[]
-  drills: { name: string; dose: string; cue: string }[]; convention: string
+  drills: Drill[]; convention: string
 } = {
   claims: [
     { text: 'Stretching regularly for several weeks clearly improves flexibility, with moderate-to-large gains in pooled trials, and it works for older adults too.', evidence: 'strong', sources: ['konrad_stretch', 'ingram_dose'] },
@@ -367,13 +370,13 @@ export const FASCIA: {
   ],
   convention: 'The drill list, holds and weekly schedule are this app’s choice, built around the doses in the cited studies.',
   drills: [
-    { name: 'Lift through a full range', dose: 'Every session', cue: 'Lower each rep under control to a full stretch. Loaded full-range training builds range as well as strength.' },
-    { name: 'Hip flexor stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Half-kneeling, squeeze the back glute and shift forward until the front of the hip stretches. Comfortable, not painful.' },
-    { name: 'Hamstring and calf stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Heel on a low step, hips back, back flat; then a wall calf stretch with the back heel down.' },
-    { name: 'Foam roll after hard sessions', dose: 'About 90 s per sore muscle', cue: 'Slow passes at a moderate 4–6 out of 10. Never sharp pain, and never over wounds or fresh bruises.' },
-    { name: 'Short-foot drill', dose: '2 × 10, 5-second hold', cue: 'Seated or standing, pull the ball of the foot toward the heel to lift the arch without curling the toes.' },
-    { name: 'Walk in flexible, flat shoes', dose: 'Add a little each week, over 10–12+ weeks', cue: 'Start with short walks. Switch running shoes slowly, if at all.' },
-    { name: 'Rest lying down, legs supported', dose: '5 minutes after heavy lifting', cue: 'On your back with your calves on a chair, breathing slowly. Lying down restores the day’s spinal compression.' },
+    { id: 'full_range', name: 'Lift through a full range', dose: 'Every session', cue: 'Lower each rep under control to a full stretch. Loaded full-range training builds range as well as strength.' },
+    { id: 'hip_flexor', name: 'Hip flexor stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Half-kneeling, squeeze the back glute and shift forward until the front of the hip stretches. Comfortable, not painful.' },
+    { id: 'hamstring_calf', name: 'Hamstring and calf stretch', dose: '2 × 60 s each side, 3–4 days a week', cue: 'Heel on a low step, hips back, back flat; then a wall calf stretch with the back heel down.' },
+    { id: 'foam_roll', name: 'Foam roll after hard sessions', dose: 'About 90 s per sore muscle', cue: 'Slow passes at a moderate 4–6 out of 10. Never sharp pain, and never over wounds or fresh bruises.' },
+    { id: 'short_foot', name: 'Short-foot drill', dose: '2 × 10, 5-second hold', cue: 'Seated or standing, pull the ball of the foot toward the heel to lift the arch without curling the toes.' },
+    { id: 'barefoot_walk', name: 'Walk in flexible, flat shoes', dose: 'Add a little each week, over 10–12+ weeks', cue: 'Start with short walks. Switch running shoes slowly, if at all.' },
+    { id: 'legs_up_rest', name: 'Rest lying down, legs supported', dose: '5 minutes after heavy lifting', cue: 'On your back with your calves on a chair, breathing slowly. Lying down restores the day’s spinal compression.' },
   ],
 }
 
