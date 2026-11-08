@@ -2,8 +2,10 @@ import { DIAGRAMS, DRILL_DIAGRAMS } from '../data/diagrams'
 import { FORM, FORM_RULES, STRETCHES, type FormEvidence, type FormRule, type Stretch } from '../data/form'
 import { EXERCISE_BY_ID, type Drill } from '../data/training'
 import { ExerciseDiagram } from './ExerciseDiagram'
+import { LiftLog } from './LiftLog'
+import type { PlannedExercise } from '../lib/training'
 import { Icon } from './Icon'
-import { Sheet, Why } from './ui'
+import { Sheet, Why, type ViewProps } from './ui'
 
 const CONVENTION = 'Coaching guidance (ACE and common practice); no trial has tested this specifically.'
 const rule = (id: string) => FORM_RULES.find((r) => r.id === id)!
@@ -26,13 +28,19 @@ export function RuleLine({ id }: { id: string }) {
  * note, easier and harder versions, and the stretches for the muscles it trains.
  * `careful` switches breathing advice to "breathe throughout" (high blood pressure, pregnancy).
  */
-export function FormSheet({ id, careful, onClose }: { id: string; careful: boolean; onClose: () => void }) {
+export function FormSheet({ id, careful, onClose, log }: {
+  id: string; careful: boolean; onClose: () => void
+  /** Show set logging at the top, with the plan's sets, reps and rest for this exercise. */
+  log?: ViewProps & { dose?: PlannedExercise }
+}) {
   const ex = EXERCISE_BY_ID[id]
   const g = FORM[id]
   if (!ex || !g) return null
   return (
     <Sheet title={ex.name} onClose={onClose}>
       <div className="form-guide">
+        {log && <LiftLog exercise={ex} dose={log.dose} state={log.state} update={log.update} />}
+        {log && <h3>How to do it</h3>}
         {DIAGRAMS[id] && <ExerciseDiagram d={DIAGRAMS[id]} name={ex.name} />}
         <p className="muted small form-cue">{ex.cue}</p>
 

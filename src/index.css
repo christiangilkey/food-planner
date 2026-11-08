@@ -978,3 +978,39 @@ details.more.card-details > summary .icon-svg { color: var(--accent); }
 .lift-rest .icon-svg { vertical-align: -2px; }
 .workout-timer .segmented button { white-space: nowrap; }
 .seg-badge { margin-left: 6px; font-size: 0.78rem; font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* ── Train: logging sets ── */
+.lift-log { display: flex; flex-direction: column; gap: 8px; padding: 12px; margin-bottom: 6px; border-radius: 14px; background: var(--surface-2); }
+.lift-log h3 { margin: 0; }
+.unit-switch { padding: 2px; }
+.unit-switch button { padding: 4px 12px; font-size: 0.85rem; }
+.lift-hint { margin: 0; padding: 8px 10px; border-radius: 10px; background: var(--accent-soft); color: var(--text); }
+.lift-hint .icon-svg { color: var(--accent); vertical-align: -3px; }
+.lift-last { margin: 0; }
+.set-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.set-rows li { display: flex; align-items: center; gap: 8px; }
+.set-n { width: 22px; height: 22px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 0.78rem; font-weight: 700; background: var(--surface); color: var(--muted); }
+.set-rows li.done .set-n { background: var(--accent); color: var(--accent-text); }
+.set-field { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; font-size: 0.85rem; color: var(--muted); }
+.set-field input { width: 100%; min-width: 0; padding: 8px 8px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 1rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.set-field input::placeholder { color: var(--muted); opacity: 0.6; font-weight: 500; }
+.set-field .times { color: var(--muted); }
+.set-check { flex-shrink: 0; width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); display: grid; place-items: center; }
+.set-rows li.done .set-check { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.lift-log-foot { gap: 8px; }
+.lift-log-foot .link { display: inline-flex; align-items: center; gap: 4px; }
+.lift-progress-empty { margin: 2px 0 0; }
+.lift-progress { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; padding-top: 10px; border-top: 1px solid var(--border); }
+.lift-progress-read { margin: 0; }
+.lift-chart { width: 100%; height: auto; display: block; overflow: visible; }
+.lift-chart .grid { stroke: var(--border); stroke-width: 1; stroke-dasharray: 3 4; }
+.lift-chart .line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.lift-chart .pt { fill: var(--surface-2); stroke: var(--accent); stroke-width: 2; }
+.lift-chart .pt.on { fill: var(--accent); }
+.lift-chart .pt-hit { cursor: pointer; }
+.lift-chart-axis { font-size: 0.72rem; }
+.lift-history summary { cursor: pointer; color: var(--accent); font-weight: 600; margin-top: 4px; }
+.lift-history ul { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-variant-numeric: tabular-nums; }
+.lift-logged { color: var(--muted); font-variant-numeric: tabular-nums; }
+.lift-logged.today { color: var(--accent); }
+.lift-logged .icon-svg { vertical-align: -2px; }

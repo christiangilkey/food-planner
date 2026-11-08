@@ -332,7 +332,29 @@ export interface AppState {
   fitness: FitnessSettings
   /** Weekly body check-ins (weight, waist, grip), newest last. */
   bodyLog: BodyCheckIn[]
+  /** Sets logged in Train, one entry per exercise per day, oldest first. */
+  liftLog: LiftEntry[]
 }
+
+/** One logged set. Weighted lifts fill weight and reps, bodyweight moves reps, holds seconds. */
+export interface LoggedSet {
+  weight?: number
+  reps?: number
+  sec?: number
+}
+
+/** The sets of one exercise on one day. */
+export interface LiftEntry {
+  /** YYYY-MM-DD. */
+  date: string
+  /** Exercise id from EXERCISES. */
+  exercise: string
+  /** The unit the weights were entered in; shown converted if the setting changes later. */
+  unit: WeightUnit
+  sets: LoggedSet[]
+}
+
+export type WeightUnit = 'lb' | 'kg'
 
 // ── Training ──────────────────────────────────────────────
 
@@ -370,6 +392,8 @@ export interface FitnessSettings {
   /** "V-taper": picks exercises for shoulders, lats, upper chest, biceps and abs. */
   preset?: 'vtaper'
   addOns?: TrainingAddOn[]
+  /** Unit for logged weights; pounds unless switched. */
+  weightUnit?: WeightUnit
 }
 
 // ── Sleep and exports ─────────────────────────────────────

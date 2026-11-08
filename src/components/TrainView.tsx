@@ -2,9 +2,10 @@ import { useMemo, useState, type ReactNode } from 'react'
 import type { Tab } from '../App'
 import { ACCESS, CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
 import { hasCondition } from '../lib/conditions'
-import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type Program, type Session } from '../lib/training'
+import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type PlannedExercise, type Program, type Session } from '../lib/training'
+import { hasValue, inUnit, lastBefore, logKind, setText, today } from '../lib/lifts'
 import { DAYS } from '../lib/plan-utils'
-import type { BodyCheckIn, FitnessSettings, Profile, TrainingAddOn } from '../types'
+import type { BodyCheckIn, FitnessSettings, LiftEntry, Profile, TrainingAddOn, WeightUnit } from '../types'
 import type { Drill } from '../data/training'
 import { DrillSheet, FormSheet, LiftingRules, RuleLine } from './FormGuide'
 import { WorkoutTimer } from './WorkoutTimer'
@@ -91,7 +92,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       {next && (
         <>
           <h2 className="section-title">{next.weekday === today ? 'Today' : `Next · ${FULL_DAYS[next.weekday]}`}</h2>
-          <SessionCard key={nextIdx} s={next} careful={careful} />
+          <SessionCard key={nextIdx} s={next} careful={careful} state={state} update={update} />
         </>
       )}
 
@@ -104,7 +105,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
               <span className="week-name"><strong>{s.name}</strong><span className="muted small">{s.exercises.length} exercises · {s.minutes} min</span></span>
               <Icon name={open === i ? 'chevronDown' : 'chevronRight'} label={open === i ? `Hide ${DAYS[s.weekday]}` : `Show ${DAYS[s.weekday]}`} />
             </button>
-            {open === i && <LiftList s={s} careful={careful} />}
+            {open === i && <LiftList s={s} careful={careful} state={state} update={update} />}
           </div>
         ))}
         <p className="muted small week-cardio"><Icon name="heartPulse" size={15} /> {program.cardio} <Cite ids={['who_activity', ...(program.cardio.includes('migraine') ? ['varkey' as const] : [])]} /></p>
@@ -162,7 +163,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
 }
 
 /** The next session: what it trains at a glance, the full list on tap. */
-function SessionCard({ s, careful }: { s: Session; careful: boolean }) {
+function SessionCard({ s, careful, state, update }: ViewProps & { s: Session; careful: boolean }) {
   const [open, setOpen] = useState(false)
   const names = s.exercises.map((x) => x.exercise.name)
   return (
@@ -172,20 +173,21 @@ function SessionCard({ s, careful }: { s: Session; careful: boolean }) {
         <span className="muted small">about {s.minutes} min</span>
       </div>
       {!open && <p className="muted small">{names.slice(0, 4).join(' · ')}{names.length > 4 ? ` · and ${names.length - 4} more` : ''}</p>}
-      {open && <LiftList s={s} careful={careful} />}
+      {open && <LiftList s={s} careful={careful} state={state} update={update} />}
       <button className="primary next-open" aria-expanded={open} onClick={() => setOpen(!open)}>{open ? 'Hide the exercises' : `See the ${s.exercises.length} exercises`}</button>
     </section>
   )
 }
 
-function LiftList({ s, careful }: { s: Session; careful: boolean }) {
-  const [guide, setGuide] = useState<string | null>(null)
+function LiftList({ s, careful, state, update }: ViewProps & { s: Session; careful: boolean }) {
+  const [guide, setGuide] = useState<PlannedExercise | null>(null)
+  const date = today()
   return (
     <>
       <ol className="lift-list">
         {s.exercises.map((x) => (
           // The whole row opens the guide; the name button carries keyboard focus and the label.
-          <li key={x.exercise.id} className="lift-tap" onClick={() => setGuide(x.exercise.id)}>
+          <li key={x.exercise.id} className="lift-tap" onClick={() => setGuide(x)}>
             <div className="row-between">
               <button type="button" className="lift-name" aria-label={`How to do ${x.exercise.name}`}>
                 <strong>{x.exercise.name}</strong> <Icon name="info" size={15} />
@@ -193,6 +195,7 @@ function LiftList({ s, careful }: { s: Session; careful: boolean }) {
               <span className="lift-dose">{x.sets} × {x.reps}</span>
             </div>
             <span className="muted small">{x.rir !== '—' ? `Stop with ${x.rir} reps left · ` : ''}<RestButton rest={x.rest} /></span>
+            <LastLine log={state.liftLog} x={x} date={date} unit={state.fitness.weightUnit ?? 'lb'} />
             {x.note && <span className="small lift-cue">{x.note}</span>}
           </li>
         ))}
@@ -200,7 +203,7 @@ function LiftList({ s, careful }: { s: Session; careful: boolean }) {
       <p className="muted small lift-foot">
         Tap an exercise for a diagram, form tips and what to stretch. <RuleLine id="warmup_ramp" /> When every set reaches the top of the rep range, add a little weight. <Why sources={['acsm_progression']} label="Source" />
       </p>
-      {guide && <FormSheet id={guide} careful={careful} onClose={() => setGuide(null)} />}
+      {guide && <FormSheet id={guide.exercise.id} careful={careful} onClose={() => setGuide(null)} log={{ state, update, dose: guide }} />}
     </>
   )
 }
@@ -333,6 +336,17 @@ function Extras({ f, setFit }: { f: FitnessSettings; setFit: (patch: Partial<Fit
       )}
     </div>
   )
+}
+
+/** Today's logged sets, or last time's, under an exercise in the list. */
+function LastLine({ log, x, date, unit }: { log: LiftEntry[]; x: PlannedExercise; date: string; unit: WeightUnit }) {
+  const kind = logKind(x.exercise)
+  const todays = log.find((e) => e.exercise === x.exercise.id && e.date === date && e.sets.some(hasValue))
+  const e = todays ?? lastBefore(log, x.exercise.id, date)
+  if (!e) return null
+  const sets = inUnit(e, unit).sets.filter(hasValue).map((s) => setText(s, kind, unit)).join(' · ')
+  const tail = kind === 'weight' ? ` ${unit}` : kind === 'reps' ? ' reps' : ''
+  return <span className={`small lift-logged ${todays ? 'today' : ''}`}>{todays ? <><Icon name="check" size={13} /> Today: </> : 'Last time: '}{sets}{tail}</span>
 }
 
 /** "rest 2–3 min" that starts the rest timer at the low end, without opening the exercise guide. */
