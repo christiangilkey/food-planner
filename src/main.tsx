@@ -4,6 +4,9 @@ import '@fontsource-variable/plus-jakarta-sans/index.css'
 import './index.css'
 import App from './App.tsx'
 import './lib/install'
+import { handleBack } from './lib/back'
+import { clearCameraCopies } from './lib/files'
+import { isNative } from './lib/platform'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -11,7 +14,16 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
+if (isNative) {
+  // Android: Back closes the top sheet or page, then goes to Today, then leaves the app.
+  void import('@capacitor/app').then(({ App: NativeApp }) => NativeApp.addListener('backButton', () => { if (!handleBack()) void NativeApp.exitApp() }))
+  // Remove any label photo a crash left behind.
+  void clearCameraCopies()
+}
+
+// The Android app carries its own files and updates through new releases, so only the web app
+// needs offline caching and update checks.
+if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative) {
   // Registration can fail in some private windows and embedded browsers; the app works without offline support.
   window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(() => {}))
 

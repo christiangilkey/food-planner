@@ -6,6 +6,7 @@ import { avoidedFoods, avoidLabel, dietBlocked, productTriggers } from '../lib/c
 import { packageGramsFrom, parseNutritionLabel } from '../lib/label'
 import { lookupBarcode } from '../lib/openfoodfacts'
 import { blankProduct, defaultMatch, inferTags, LABEL_FIELDS, plausibleMatch, productFoodId, stockProduct, suggestMatches } from '../lib/products'
+import { clearCameraCopies } from '../lib/files'
 import { ocrText, readBarcode } from '../lib/scan'
 import type { MealSlot, Product } from '../types'
 import { Icon } from './Icon'
@@ -28,6 +29,7 @@ export function ScanSheet({ state, update, onClose, editing }: ViewProps & { onC
   const [code, setCode] = useState('')
   const [busy, setBusy] = useState('')
   const [note, setNote] = useState('')
+  const [fromOff, setFromOff] = useState(false)
   const labelInput = useRef<HTMLInputElement>(null)
 
   const set = (patch: Partial<Product>) => setDraft((d) => ({ ...d, ...patch }))
@@ -42,6 +44,7 @@ export function ScanSheet({ state, update, onClose, editing }: ViewProps & { onC
         setNote('That barcode isn’t in Open Food Facts yet. Take a photo of the Nutrition Facts label, or type the numbers in.')
       } else {
         const { categories: _, ...rest } = found
+        setFromOff(true)
         setDraft((d) => {
           const next = { ...d, ...rest }
           return { ...next, tags: inferTags(`${next.name} ${next.ingredients}`), matches: defaultMatch(next) }
@@ -73,9 +76,10 @@ export function ScanSheet({ state, update, onClose, editing }: ViewProps & { onC
         : 'Only part of the label was readable. Fill in the rest, or retake the photo flat, in good light, filling the frame.')
       setStep('review')
     } catch {
-      setNote('Couldn’t read that photo. The text reader downloads once (about 10 MB) and needs a connection the first time.')
+      setNote('Couldn’t read that photo. Retake it flat, in good light, filling the frame, or type the numbers in.')
     } finally {
       setBusy('')
+      void clearCameraCopies()
     }
   }
 
@@ -129,6 +133,11 @@ export function ScanSheet({ state, update, onClose, editing }: ViewProps & { onC
       {step === 'review' && (
         <ProductForm state={state} draft={draft} set={set} packages={packages} setPackages={setPackages} editing={!!editing}
           onLabelPhoto={() => labelInput.current?.click()} busy={!!busy} onSave={save} />
+      )}
+      {step === 'review' && fromOff && (
+        <p className="muted small off-credit">
+          Product data from <a className="ext" href="https://world.openfoodfacts.org/" target="_blank" rel="noopener noreferrer">Open Food Facts</a>, available under the Open Database License (ODbL). It can be wrong: check allergens and nutrition on the package.
+        </p>
       )}
     </Sheet>
   )

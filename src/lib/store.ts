@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { AppState } from '../types'
+import { parseUntrusted, sanitizeBackup, withoutSecrets } from './backup'
 import { emptyPlan } from './plan-utils'
 import { syncProducts } from './products'
 
@@ -48,6 +49,7 @@ export function defaultState(): AppState {
     googleClientId: '',
     setupDone: false,
     disclaimerAccepted: false,
+    termsAccepted: '',
     sleepLog: [],
     exportTarget: 'google',
     onyx: { url: 'http://127.0.0.1:4747', token: '' },
@@ -91,15 +93,23 @@ export function useAppState(): [AppState, Update] {
   return [state, update]
 }
 
+/** A backup file's text. Tokens are left out (the AI key is never in the state at all). */
 export function exportState(state: AppState): string {
-  return JSON.stringify(state, null, 2)
+  return JSON.stringify(withoutSecrets(state), null, 2)
 }
 
-export function importState(json: string): AppState {
-  const parsed = JSON.parse(json) as Partial<AppState>
-  const base = defaultState()
-  if (!parsed.profile || !Array.isArray(parsed.plan)) throw new Error('That file is not a Health Tracker backup.')
-  const state = { ...base, ...parsed, profile: { ...base.profile, ...parsed.profile, meds: { ...base.profile.meds, ...parsed.profile.meds } } }
+/**
+ * Read a backup file. Every field is checked and anything unexpected is dropped (see lib/backup).
+ * `device` is this device's current state: its tokens and Terms agreement are kept.
+ */
+export function importState(json: string, device?: AppState): AppState {
+  let parsed: unknown
+  try {
+    parsed = parseUntrusted(json)
+  } catch (e) {
+    throw e instanceof SyntaxError ? new Error('That file is not a Health Tracker backup.') : e
+  }
+  const state = sanitizeBackup(parsed, defaultState(), device)
   syncProducts(state.products)
   return state
 }

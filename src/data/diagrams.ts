@@ -2,6 +2,7 @@
 // src/lib/pose.ts: frames are 200 × 200, the floor is at y = 190, a flat foot's ankle at y = 186,
 // angles are absolute (0 down, 90 forward, 180 up, -90 back).
 import type { Diagram, Prop, SidePose } from '../lib/pose'
+import { EXTRA_DIAGRAMS } from './exercises'
 
 const G = 186
 
@@ -33,7 +34,7 @@ const squatLow = (torso: number, arm: SidePose['arm']): SidePose => ({ at: ['ank
 // Lying on the floor, head to the left.
 const floorLie = (extra: Partial<SidePose>): SidePose => ({ at: ['shoulder', 58, 180], torso: -90, arm: [90, 90], leg: [90, 90, 180], ...extra })
 
-export const DIAGRAMS: Record<string, Diagram> = {
+const BASE_DIAGRAMS: Record<string, Diagram> = {
   // ── Chest ──
   bench: {
     start: benchLie([180, 180]), end: benchLie({ to: [100, 114], bend: 'down' }),
@@ -327,6 +328,9 @@ export const DIAGRAMS: Record<string, Diagram> = {
 }
 
 /** Posture and mobility drills, keyed by the drill id in training.ts. */
+/** Every exercise diagram: the originals plus each muscle group's additions (./extra). */
+export const DIAGRAMS: Record<string, Diagram> = { ...BASE_DIAGRAMS, ...EXTRA_DIAGRAMS }
+
 export const DRILL_DIAGRAMS: Record<string, Diagram> = {
   // Loaded full-range lifting: the goblet squat shows it best.
   full_range: DIAGRAMS.goblet,

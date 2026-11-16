@@ -33,7 +33,7 @@ export const LABEL_FIELDS: { key: LabelKey; label: string; unit: 'kcal' | 'g' | 
 export const productFoodId = (p: Pick<Product, 'id'>) => `p_${p.id}`
 
 /** The app food a product stands for: the matched food, or its own entry. */
-export const productFood = (p: Product) => (p.matches && FOOD_BY_ID[p.matches] ? p.matches : productFoodId(p))
+export const productFood = (p: Product) => (p.matches && Object.hasOwn(FOOD_BY_ID, p.matches) ? p.matches : productFoodId(p))
 
 export const productTitle = (p: Pick<Product, 'brand' | 'name'>) =>
   p.brand && !p.name.toLowerCase().startsWith(p.brand.toLowerCase()) ? `${p.brand} ${p.name}` : p.name
@@ -68,7 +68,8 @@ export function syncProducts(products: Product[]) {
 
   // Oldest first, so the most recently scanned brand of a food wins.
   for (const p of [...products].sort((a, b) => a.addedAt.localeCompare(b.addedAt))) {
-    const base = p.matches ? FOOD_BY_ID[p.matches] : undefined
+    // hasOwn, so a "__proto__" match can never reach Object.prototype and change every object.
+    const base = p.matches && Object.hasOwn(FOOD_BY_ID, p.matches) ? FOOD_BY_ID[p.matches] : undefined
     if (base) {
       if (!original.has(base.id)) original.set(base.id, { ...base.n })
       base.n = { ...base.n, ...labelPer100(p.label, p.servingGrams) }

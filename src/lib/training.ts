@@ -1,7 +1,8 @@
 import type { Claim } from '../data/conditions'
 import { RECIPE_BY_ID } from '../data/recipes'
-import { ACCESS, CONDITION_TRAINING, EXERCISE_BY_ID, EXERCISES, FUEL, MUSCLE_LABEL, MUSCLES, VTAPER, type Exercise, type Muscle, type TrainingGoal } from '../data/training'
-import type { Activity, AppState, BodyCheckIn, FitnessSettings, Profile } from '../types'
+import { LIMITATION_BY_ID, type Limitation } from '../data/limitations'
+import { ACCESS, canDo, CONDITION_TRAINING, EXERCISE_BY_ID, EXERCISES, FUEL, gearOf, MUSCLE_LABEL, MUSCLES, VTAPER, type EquipmentId, type Exercise, type Muscle, type Stress, type TrainingGoal } from '../data/training'
+import type { Activity, AppState, BodyCheckIn, FitnessSettings, Profile, TrainingPlace } from '../types'
 import { hasCondition } from './conditions'
 import { computeTargets, lbToKg } from './energy'
 import { servingTotals } from './nutrition'
@@ -59,6 +60,8 @@ export interface PlannedExercise {
   rest: string
   /** Main target of this pick. */
   for: Muscle
+  /** The exercise the plan chose before your swap. */
+  swappedFrom?: string
   note?: string
 }
 
@@ -77,6 +80,8 @@ export interface Program {
   /** Sets had to be cut to fit the session length. */
   trimmed: boolean
   conditionNotes: Claim[]
+  /** Limitations that shaped this week. */
+  limits: Limitation[]
   cardio: string
   warnings: string[]
 }
@@ -90,8 +95,9 @@ const activeConditionTraining = (p: Profile) =>
 
 function prescription(e: Exercise, f: FitnessSettings, minRir: number, firstCompound: boolean): Pick<PlannedExercise, 'reps' | 'rir' | 'rest'> {
   const fresh = f.experience === 'new'
-  const loadless = e.gear.length === 1 && e.gear[0] === 'bodyweight'
-  if (e.isometric) return { reps: e.id === 'plank' ? '30–60 s hold' : '2 min hold', rir: '—', rest: '1–2 min' }
+  // Moving your own body weight (on the floor or in suspension straps): progress with reps and harder versions.
+  const loadless = e.gear.every((g) => g === 'bodyweight' || g === 'suspension')
+  if (e.isometric) return { reps: HOLDS[e.id] ?? '30–60 s hold', rir: '—', rest: '1–2 min' }
   if (e.compound) {
     if (f.goal === 'strength' && firstCompound && !loadless) return { reps: '3–6', rir: '2–3', rest: '3–5 min' }
     const rir = Math.max(minRir, fresh || f.goal === 'health' ? 2 : 1)
@@ -99,6 +105,52 @@ function prescription(e: Exercise, f: FitnessSettings, minRir: number, firstComp
   }
   const rir = fresh || f.goal === 'health' ? '1–2' : '0–2'
   return { reps: loadless ? '12–25' : f.goal === 'health' ? '12–15' : '10–15', rir, rest: '1–2 min' }
+}
+
+const HOLDS: Record<string, string> = { plank: '30–60 s hold', side_plank: '20–45 s each side', farmer_carry: '30–45 s walk', wall_sit: '2 min hold' }
+
+// ── Where you train, what you have, and what your body needs ─────────────
+
+/** Your places; without any saved, one place built from the old "where you train" choice. */
+export function placesOf(f: FitnessSettings): TrainingPlace[] {
+  if (f.places?.length) return f.places
+  const a = ACCESS.find((x) => x.id === f.access) ?? ACCESS[0]
+  return [{ id: 'main', name: a.id === 'gym' ? 'Gym' : a.id === 'home' ? 'Home' : 'Anywhere', equipment: [...a.equipment] }]
+}
+export const activePlace = (f: FitnessSettings): TrainingPlace => placesOf(f).find((x) => x.id === f.place) ?? placesOf(f)[0]
+export const equipmentOf = (f: FitnessSettings): EquipmentId[] => activePlace(f).equipment
+
+export const limitationsOf = (f: FitnessSettings): Limitation[] => (f.limitations ?? []).map((id) => LIMITATION_BY_ID[id]).filter(Boolean)
+
+/** Joint stresses to avoid: from limitations, plus lying face down in pregnancy. */
+function avoidedStress(f: FitnessSettings, p: Profile): Set<Stress> {
+  const out = new Set<Stress>(limitationsOf(f).flatMap((l) => l.avoid))
+  if (p.meds.pregnant) out.add('prone')
+  return out
+}
+
+/** Why an exercise can't be planned right now, or null if it can. */
+export function whyNot(e: Exercise, f: FitnessSettings, p: Profile): string | null {
+  if (!canDo(e, gearOf(equipmentOf(f)))) return `Needs equipment you haven’t ticked for ${activePlace(f).name}`
+  const avoid = avoidedStress(f, p)
+  const hit = limitationsOf(f).find((l) => (e.stress ?? []).some((s) => l.avoid.includes(s)))
+  if (hit) return `Not with ${hit.label.toLowerCase()}`
+  if ((e.stress ?? []).some((s) => avoid.has(s)) || (p.meds.pregnant && e.supine)) return 'Not in pregnancy'
+  if (f.avoid?.includes(e.id)) return 'You chose not to do this one'
+  return null
+}
+
+/** Exercises the planner may use for volume right now. */
+export function usableExercises(f: FitnessSettings, p: Profile): Exercise[] {
+  return EXERCISES.filter((e) => !e.addOnOnly && !whyNot(e, f, p))
+}
+
+/** Other exercises for the same main muscle that fit your equipment and body, best match first. */
+export function alternativesFor(e: Exercise, f: FitnessSettings, p: Profile): Exercise[] {
+  const same = (x: Exercise) => x.primary[0] === e.primary[0]
+  return usableExercises(f, p)
+    .filter((x) => x.id !== e.id && same(x))
+    .sort((a, b) => Number(b.compound === e.compound) - Number(a.compound === e.compound) || a.name.localeCompare(b.name))
 }
 
 /** Lifting time for a session. Blood-pressure wall sits are extra (they can be done at home, any time). */
@@ -111,12 +163,14 @@ export const WALL_SIT_MIN = 16
 export function buildProgram(f: FitnessSettings, p: Profile): Program {
   const days = Math.max(2, Math.min(6, Math.round(f.days)))
   const split = SPLITS[days]
-  const gear = new Set(ACCESS.find((a) => a.id === f.access)!.gear)
   const rules = activeConditionTraining(p)
-  const minRir = Math.max(0, ...rules.map((r) => r.minRir ?? 0))
+  const limits = limitationsOf(f)
+  const minRir = Math.max(0, ...rules.map((r) => r.minRir ?? 0), ...limits.map((l) => l.minRir ?? 0))
   const noSupine = rules.some((r) => r.noSupine)
   const targets = weeklyTargets(f)
-  const usable = EXERCISES.filter((e) => e.gear.every((g) => gear.has(g)) && !(noSupine && e.supine) && e.id !== 'wall_sit' && e.id !== 'nordic')
+  const usable = usableExercises(f, p).filter((e) => !(noSupine && e.supine))
+  const usableIds = new Set(usable.map((e) => e.id))
+  const gear = gearOf(equipmentOf(f))
   const prefer = f.preset === 'vtaper' ? VTAPER.prefer : {}
 
   const hits = {} as Record<Muscle, number>
@@ -126,9 +180,12 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
   const sessions: Session[] = split.kinds.map((kind, si) => {
     const list: PlannedExercise[] = []
     const credit = {} as Record<Muscle, number>
-    const add = (e: Exercise, sets: number, m: Muscle) => {
+    const add = (picked: Exercise, sets: number, m: Muscle) => {
+      // Your own swap wins when it still fits your equipment and body and isn't already in the session.
+      const mine = f.swaps?.[picked.id]
+      const e = mine && usableIds.has(mine) && !list.some((x) => x.exercise.id === mine) ? EXERCISE_BY_ID[mine] : picked
       const firstCompound = e.compound && !list.some((x) => x.exercise.compound)
-      list.push({ exercise: e, sets, for: m, ...prescription(e, f, e.compound ? minRir : 0, firstCompound) })
+      list.push({ exercise: e, sets, for: m, ...(e !== picked ? { swappedFrom: picked.id } : {}), ...prescription(e, f, e.compound ? minRir : 0, firstCompound) })
       for (const q of e.primary) credit[q] = (credit[q] ?? 0) + sets
       for (const q of e.secondary) credit[q] = (credit[q] ?? 0) + sets / 2
     }
@@ -174,9 +231,21 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
   }
 
   // Tendon add-on: Nordic hamstring curls once a week, on the first day that trains hamstrings.
-  if (f.addOns?.includes('tendon')) {
+  if (f.addOns?.includes('tendon') && !whyNot(EXERCISE_BY_ID.nordic, f, p)) {
     const day = sessions[split.kinds.findIndex((k) => DAY_MUSCLES[k].includes('hamstrings'))]
     day?.exercises.push({ exercise: EXERCISE_BY_ID.nordic, sets: 2, reps: '4–6 slow', rir: '1–3', rest: '2 min', for: 'hamstrings', note: 'For injury-proofing: lower as slowly as you can. Expect sore hamstrings for the first two weeks.' })
+  }
+
+  // Limitation add-ons (rotator cuff work for shoulders, back extensions for bones) on the first two days.
+  for (const l of limits) for (const a of l.adds ?? []) {
+    // A band exercise falls back to the cable version, and the other way round.
+    const options = [a.exercise, a.exercise.replace(/^band_/, 'cable_'), a.exercise.replace(/^cable_/, 'band_')]
+    const e = options.map((id) => EXERCISE_BY_ID[id]).find((x) => x && canDo(x, gear) && !whyNot(x, f, p))
+    if (!e) continue
+    for (const s of sessions.slice(0, 2)) {
+      if (s.exercises.some((x) => x.exercise.id === e.id)) continue
+      s.exercises.push({ exercise: e, sets: a.sets, reps: a.reps, rir: '2–3', rest: '1 min', for: e.primary[0], note: `For your ${l.label.toLowerCase()}: ${a.note}` })
+    }
   }
 
   // Fit each session into the time available: trim non-priority sets first, then priority, never below 2.
@@ -189,7 +258,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       if (cut) { cut.sets--; trimmed = true; continue }
       // Everything at 2 sets: drop the last non-priority extra exercise for a muscle that has two.
       // Add-ons (wall sits, Nordic curls) are kept: the user asked for them.
-      const keep = (x: PlannedExercise) => x.exercise.isometric || x.exercise.id === 'nordic'
+      const keep = (x: PlannedExercise) => x.exercise.isometric || !!x.exercise.addOnOnly
       const extras = s.exercises.filter((x, i) => !keep(x) && s.exercises.findIndex((y) => y.for === x.for) !== i)
       const drop = extras.sort((a, b) => Number(pri(a)) - Number(pri(b)))[0] ?? [...s.exercises].reverse().find((x) => !pri(x) && !keep(x))
       if (!drop) break
@@ -202,13 +271,16 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
   const weekly = {} as Program['weekly']
   for (const { id } of MUSCLES) weekly[id] = { target: targets[id], sets: 0 }
   for (const s of sessions) for (const x of s.exercises) {
-    if (x.exercise.id === 'wall_sit') continue
+    if (x.exercise.addOnOnly) continue
     for (const q of x.exercise.primary) weekly[q].sets += x.sets
     for (const q of x.exercise.secondary) weekly[q].sets += x.sets / 2
   }
 
   const warnings: string[] = []
-  if (f.access === 'bodyweight') warnings.push('Without equipment, progress by doing harder variations (feet raised, slower lowering, one leg) once you pass the top of the rep range.')
+  // Muscles nothing fits for: say so rather than silently leaving them out.
+  const missing = MUSCLES.filter(({ id }) => !usable.some((e) => e.primary[0] === id)).map((m) => m.label.toLowerCase())
+  if (missing.length) warnings.push(`Nothing for your ${missing.join(', ')} fits ${activePlace(f).name}’s equipment and your limitations. Tick more equipment, or try another place.`)
+  if (!equipmentOf(f).length) warnings.push('Without equipment, progress by doing harder variations (feet raised, slower lowering, one leg) once you pass the top of the rep range.')
   if (trimmed) warnings.push(`Sets were cut to fit ${f.sessionMin}-minute sessions. Longer sessions or another training day would let every muscle reach its target.`)
   const migraine = hasCondition(p, 'migraine')
   const cardio = migraine
@@ -217,7 +289,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       ? '150–300 minutes a week of moderate cardio. Your two 10-minute walks after lunch and dinner give about 140; add a couple of longer sessions.'
       : 'Keep the after-meal walks on your schedule; together with lifting they work toward the WHO weekly activity target.'
 
-  return { split: split.name, splitWhy: split.why, sessions, weekly, trimmed, conditionNotes: rules.flatMap((r) => r.claims), cardio, warnings }
+  return { split: split.name, splitWhy: split.why, sessions, weekly, trimmed, conditionNotes: rules.flatMap((r) => r.claims), limits, cardio, warnings }
 }
 
 // ── What training changes in the meal plan ─────────────────────────

@@ -1,5 +1,6 @@
 import type { DietTag } from './data/diets'
-import type { Access, Experience, Muscle, TrainingGoal } from './data/training'
+import type { Access, EquipmentId, Experience, Muscle, TrainingGoal } from './data/training'
+import type { LimitationId } from './data/limitations'
 
 export type Sex = 'male' | 'female'
 export type Activity = 'sedentary' | 'light' | 'moderate' | 'very' | 'athlete'
@@ -324,6 +325,8 @@ export interface AppState {
   setupDone: boolean
   /** The user has read and acknowledged the "not a health professional" disclaimer. */
   disclaimerAccepted: boolean
+  /** The version (date) of the Terms of Service and Privacy Policy the user agreed to; '' if none yet. */
+  termsAccepted: string
   /** Nights the user has logged, newest last. */
   sleepLog: SleepEntry[]
   /** Where the export buttons send tasks. */
@@ -394,6 +397,22 @@ export interface FitnessSettings {
   addOns?: TrainingAddOn[]
   /** Unit for logged weights; pounds unless switched. */
   weightUnit?: WeightUnit
+  /** Places you train, each with the equipment there. Missing: one place from `access`. */
+  places?: TrainingPlace[]
+  /** The place you're training at now (an id from places). */
+  place?: string
+  /** Physical limitations; the plan avoids exercises that load them. */
+  limitations?: LimitationId[]
+  /** Exercises never to plan. */
+  avoid?: string[]
+  /** Your own swaps: planned exercise id → the one you'd rather do. */
+  swaps?: Record<string, string>
+}
+
+export interface TrainingPlace {
+  id: string
+  name: string
+  equipment: EquipmentId[]
 }
 
 // ── Sleep and exports ─────────────────────────────────────

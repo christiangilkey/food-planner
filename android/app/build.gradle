@@ -1,0 +1,80 @@
+apply plugin: 'com.android.application'
+
+// The Android app's version follows the web app's (package.json): 1.8.0 becomes versionName
+// "1.8.0" and versionCode 10800, so every release is an upgrade.
+def appVersion = new groovy.json.JsonSlurper().parse(file('../../package.json')).version
+def appParts = appVersion.tokenize('.').collect { it.replaceAll('[^0-9].*', '') as int }
+
+// Release signing. The key proves updates come from us, so it lives outside the code (never
+// committed) with its password beside it. Back that folder up: without the key, Android won't
+// let a new version update an installed one. Override the location with HEALTH_TRACKER_SIGNING.
+def signingProps = file(System.getenv('HEALTH_TRACKER_SIGNING') ?: "${System.getProperty('user.home')}/.keys/health-tracker/signing.properties")
+def signing = new Properties()
+if (signingProps.exists()) signingProps.withInputStream { signing.load(it) }
+
+android {
+    namespace = "app.vena.healthtracker"
+    compileSdk = rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "app.vena.healthtracker"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode appParts[0] * 10000 + appParts[1] * 100 + appParts[2]
+        versionName appVersion
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        aaptOptions {
+             // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
+             // Default: https://android.googlesource.com/platform/frameworks/base/+/282e181b58cf72b6ca770dc7ca5f91f135444502/tools/aapt/AaptAssets.cpp#61
+            ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
+        }
+    }
+    signingConfigs {
+        if (signing.storeFile) {
+            release {
+                storeFile new File(signingProps.parentFile, signing.storeFile)
+                storeType 'pkcs12'
+                storePassword signing.password
+                keyAlias signing.alias
+                keyPassword signing.password
+            }
+        }
+    }
+    buildTypes {
+        release {
+            if (signing.storeFile) signingConfig signingConfigs.release
+            // Release builds never allow attaching a debugger or inspecting the web view.
+            debuggable false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}

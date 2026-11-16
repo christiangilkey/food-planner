@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from 'react'
+import { LEGAL_VERSION } from '../data/legal'
 import { DisclaimerAcknowledge } from './Disclaimer'
 import { Icon } from './Icon'
 import { Logo, LogoMark } from './Logo'
@@ -45,7 +46,7 @@ export function Onboarding(props: ViewProps) {
         </div>
         <section className="card disclaimer-card">
           <h2>Please read first</h2>
-          <DisclaimerAcknowledge buttonLabel="I understand, get started" onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true }))} />
+          <DisclaimerAcknowledge buttonLabel="I understand, get started" onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true, termsAccepted: LEGAL_VERSION }))} />
         </section>
       </div>
     )

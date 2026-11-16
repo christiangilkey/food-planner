@@ -1,9 +1,11 @@
 import { DIAGRAMS, DRILL_DIAGRAMS } from '../data/diagrams'
 import { FORM, FORM_RULES, STRETCHES, type FormEvidence, type FormRule, type Stretch } from '../data/form'
-import { EXERCISE_BY_ID, type Drill } from '../data/training'
+import { useState } from 'react'
+import { EXERCISE_BY_ID, HEAD_INFO, HEADS, type Drill } from '../data/training'
 import { ExerciseDiagram } from './ExerciseDiagram'
 import { LiftLog } from './LiftLog'
-import type { PlannedExercise } from '../lib/training'
+import { activePlace, alternativesFor, type PlannedExercise } from '../lib/training'
+import type { FitnessSettings } from '../types'
 import { Icon } from './Icon'
 import { Sheet, Why, type ViewProps } from './ui'
 
@@ -40,9 +42,12 @@ export function FormSheet({ id, careful, onClose, log }: {
     <Sheet title={ex.name} onClose={onClose}>
       <div className="form-guide">
         {log && <LiftLog exercise={ex} dose={log.dose} state={log.state} update={log.update} />}
+        {log?.dose && <SwapPanel x={log.dose} state={log.state} update={log.update} onDone={onClose} />}
         {log && <h3>How to do it</h3>}
         {DIAGRAMS[id] && <ExerciseDiagram d={DIAGRAMS[id]} name={ex.name} />}
         <p className="muted small form-cue">{ex.cue}</p>
+
+        <MusclesUsed id={id} />
 
         <h3>Set up</h3>
         <ol className="form-steps">{g.setup.map((s) => <li key={s}>{s}</li>)}</ol>
@@ -75,6 +80,83 @@ export function FormSheet({ id, careful, onClose, log }: {
         <p className="muted small">Setup and movement cues are coaching guidance (ACE and common practice), not tested one by one in trials.</p>
       </div>
     </Sheet>
+  )
+}
+
+const ROLES: { key: 'prime' | 'assist' | 'stabilize'; title: string }[] = [
+  { key: 'prime', title: 'Main movers' },
+  { key: 'assist', title: 'Helpers' },
+  { key: 'stabilize', title: 'Steadying' },
+]
+
+/** The muscles and muscle heads an exercise works, by how much. */
+function MusclesUsed({ id }: { id: string }) {
+  const h = HEADS[id]
+  if (!h) return null
+  return (
+    <section className="muscles-used" aria-label="Muscles worked">
+      <h3>Muscles worked</h3>
+      {ROLES.map(({ key, title }) => {
+        const list = h[key] ?? []
+        if (!list.length) return null
+        return (
+          <div key={key} className={`muscle-role role-${key}`}>
+            <span className="eyebrow">{title}</span>
+            <ul>
+              {list.map((m) => (
+                <li key={m}>
+                  <span className="muscle-dot" aria-hidden />
+                  <span><strong>{HEAD_INFO[m].label}</strong> <span className="muted small">{HEAD_INFO[m].area}</span><br /><span className="small">{HEAD_INFO[m].note}</span></span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      })}
+      {h.note && <p className="small muted">{h.note}</p>}
+      <p className="muted small">From anatomy and muscle-activity studies; which head works hardest varies a little from person to person. <Why sources={['pm_26214739']} label="Note" convention="Muscle activity in a lift doesn’t always predict which muscle grows most." /></p>
+    </section>
+  )
+}
+
+/** Swap a planned exercise for one that fits your equipment and body, or stop it being planned. */
+function SwapPanel({ x, state, update, onDone }: ViewProps & { x: PlannedExercise; onDone: () => void }) {
+  const [open, setOpen] = useState(false)
+  const f = state.fitness
+  const original = x.swappedFrom ?? x.exercise.id
+  const alts = alternativesFor(x.exercise, f, state.profile).filter((e) => e.id !== original)
+  const setFit = (patch: Partial<FitnessSettings>) => update((s) => ({ ...s, fitness: { ...s.fitness, ...patch } }))
+  const swapTo = (to: string) => {
+    const swaps = { ...f.swaps }
+    if (to === original) delete swaps[original]
+    else swaps[original] = to
+    setFit({ swaps })
+    onDone()
+  }
+  return (
+    <div className="swap-panel">
+      <div className="add-row">
+        <button type="button" className="secondary small with-icon" aria-expanded={open} onClick={() => setOpen(!open)}><Icon name="reset" size={14} /> Swap this exercise</button>
+        <button type="button" className="ghost small" onClick={() => { setFit({ avoid: [...new Set([...(f.avoid ?? []), x.exercise.id])] }); onDone() }}>Don’t plan this</button>
+      </div>
+      {x.swappedFrom && EXERCISE_BY_ID[x.swappedFrom] && (
+        <p className="muted small">Your swap for {EXERCISE_BY_ID[x.swappedFrom].name}. <button type="button" className="link small" onClick={() => swapTo(original)}>Go back to it</button></p>
+      )}
+      {open && (
+        alts.length ? (
+          <ul className="swap-list">
+            {alts.map((e) => (
+              <li key={e.id}>
+                <button type="button" className="swap-option" onClick={() => swapTo(e.id)}>
+                  <strong>{e.name}</strong>
+                  <span className="muted small">{e.compound ? 'Compound' : 'Isolation'} · {e.cue}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : <p className="muted small">Nothing else for this muscle fits {activePlace(f).name}’s equipment and your limitations. Tick more equipment to see options.</p>
+      )}
+    </div>
   )
 }
 

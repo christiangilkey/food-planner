@@ -88,7 +88,7 @@ export function CravingPanel({ state, update, goTo, day }: ViewProps & { goTo: (
           {result.note && (result.fromPantry.length > 0 || result.toBuy.length > 0) && <p className="note">{result.note}</p>}
           <p className="muted small">
             {result.source === 'ai'
-              ? 'Ideas from Claude, picked only from meals and foods your conditions, diet, medications and kitchen allow, then checked again by the app.'
+              ? 'AI ideas from Claude, picked only from meals and foods your conditions, diet, medications and kitchen allow, then checked again by the app.'
               : <>Ideas from your device, using only meals and foods your settings allow. For smarter ideas, add your own Anthropic API key in <button type="button" className="link" onClick={() => goTo('profile', 'ai')}>Profile → AI suggestions</button>.</>}
           </p>
         </>

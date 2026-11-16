@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { SOURCES } from '../data/sources'
-import { ACCESS, CHECKINS, CONDITION_TRAINING, FASCIA, FUEL, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
+import { ACCESS, canDo, EXERCISES, gearNames, gearOf, HEAD_INFO, HEADS, CHECKINS, CONDITION_TRAINING, FASCIA, FUEL, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, VTAPER, type Access, type Muscle } from '../data/training'
 import type { ConditionId, FitnessSettings, Profile } from '../types'
 import { computeTargets, lbToKg } from './energy'
-import { activityFor, bodyTrend, buildProgram, fuelAdvice } from './training'
+import { activityFor, alternativesFor, bodyTrend, buildProgram, fuelAdvice, usableExercises, whyNot } from './training'
+import { LIMITATIONS } from '../data/limitations'
 import { defaultState } from './store'
 
 const fit = (patch: Partial<FitnessSettings> = {}): FitnessSettings => ({ ...defaultState().fitness, enabled: true, ...patch })
@@ -25,11 +26,11 @@ describe('program builder', () => {
   it('trains every muscle at least twice a week, with only the equipment available, inside the session length', () => {
     for (const access of accesses) for (const days of [2, 3, 4, 5, 6]) for (const sessionMin of [45, 75]) {
       const prog = buildProgram(fit({ access, days, sessionMin, experience: 'some' }), person())
-      const gear = new Set(ACCESS.find((a) => a.id === access)!.gear)
+      const gear = gearOf(ACCESS.find((a) => a.id === access)!.equipment)
       expect(prog.sessions).toHaveLength(days)
       for (const s of prog.sessions) {
         expect(s.minutes, `${access} ${days}d ${sessionMin}m ${s.name}`).toBeLessThanOrEqual(sessionMin)
-        for (const x of s.exercises) for (const g of x.exercise.gear) expect(gear.has(g), `${x.exercise.id} needs ${g}`).toBe(true)
+        for (const x of s.exercises) expect(canDo(x.exercise, gear), `${x.exercise.id} needs ${gearNames(x.exercise).join(', ')}`).toBe(true)
       }
       for (const m of ['chest', 'back', 'quads', 'hamstrings', 'shoulders'] as Muscle[]) {
         const sessions = prog.sessions.filter((s) => s.exercises.some((x) => x.exercise.primary.includes(m) || x.exercise.secondary.includes(m)))
@@ -203,5 +204,79 @@ describe('looks, tendons, posture and check-ins', () => {
     expect(t.grip).toEqual({ first: 40, latest: 43 })
     expect(bodyTrend([{ date: day(0), waistIn: 33 }], person([], { heightIn: 70 }), today).whtrBand).toBe('healthy')
     expect(bodyTrend([{ date: day(0), waistIn: 43 }], person([], { heightIn: 70 }), today).whtrBand).toBe('high')
+  })
+})
+
+describe('equipment, limitations and swaps', () => {
+  const at = (equipment: FitnessSettings['places'] extends (infer P)[] | undefined ? P extends { equipment: infer E } ? E : never : never) =>
+    fit({ places: [{ id: 'p', name: 'Here', equipment }], place: 'p', days: 4, sessionMin: 75 })
+  const all = (prog: ReturnType<typeof buildProgram>) => prog.sessions.flatMap((s) => s.exercises.map((x) => x.exercise))
+
+  it('uses only the equipment ticked for the active place, including home systems', () => {
+    const prog = buildProgram(at(['suspension', 'bands']), person())
+    const gear = gearOf(['suspension', 'bands'])
+    for (const e of all(prog)) expect(canDo(e, gear), e.id).toBe(true)
+    expect(all(prog).some((e) => e.gear.includes('suspension'))).toBe(true)
+  })
+
+  it('switching place changes the plan straight away', () => {
+    const f = fit({ places: [{ id: 'gym', name: 'Gym', equipment: [...ACCESS[0].equipment] }, { id: 'hotel', name: 'Hotel', equipment: [] }], place: 'hotel' })
+    for (const e of all(buildProgram(f, person()))) expect(canDo(e, gearOf([])), e.id).toBe(true)
+    expect(all(buildProgram({ ...f, place: 'gym' }, person())).some((e) => e.gear.includes('barbell') || e.gear.includes('cable'))).toBe(true)
+  })
+
+  it('never plans an exercise that loads a limitation, and adds the targeted work', () => {
+    const gym = [...ACCESS[0].equipment]
+    for (const l of LIMITATIONS) {
+      const prog = buildProgram({ ...at(gym), limitations: [l.id] }, person())
+      for (const e of all(prog)) for (const s of e.stress ?? []) expect(l.avoid.includes(s), `${l.id}: ${e.id} (${s})`).toBe(false)
+      for (const a of l.adds ?? []) expect(all(prog).some((e) => e.id === a.exercise || e.id === a.exercise.replace(/^band_/, 'cable_')), `${l.id} adds ${a.exercise}`).toBe(true)
+      for (const x of prog.sessions.flatMap((s) => s.exercises)) if (l.minRir && x.exercise.compound && x.rir !== '—') expect(Number(x.rir.split('–')[0]), `${l.id} ${x.exercise.id}`).toBeGreaterThanOrEqual(l.minRir)
+    }
+  })
+
+  it('osteoporosis swaps crunches for spine-friendly core work, and shoulder pain drops overhead pressing', () => {
+    const gym = [...ACCESS[0].equipment]
+    const bones = all(buildProgram({ ...at(gym), limitations: ['osteoporosis'], priorities: ['abs'] }, person()))
+    expect(bones.some((e) => e.primary.includes('abs'))).toBe(true)
+    expect(bones.some((e) => e.stress?.includes('spine_flexion'))).toBe(false)
+    const shoulder = all(buildProgram({ ...at(gym), limitations: ['shoulder'] }, person()))
+    expect(shoulder.some((e) => e.stress?.includes('overhead'))).toBe(false)
+    expect(shoulder.some((e) => e.primary[0] === 'shoulders' && !e.addOnOnly)).toBe(true)
+  })
+
+  it('every muscle has alternatives, and limitations keep at least one per muscle at the gym', () => {
+    const gym = fit({ access: 'gym' })
+    for (const { id } of MUSCLES) {
+      const one = usableExercises(gym, person()).find((e) => e.primary[0] === id)!
+      expect(alternativesFor(one, gym, person()).length, id).toBeGreaterThanOrEqual(3)
+    }
+    for (const l of LIMITATIONS) {
+      const prog = buildProgram({ ...gym, days: 4, sessionMin: 90, limitations: [l.id] }, person())
+      expect(prog.warnings.join(' '), l.id).not.toMatch(/Nothing for your/)
+    }
+  })
+
+  it('a swap replaces the planned exercise, and an avoided one is never planned', () => {
+    const f = at([...ACCESS[0].equipment])
+    const first = buildProgram(f, person()).sessions[0].exercises[0].exercise
+    const alt = alternativesFor(first, f, person())[0]
+    const swapped = buildProgram({ ...f, swaps: { [first.id]: alt.id } }, person())
+    expect(swapped.sessions[0].exercises[0].exercise.id).toBe(alt.id)
+    const avoided = buildProgram({ ...f, avoid: [first.id] }, person())
+    expect(all(avoided).some((e) => e.id === first.id)).toBe(false)
+    expect(whyNot(first, { ...f, avoid: [first.id] }, person())).toMatch(/chose/)
+  })
+})
+
+describe('muscles worked', () => {
+  it('every exercise lists its main movers, using known muscles', () => {
+    for (const e of EXERCISES) {
+      const h = HEADS[e.id]
+      expect(h, `${e.id} has no muscle list`).toBeDefined()
+      expect(h.prime.length, `${e.id} main movers`).toBeGreaterThan(0)
+      for (const m of [...h.prime, ...h.assist, ...(h.stabilize ?? [])]) expect(HEAD_INFO[m], `${e.id}: ${m}`).toBeDefined()
+    }
+    expect(Object.keys(HEADS).filter((id) => !EXERCISES.some((e) => e.id === id))).toEqual([])
   })
 })

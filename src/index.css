@@ -858,7 +858,6 @@ details.more.card-details > summary .icon-svg { color: var(--accent); }
 .share-toast { position: absolute; top: calc(100% + 8px); right: 0; z-index: 20; white-space: nowrap; max-width: min(80vw, 320px); overflow-wrap: anywhere; white-space: normal; width: max-content; padding: 6px 10px; border-radius: 10px; background: var(--text); color: var(--bg); font-size: 0.8rem; font-weight: 600; box-shadow: var(--shadow); }
 
 /* ── VENA brand ─────────────────────────────────── */
-.logo-wide { display: block; flex-shrink: 0; }
 .onboarding-head .logo-mark { border-radius: 24px; }
 .pf-ob-brand .brand { gap: 8px; }
 
@@ -1014,3 +1013,41 @@ details.more.card-details > summary .icon-svg { color: var(--accent); }
 .lift-logged { color: var(--muted); font-variant-numeric: tabular-nums; }
 .lift-logged.today { color: var(--accent); }
 .lift-logged .icon-svg { vertical-align: -2px; }
+
+/* ── Edge-to-edge (Android app): keep the top bar and first screens below the status bar ── */
+.topbar { padding-top: calc(10px + env(safe-area-inset-top)); }
+.onboarding { padding-top: calc(24px + env(safe-area-inset-top)); }
+.sheet { max-height: calc(88dvh - env(safe-area-inset-top)); }
+
+/* ── Legal ─────────────────────────────────────── */
+.legal-doc h3 { margin: 18px 0 4px; font-size: 1rem; }
+.legal-doc p, .legal-doc li { line-height: 1.55; }
+.legal-doc ul { padding-left: 1.2em; }
+.legal-summary { font-weight: 600; }
+.legal-links { margin-top: 8px; }
+.agree-line { margin: 6px 0 0; }
+.agree-line .link, .agree-line .link:hover { padding: 0; font-size: inherit; }
+.licence-list { list-style: none; padding: 0; margin: 6px 0 14px; display: flex; flex-direction: column; gap: 10px; }
+.licence-list summary { cursor: pointer; overflow-wrap: anywhere; }
+.licence-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.72rem; line-height: 1.4; max-height: 260px; overflow: auto; background: var(--surface-2); padding: 10px; border-radius: 10px; }
+.off-credit { margin-top: 10px; }
+
+/* ── Train: places, equipment, limitations, swaps, muscles ── */
+.place-bar { display: flex; flex-direction: column; gap: 8px; }
+.place-bar p { margin: 0; }
+.equipment-editor h3 { margin: 12px 0 6px; }
+.equipment-editor .check-card small { display: block; }
+.limit-detail { margin: 4px 0 10px 12px; padding-left: 10px; border-left: 3px solid var(--accent-soft); }
+.limit-detail p { margin: 4px 0; }
+.swap-row { padding: 6px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.swap-panel { display: flex; flex-direction: column; gap: 6px; margin: 4px 0 8px; }
+.swap-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow: auto; }
+.swap-option { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface-2); color: inherit; font: inherit; cursor: pointer; }
+.swap-option:hover { border-color: var(--accent); }
+.muscles-used { margin: 6px 0 4px; }
+.muscle-role { margin: 8px 0; }
+.muscle-role ul { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.muscle-role li { display: flex; gap: 8px; align-items: flex-start; line-height: 1.35; }
+.muscle-dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; background: var(--accent); }
+.role-assist .muscle-dot { background: color-mix(in srgb, var(--accent) 55%, transparent); }
+.role-stabilize .muscle-dot { background: transparent; border: 2px solid var(--muted); width: 8px; height: 8px; }

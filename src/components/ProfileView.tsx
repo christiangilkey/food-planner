@@ -12,8 +12,13 @@ import type { ExportTarget, Profile } from '../types'
 import { Icon, type IconName } from './Icon'
 import { InstallFields } from './InstallApp'
 import { AiKeyFields } from './AiKeyFields'
-import { useAiKey } from '../lib/aiKey'
-import { DisclaimerText } from './Disclaimer'
+import { setAiKey, useAiKey } from '../lib/aiKey'
+import { timerErase } from '../lib/timer'
+import { useBackHandler } from '../lib/back'
+import { isNative } from '../lib/platform'
+import { clearAppCache, saveBackupFile } from '../lib/files'
+import { AboutPage } from './Legal'
+import { WEB_URL } from '../data/legal'
 import { MedFields, MedSummary } from './MedFields'
 import { BodyFields, EquipmentFields, LifestyleFields, Why } from './ProfileFields'
 import { Cite, type ViewProps } from './ui'
@@ -39,6 +44,7 @@ export function ProfileView(props: Props) {
   const install = useInstall()
   // Each settings page starts at the top, and Back returns to the list's top too.
   useEffect(() => { window.scrollTo(0, 0) }, [page])
+  useBackHandler(page !== null, () => setPage(null))
 
   const rows: { title: string; items: { id: Page; icon: IconName; label: string; value: ReactNode }[] }[] = [
     {
@@ -61,10 +67,10 @@ export function ProfileView(props: Props) {
     {
       title: 'App',
       items: [
-        { id: 'exports', icon: 'share', label: 'Exports', value: state.exportTarget === 'onyx' ? 'Onyx Calendar' : 'Google Tasks' },
+        { id: 'exports', icon: 'share', label: 'Exports', value: isNative ? 'Share as a checklist' : state.exportTarget === 'onyx' ? 'Onyx Calendar' : 'Google Tasks' },
         { id: 'ai', icon: 'sparkles', label: 'AI suggestions', value: aiKey ? 'Using your Anthropic key' : 'Off: suggestions made on your device' },
-        { id: 'install', icon: 'smartphone', label: 'Home screen app', value: install.installed ? 'Installed' : 'Not installed' },
-        { id: 'about', icon: 'info', label: 'About & disclaimer', value: 'Not medical advice' },
+        ...(isNative ? [] : [{ id: 'install' as const, icon: 'smartphone' as const, label: 'Home screen app', value: install.installed ? 'Installed' : 'Not installed' }]),
+        { id: 'about', icon: 'info', label: 'About & legal', value: 'Disclaimer, terms, privacy, licences' },
         { id: 'data', icon: 'hardDrive', label: 'Your data', value: 'Backup, restore or erase' },
       ],
     },
@@ -192,6 +198,14 @@ function SettingsPage({ page, ...props }: Props & { page: Page }) {
         </>
       )
     case 'exports':
+      if (isNative) {
+        return (
+          <section className="card">
+            <p>In the Android app, the export buttons on Food and Sleep open Android’s share sheet, so you can send your meals, groceries, prep day and sleep routine to Google Tasks, Keep or any notes or to-do app as a checklist.</p>
+            <p className="muted small">Sending straight to Google Tasks or Onyx Calendar works from the web app at {WEB_URL}.</p>
+          </section>
+        )
+      }
       return (
         <>
           <p className="muted pf-intro">Where the export buttons on Food and Sleep send your meals, groceries, prep day and sleep schedule.</p>
@@ -212,7 +226,7 @@ function SettingsPage({ page, ...props }: Props & { page: Page }) {
     case 'install':
       return <section className="card"><InstallFields /></section>
     case 'about':
-      return <section className="card disclaimer-card"><DisclaimerText /></section>
+      return <AboutPage />
     case 'data':
       return <DataPage {...props} />
   }
@@ -262,18 +276,18 @@ function ExcludedFoods({ state, update, goTo }: Props) {
 function DataPage({ state, update }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const [msg, setMsg] = useState('')
-  const download = () => {
-    const blob = new Blob([exportState(state)], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `food-planner-backup-${new Date().toISOString().slice(0, 10)}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
+  const download = async () => {
+    try {
+      await saveBackupFile(`health-tracker-backup-${new Date().toISOString().slice(0, 10)}.json`, exportState(state))
+    } catch (e) {
+      // Closing Android's share sheet without picking anything isn't an error worth showing.
+      if (!/cancel/i.test(e instanceof Error ? e.message : '')) setMsg('Couldn’t save the backup. Try again.')
+    }
   }
   const restore = async (file: File | undefined) => {
     if (!file) return
     try {
-      const next = importState(await file.text())
+      const next = importState(await file.text(), state)
       update(() => next)
       setMsg('Backup restored.')
     } catch (e) {
@@ -282,20 +296,24 @@ function DataPage({ state, update }: Props) {
   }
   return (
     <>
-      <p className="muted pf-intro">Everything is stored only on this device. Make a backup to move it to another phone or browser.</p>
+      <p className="muted pf-intro">Everything is stored only on this device. Make a backup to move it to another phone or browser. A backup holds your health information, so keep it somewhere private; it never includes your AI key or Onyx token.</p>
       <section className="card stack tight">
-        <button className="primary with-icon" onClick={download}><Icon name="download" size={16} /> Download backup</button>
+        <button className="primary with-icon" onClick={download}><Icon name="download" size={16} /> {isNative ? 'Save backup' : 'Download backup'}</button>
         <button className="secondary" onClick={() => fileRef.current?.click()}>Restore backup</button>
         <input ref={fileRef} type="file" accept="application/json" hidden onChange={(e) => restore(e.target.files?.[0])} />
         {msg && <p className="small" role="status">{msg}</p>}
       </section>
       <section className="card">
         <h2>Start over</h2>
-        <p className="muted small">Erases your profile, pantry, prices and plan on this device.</p>
+        <p className="muted small">Erases everything this app stores on this device: your profile, health settings, pantry, prices, plan, logs, timer and AI key. It can’t be undone, so make a backup first if you might want it back.</p>
         <button
           className="ghost danger"
           onClick={() => {
-            if (confirm('Erase your profile, pantry, prices and plan on this device?')) update(() => defaultState())
+            if (!confirm('Erase everything this app stores on this device? This can’t be undone.')) return
+            setAiKey('')
+            timerErase()
+            void clearAppCache()
+            update(() => defaultState())
           }}
         >
           Erase everything

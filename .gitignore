@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Scanner engine files, copied from node_modules by scripts/vendor.mjs
+public/vendor
+
+# Built Android installers (copied from android/app/build/outputs)
+release/

@@ -1,7 +1,7 @@
 {
   "name": "food-planner",
   "private": true,
-  "version": "1.7.0",
+  "version": "1.8.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,20 +9,32 @@
     "lint": "oxlint",
     "test": "vitest run",
     "preview": "vite preview",
-    "deploy": "npm test && npm run build && node scripts/deploy.mjs"
+    "deploy": "npm test && npm run build && node scripts/deploy.mjs",
+    "vendor": "node scripts/vendor.mjs",
+    "licenses": "node scripts/licenses.mjs",
+    "predev": "node scripts/vendor.mjs",
+    "prebuild": "node scripts/vendor.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.131.0",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.6",
+    "@tesseract.js-data/eng": "^1.0.0",
     "barcode-detector": "^3.2.2",
     "lucide-react": "^0.511.0",
     "motion": "^12.23.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "tesseract.js": "^7.0.0",
+    "wasm-feature-detect": "^1.9.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

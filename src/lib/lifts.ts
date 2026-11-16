@@ -1,4 +1,4 @@
-import type { Exercise } from '../data/training'
+import type { Exercise, Gear } from '../data/training'
 import type { LiftEntry, LoggedSet, WeightUnit } from '../types'
 
 /**
@@ -9,11 +9,13 @@ import type { LiftEntry, LoggedSet, WeightUnit } from '../types'
 /** Weight and reps for loaded lifts, reps for bodyweight and band moves, seconds for holds. */
 export type LogKind = 'weight' | 'reps' | 'hold'
 
-const LOADED = new Set(['barbell', 'dumbbell', 'machine', 'cable'])
+/** Gear that adds no load you'd write down: your own body, bands, straps and things to sit or hang on. */
+const UNLOADED = new Set<Gear>(['bodyweight', 'band', 'mini_band', 'suspension', 'pullup_bar', 'dip_bars', 'bench', 'incline_bench', 'box', 'stability_ball', 'ab_wheel', 'back_ext'])
 
 export function logKind(e: Exercise): LogKind {
   if (e.isometric) return 'hold'
-  return e.gear.some((g) => LOADED.has(g)) ? 'weight' : 'reps'
+  // An "either" choice (dumbbell or kettlebell, cable or band) counts by its first option.
+  return e.gear.some((g) => !UNLOADED.has(Array.isArray(g) ? g[0] : g)) ? 'weight' : 'reps'
 }
 
 /** Today's date as YYYY-MM-DD in local time. */

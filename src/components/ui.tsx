@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { SOURCES, type SourceId } from '../data/sources'
+import { useBackHandler } from '../lib/back'
 import { Icon } from './Icon'
 import type { AppState, Evidence } from '../types'
 import type { Update } from '../lib/store'
@@ -43,6 +44,7 @@ export function Sheet({ title, onClose, children }: { title: string; onClose: ()
     openSheets.push(id)
     return () => { openSheets.splice(openSheets.indexOf(id), 1) }
   }, [id])
+  useBackHandler(true, onClose)
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && openSheets[openSheets.length - 1] === id && onClose()
     window.addEventListener('keydown', onKey)

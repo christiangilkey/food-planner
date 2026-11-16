@@ -1,4 +1,6 @@
 import type { AppState, ExportTarget, OnyxSettings } from '../types'
+import { httpUrl } from './backup'
+import { isNative } from './platform'
 import type { TaskDraft, TaskListDraft } from './googleTasks'
 
 /**
@@ -9,10 +11,15 @@ import type { TaskDraft, TaskListDraft } from './googleTasks'
 
 const TARGET_NAME: Record<ExportTarget, string> = { google: 'Google Tasks', onyx: 'Onyx' }
 
-/** "Export to Google Tasks" or "Export to Onyx", following the setting. */
-export const exportLabel = (s: Pick<AppState, 'exportTarget'>) => `Export to ${TARGET_NAME[s.exportTarget]}`
+/** "Export to Google Tasks" or "Export to Onyx", following the setting. The Android app shares instead. */
+export const exportLabel = (s: Pick<AppState, 'exportTarget'>) => (isNative ? 'Share as checklist' : `Export to ${TARGET_NAME[s.exportTarget]}`)
 
-const base = (cfg: OnyxSettings) => cfg.url.trim().replace(/\/+$/, '')
+/** The address, only if it is a plain web address (http or https, no user name or password in it). */
+function base(cfg: OnyxSettings): string {
+  const url = httpUrl(cfg.url)
+  if (!url) throw new Error('The Onyx address must be a web address starting with http:// or https://, like http://127.0.0.1:4747.')
+  return url.replace(/\/+$/, '')
+}
 
 /** Chrome asks permission before a web page reaches a device on the local network. */
 const LOCAL = { targetAddressSpace: 'local' } as RequestInit

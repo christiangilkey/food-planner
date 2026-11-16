@@ -2,7 +2,13 @@
  * Camera helpers for the product scanner. Both run on the device: barcodes are read with the
  * browser's BarcodeDetector (or a WebAssembly fallback where it's missing, e.g. iPhone Safari),
  * and label photos are read with Tesseract OCR. Each library loads only when first used.
+ *
+ * Their engine files ship with the app (public/vendor, copied by scripts/vendor.mjs): nothing is
+ * fetched from a CDN, so no code arrives from outside after release and scanning works offline.
  */
+
+/** An app file's full address. Workers resolve relative paths against their own script, so make them absolute. */
+const vendor = (path: string) => new URL(`vendor/${path}`, document.baseURI).href
 
 interface Detector {
   detect(source: ImageBitmapSource): Promise<{ rawValue: string }[]>
@@ -18,7 +24,8 @@ export function barcodeDetector(): Promise<Detector> {
       const supported = await Native.getSupportedFormats().catch(() => [] as string[])
       if (FORMATS.some((f) => supported.includes(f))) return new Native({ formats: FORMATS.filter((f) => supported.includes(f)) })
     }
-    const { BarcodeDetector } = await import('barcode-detector/ponyfill')
+    const { BarcodeDetector, prepareZXingModule } = await import('barcode-detector/ponyfill')
+    prepareZXingModule({ overrides: { locateFile: (path: string, prefix: string) => (path.endsWith('.wasm') ? vendor('zxing/zxing_reader.wasm') : prefix + path) } })
     return new BarcodeDetector({ formats: FORMATS as never })
   })()
   return detector
@@ -52,8 +59,15 @@ export async function prepareForOcr(file: Blob): Promise<HTMLCanvasElement> {
 
 /** Read the text in a label photo. `onProgress` gets 0–1. */
 export async function ocrText(file: Blob, onProgress?: (p: number) => void): Promise<string> {
-  const [{ createWorker }, canvas] = await Promise.all([import('tesseract.js'), prepareForOcr(file)])
+  const [{ createWorker }, { simd }, canvas] = await Promise.all([import('tesseract.js'), import('wasm-feature-detect'), prepareForOcr(file)])
+  // Nearly every phone has WebAssembly SIMD (faster); the plain build covers the rest.
+  const core = (await simd()) ? 'tesseract-core-simd-lstm.wasm.js' : 'tesseract-core-lstm.wasm.js'
   const worker = await createWorker('eng', 1, {
+    workerPath: vendor('tesseract/worker.min.js'),
+    corePath: vendor(`tesseract/${core}`),
+    langPath: vendor('tesseract'),
+    gzip: false, // shipped unpacked (see scripts/vendor.mjs)
+    workerBlobURL: false,
     logger: (m: { status: string; progress: number }) => m.status === 'recognizing text' && onProgress?.(m.progress),
   })
   try {

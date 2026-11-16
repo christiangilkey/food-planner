@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { looksLikeKey, maskKey, setAiKey, useAiKey } from '../lib/aiKey'
 import { Icon } from './Icon'
+import { Linked } from './Legal'
 
 /** Profile → AI suggestions: the person's own Anthropic API key, stored only on this device. */
 export function AiKeyFields() {
@@ -46,6 +47,7 @@ export function AiKeyFields() {
           <li>Only when you tap “Find ideas”: what you typed, your setup (body, goal, conditions, diet, medications, foods you won’t eat, kitchen, budget), your pantry, and the meals and foods your settings allow.</li>
           <li>It goes straight from this device to Anthropic. The key is stored only on this device and is left out of backups.</li>
           <li>Ideas are picked only from what your settings allow, and the app checks them again before showing them. It’s not medical advice.</li>
+          <li><strong>You must be 18 or older</strong> to use Anthropic’s API, and Anthropic’s own terms and privacy policy apply to what you send: <Linked text="https://www.anthropic.com/legal/privacy" /></li>
         </ul>
       </section>
     </div>

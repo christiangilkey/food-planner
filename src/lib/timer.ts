@@ -39,6 +39,12 @@ function set(next: TimerState) {
   watchForEnd()
 }
 
+/** "Erase everything": back to a fresh timer, with nothing left in storage. */
+export function timerErase() {
+  set(initial())
+  try { localStorage.removeItem(KEY) } catch { /* nothing stored */ }
+}
+
 export const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l) } }
 export const getTimer = () => state
 

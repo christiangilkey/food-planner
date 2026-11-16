@@ -1,6 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { buildTaskLists, exportToGoogleTasks, getTasksToken, toChecklistText, type ExportOptions, type TaskListDraft } from '../lib/googleTasks'
 import { exportLabel, exportToOnyx, onyxHealth } from '../lib/onyx'
+import { shareText } from '../lib/files'
+import { isNative } from '../lib/platform'
 import { buildSleepTaskLists } from '../lib/sleep'
 import type { AppState } from '../types'
 import { Icon } from './Icon'
@@ -17,7 +19,7 @@ export function ExportSheet({ state, update, onClose }: ViewProps & { onClose: (
   const onyx = state.exportTarget === 'onyx'
   return (
     <Sheet title={exportLabel(state)} onClose={onClose}>
-      <p className="muted small">
+      <p className="muted small" hidden={isNative}>
         {onyx
           ? 'Meals and prep go to Onyx’s Magic add, which fits them around what’s already on each day, near their planned times. Groceries go as one shopping task. Everything is tagged “food-planner”, and sending again updates them instead of adding duplicates.'
           : 'Creates a task list for each part you choose, with meals due on their day.'}{' '}
@@ -42,7 +44,7 @@ export function SleepExportSheet({ state, update, onClose }: ViewProps & { onClo
   const onyx = state.exportTarget === 'onyx'
   return (
     <Sheet title={`${exportLabel(state)}: sleep schedule`} onClose={onClose}>
-      <p className="muted small">
+      <p className="muted small" hidden={isNative}>
         {onyx
           ? 'Adds your wind-down routine for the next 7 nights as fixed blocks on your Onyx calendar, with your sleep itself as one block each night, tagged “sleep”. These keep their exact times rather than going through Magic add.'
           : 'Adds your wind-down routine for the next 7 nights as tasks due on their day: caffeine cutoff, last food, screens away, lights out and morning light.'}
@@ -102,6 +104,29 @@ function ExportPanel({ state, update, lists, children }: ViewProps & { lists: Ta
     } catch {
       setStatus({ kind: 'error', text: 'Couldn’t access the clipboard.' })
     }
+  }
+  const share = async () => {
+    try {
+      await shareText(lists.length === 1 ? lists[0].title : 'Health Tracker plan', toChecklistText(lists))
+    } catch {
+      // Closed the share sheet: nothing to report.
+    }
+  }
+
+  // Android's app view can't open Google's sign-in, and Android blocks plain-http connections to
+  // a computer, so the Android app shares the checklist to Google Tasks or any other app instead.
+  if (isNative) {
+    return (
+      <>
+        {children}
+        <p className="muted small">{count} tasks in {lists.length} list{lists.length === 1 ? '' : 's'}. Share them to Google Tasks, Keep or any notes or to-do app. Sending straight to Google Tasks or Onyx works from the web app.</p>
+        <div className="add-row">
+          <button className="primary with-icon" onClick={share} disabled={!count}><Icon name="share" /> Share checklist</button>
+          <button className="secondary" onClick={copy} disabled={!count}>Copy</button>
+        </div>
+        {status.text && <p className={`small ${status.kind === 'error' ? 'warn-text' : 'good-text'}`} role="status">{status.text}</p>}
+      </>
+    )
   }
 
   return (

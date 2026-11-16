@@ -3,6 +3,7 @@
 // safety notes, stretches and rules carry their evidence level and sources.
 import type { Evidence } from '../types'
 import type { SourceId } from './sources'
+import { EXTRA_FORM } from './exercises'
 
 export type FormEvidence = Evidence | 'convention'
 
@@ -61,7 +62,7 @@ export const STRETCHES: Record<string, Stretch> = {
   cobra: { id: "cobra", name: "Cobra", muscles: ["abdominals","hip flexors"], howTo: "Lie face down and press your chest up with your hands while your hips stay on the floor. Stop if your low back hurts.", hold: "20-30 s", sets: "2-3", when: "after", evidence: "convention", sources: ["ace_cobra"] },
 }
 
-export const FORM: Record<string, FormGuide> = {
+const BASE_FORM: Record<string, FormGuide> = {
   bench: { setup: ["Lie with your eyes under the bar, feet flat.","Grip a little wider than your shoulders, no more than 1.5x.","Pull your shoulder blades down and back into the bench."], execution: ["Unrack with straight arms over your shoulders.","Lower under control to your lower chest, elbows 45-70° out.","Touch lightly or stop just above your chest.","Press up and slightly back; hips stay down."], breathing: "Breathe in and brace before lowering, out as you press.", mistakes: ["Hips lifting off the bench.","Bouncing the bar off your chest.","Very wide grip with elbows flared to 90°."], safety: { text: "A grip under 1.5x shoulder width with shoulder blades back cut modelled shoulder load.", sources: ["pm_38974522"] }, easier: "Dumbbell or machine chest press.", harder: "Paused bench, 1 s on the chest.", stretches: ["doorway_pec_mid","overhead_triceps"] },
   incline_db: { setup: ["Set the bench to about 30°, never above 45°.","Feet planted, shoulder blades back, head and hips on the pad."], execution: ["Start with the dumbbells over your upper chest.","Lower beside your upper chest, elbows 45-70° out.","Press up and slightly in without clanking."], breathing: "In on the way down, out as you press.", mistakes: ["Bench too steep, so it becomes a shoulder press.","Back arching off the pad.","Dumbbells drifting toward your hips."], easier: "Incline machine press or lighter neutral-grip dumbbells.", harder: "Slower lowering or a pause at the bottom.", stretches: ["doorway_pec_low","overhead_triceps"] },
   db_bench: { setup: ["Sit with the dumbbells on your thighs, then roll back onto the bench.","Feet flat; head, shoulders and hips down; shoulder blades back."], execution: ["Press the dumbbells up over your chest.","Lower until level with your chest, forearms vertical.","Press back up, elbows 45-70° out."], breathing: "In on the way down, out as you press.", mistakes: ["Sinking into a deep stretch under heavy load.","Arms moving unevenly.","Wrists bent back."], easier: "Machine chest press.", harder: "Single-arm dumbbell press.", stretches: ["doorway_pec_mid","overhead_triceps"] },
@@ -122,6 +123,9 @@ export const FORM: Record<string, FormGuide> = {
   hanging_raise: { setup: ["Hang from a bar, hands shoulder-width; ab straps are fine.","Shoulders gently pulled down, legs together, body still."], execution: ["Lift your knees toward your chest.","Keep curling so your pelvis tilts up toward your ribs.","Pause 1 s, then lower over 2-3 s without swinging."], breathing: "Out as your knees rise, in as you lower.", mistakes: ["Swinging for momentum.","Lifting the thighs with no pelvic curl.","Dropping fast."], safety: { text: "High hip-flexor demand may not suit some people with low back problems; use a lying reverse crunch instead.", sources: ["pm_16649890"] }, easier: "Captain's-chair knee raise, or lying reverse crunch.", harder: "Straight-leg raise, or toes-to-bar.", stretches: ["hip_flexor_kneeling","cobra"] },
   leg_raise: { setup: ["Lie on your back, legs straight, hands by your hips or under your low back.","Press your low back gently down and brace."], execution: ["Lift your legs to about vertical.","Lower over about 3 s, stopping before your low back arches.","Repeat without resting your heels on the floor."], breathing: "Out as your legs rise, in as they lower.", mistakes: ["Low back arching as your legs drop.","Dropping your legs quickly.","Swinging them up."], easier: "Bent-knee leg raise, or one leg at a time.", harder: "Add a hip lift at the top, or a 5 s lowering.", stretches: ["thomas_stretch","cobra"] },
 }
+
+/** Every form guide: the originals plus each muscle group's additions (./extra). */
+export const FORM: Record<string, FormGuide> = { ...BASE_FORM, ...EXTRA_FORM }
 
 export const FORM_RULES: FormRule[] = [
   { id: "warmup_active", text: "Warm up by moving, not by stretching alone; active warm-ups improved performance in most studies.", evidence: "moderate", sources: ["pm_19996770","pm_25694615"] },

@@ -1,14 +1,15 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import type { Tab } from '../App'
-import { ACCESS, CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
+import { CHECKINS, EXPERIENCE, FASCIA, HORMONE_CUES, MOBILITY_MYTHS, MUSCLES, NOT_FOR_YOU, POSTURE, PRINCIPLES, TENDON, TRAINING_GOALS, VTAPER, type Muscle } from '../data/training'
 import { hasCondition } from '../lib/conditions'
-import { bodyTrend, buildProgram, fuelAdvice, muscleList, type FuelAdvice, type PlannedExercise, type Program, type Session } from '../lib/training'
+import { activePlace, bodyTrend, buildProgram, placesOf, fuelAdvice, muscleList, type FuelAdvice, type PlannedExercise, type Program, type Session } from '../lib/training'
 import { hasValue, inUnit, lastBefore, logKind, setText, today } from '../lib/lifts'
 import { DAYS } from '../lib/plan-utils'
 import type { BodyCheckIn, FitnessSettings, LiftEntry, Profile, TrainingAddOn, WeightUnit } from '../types'
 import type { Drill } from '../data/training'
 import { DrillSheet, FormSheet, LiftingRules, RuleLine } from './FormGuide'
 import { WorkoutTimer } from './WorkoutTimer'
+import { EquipmentEditor, LimitsEditor, PlaceBar } from './TrainSetup'
 import { parseRest, restStart } from '../lib/timer'
 import { Icon, type IconName } from './Icon'
 import { Bar, Cite, EvidenceChip, Sheet, Sourced, Why, type ViewProps } from './ui'
@@ -16,7 +17,7 @@ import { Bar, Cite, EvidenceChip, Sheet, Sourced, Why, type ViewProps } from './
 const SESSION_LENGTHS = [30, 45, 60, 75, 90]
 const FULL_DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-type Panel = 'setup' | 'meals' | 'checkins' | 'extras' | 'health' | 'learn'
+type Panel = 'setup' | 'equipment' | 'limits' | 'meals' | 'checkins' | 'extras' | 'health' | 'learn'
 
 /** Which session is next: today's if it's still today, else the next day with one. */
 function nextSession(p: Program, today: number): Session | undefined {
@@ -69,6 +70,8 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
 
   const tiles: { id: Panel; icon: IconName; title: string; detail: string }[] = [
     { id: 'setup', icon: 'target', title: 'Goal & schedule', detail: `${goal.label} · ${f.days} days` },
+    { id: 'equipment', icon: 'dumbbell', title: 'Equipment', detail: `${placesOf(f).length} place${placesOf(f).length > 1 ? 's' : ''} · ${activePlace(f).name}` },
+    { id: 'limits', icon: 'shield', title: 'Injuries & limits', detail: f.limitations?.length ? `${f.limitations.length} on` : 'None set' },
     { id: 'meals', icon: 'meal', title: 'Meals for training', detail: mealTodos ? `${mealTodos} suggestion${mealTodos > 1 ? 's' : ''}` : 'All set' },
     { id: 'checkins', icon: 'scale', title: 'Check-ins', detail: latest ? `Last: ${new Date(`${latest.date}T12:00`).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}` : 'Weight, waist, grip' },
     { id: 'extras', icon: 'sparkles', title: 'Extras', detail: addOnCount ? `${addOnCount} on` : 'Mobility, posture, injuries' },
@@ -86,6 +89,8 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
           {f.priorities.length > 0 && <> · extra work for {muscleList(f.priorities).toLowerCase()}</>}
         </p>
       </section>
+
+      <PlaceBar f={f} setFit={setFit} onEquipment={() => setPanel('equipment')} onLimits={() => setPanel('limits')} />
 
       <WorkoutTimer />
 
@@ -126,6 +131,16 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       {panel === 'setup' && (
         <Sheet title="Goal & schedule" onClose={close}>
           <Setup f={f} p={p} setFit={setFit} setProfile={setProfile} onDone={close} />
+        </Sheet>
+      )}
+      {panel === 'equipment' && (
+        <Sheet title="Equipment" onClose={close}>
+          <EquipmentEditor f={f} setFit={setFit} />
+        </Sheet>
+      )}
+      {panel === 'limits' && (
+        <Sheet title="Injuries and limitations" onClose={close}>
+          <LimitsEditor f={f} setFit={setFit} />
         </Sheet>
       )}
       {panel === 'meals' && (
@@ -279,13 +294,14 @@ function Setup({ f, p, setFit, setProfile, onDone }: {
             {EXPERIENCE.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
           </select>
         </label>
-        <label className="field">
-          <span>Where you train</span>
-          <select value={f.access} onChange={(e) => setFit({ access: e.target.value as FitnessSettings['access'] })}>
-            {ACCESS.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
-          </select>
-        </label>
       </div>
+
+      <h3>Where you train</h3>
+      <p className="muted small">Pick a starting point, then tick exactly what you have. Add more places (home, a hotel) any time from the Train tab.</p>
+      <EquipmentEditor f={f} setFit={setFit} />
+
+      <h3>Injuries and limitations</h3>
+      <LimitsEditor f={f} setFit={setFit} />
 
       <label className="toggle compact">
         <input type="checkbox" checked={f.feedMealPlan} onChange={(e) => setFit({ feedMealPlan: e.target.checked })} />

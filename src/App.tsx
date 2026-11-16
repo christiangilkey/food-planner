@@ -1,6 +1,9 @@
 import { motion, MotionConfig, useMotionValue } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { DisclaimerGate } from './components/Disclaimer'
+import { DisclaimerGate, TermsGate } from './components/Disclaimer'
+import { LEGAL_VERSION } from './data/legal'
+import { useBackHandler } from './lib/back'
+import { isNative } from './lib/platform'
 import { HealthView } from './components/HealthView'
 import { Icon, type IconName } from './components/Icon'
 import { InstallButton } from './components/InstallApp'
@@ -60,11 +63,14 @@ export default function App() {
   }, [tab, goTo])
 
   useSwipe(mainRef, dragX, onSwipe, state.setupDone)
+  // Android Back: from any other tab, go to Today first (sheets and settings pages handle their own).
+  useBackHandler(tab !== 'today', () => goTo('today'))
   // New page: start at the top and clear any finger offset.
   useEffect(() => { window.scrollTo(0, 0); dragX.set(0) }, [tab, section, dragX])
 
   if (!state.setupDone) return <Onboarding state={state} update={update} />
-  if (!state.disclaimerAccepted) return <DisclaimerGate onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true }))} />
+  if (!state.disclaimerAccepted) return <DisclaimerGate onAccept={() => update((s) => ({ ...s, disclaimerAccepted: true, termsAccepted: LEGAL_VERSION }))} />
+  if (state.termsAccepted !== LEGAL_VERSION) return <TermsGate first={!state.termsAccepted} onAccept={() => update((s) => ({ ...s, termsAccepted: LEGAL_VERSION }))} />
 
   const props = { state, update, goTo }
   const initial = (state.profile.name.trim()[0] ?? '').toUpperCase()
@@ -76,8 +82,9 @@ export default function App() {
           <header className="topbar">
             <Logo />
             <div className="topbar-actions">
-              <InstallButton />
-              <ShareButton />
+              {/* Inside the Android app it's already installed, and sharing a web link isn't the point. */}
+              {!isNative && <InstallButton />}
+              {!isNative && <ShareButton />}
               <button className={`avatar-btn ${tab === 'profile' ? 'active' : ''}`} onClick={() => goTo('profile')} aria-label="Profile and settings" title="Profile and settings">
                 {initial ? <span className="avatar">{initial}</span> : <Icon name="user" size={20} />}
                 <span className="avatar-label">Profile</span>
