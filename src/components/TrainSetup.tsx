@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { ACCESS, EQUIPMENT, EQUIPMENT_GROUPS, EXERCISE_BY_ID, type EquipmentId } from '../data/training'
 import { LIMITATIONS, type LimitationId } from '../data/limitations'
 import { activePlace, placesOf } from '../lib/training'
-import type { FitnessSettings, TrainingPlace } from '../types'
+import { hasCondition } from '../lib/conditions'
+import type { FitnessSettings, Profile, TrainingPlace } from '../types'
 import { Icon } from './Icon'
 import { Sourced, Why } from './ui'
 
@@ -102,8 +103,10 @@ export function EquipmentEditor({ f, setFit }: { f: FitnessSettings; setFit: Set
 }
 
 /** Physical limitations, and the exercises you've swapped or ruled out yourself. */
-export function LimitsEditor({ f, setFit }: { f: FitnessSettings; setFit: SetFit }) {
-  const on = new Set(f.limitations ?? [])
+export function LimitsEditor({ f, p, setFit }: { f: FitnessSettings; p?: Profile; setFit: SetFit }) {
+  // Osteoporosis set as a health condition in the profile is always on here too.
+  const fromProfile = new Set<LimitationId>(p && hasCondition(p, 'osteoporosis') ? ['osteoporosis'] : [])
+  const on = new Set([...(f.limitations ?? []), ...fromProfile])
   const toggle = (id: LimitationId) => setFit({ limitations: on.has(id) ? [...on].filter((x) => x !== id) : [...on, id] })
   const swaps = Object.entries(f.swaps ?? {}).filter(([a, b]) => EXERCISE_BY_ID[a] && EXERCISE_BY_ID[b])
   const avoided = (f.avoid ?? []).filter((id) => EXERCISE_BY_ID[id])
@@ -113,8 +116,8 @@ export function LimitsEditor({ f, setFit }: { f: FitnessSettings; setFit: SetFit
       {LIMITATIONS.map((l) => (
         <div key={l.id}>
           <label className={`toggle compact ${on.has(l.id) ? 'on' : ''}`}>
-            <input type="checkbox" checked={on.has(l.id)} onChange={() => toggle(l.id)} />
-            <span><strong>{l.label}</strong><small> {l.detail}</small></span>
+            <input type="checkbox" checked={on.has(l.id)} disabled={fromProfile.has(l.id)} onChange={() => toggle(l.id)} />
+            <span><strong>{l.label}</strong><small> {fromProfile.has(l.id) ? 'On from your health conditions in Profile.' : l.detail}</small></span>
           </label>
           {on.has(l.id) && (
             <div className="limit-detail small">

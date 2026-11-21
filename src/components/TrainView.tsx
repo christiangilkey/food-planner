@@ -140,7 +140,7 @@ export function TrainView({ state, update, goTo }: ViewProps & { goTo: (t: Tab, 
       )}
       {panel === 'limits' && (
         <Sheet title="Injuries and limitations" onClose={close}>
-          <LimitsEditor f={f} setFit={setFit} />
+          <LimitsEditor f={f} p={p} setFit={setFit} />
         </Sheet>
       )}
       {panel === 'meals' && (
@@ -301,7 +301,7 @@ function Setup({ f, p, setFit, setProfile, onDone }: {
       <EquipmentEditor f={f} setFit={setFit} />
 
       <h3>Injuries and limitations</h3>
-      <LimitsEditor f={f} setFit={setFit} />
+      <LimitsEditor f={f} p={p} setFit={setFit} />
 
       <label className="toggle compact">
         <input type="checkbox" checked={f.feedMealPlan} onChange={(e) => setFit({ feedMealPlan: e.target.checked })} />

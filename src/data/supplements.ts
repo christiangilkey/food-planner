@@ -81,6 +81,7 @@ export const SUPPLEMENTS: Supplement[] = [
     uses: [
       { goal: 'gaps', nutrient: 'vitD', text: 'Food rarely supplies enough; a supplement is the reliable way to close the gap when sun is limited.', evidence: 'strong', sources: ['ods_vitD'] },
       { goal: 'bones', conditions: ['menopause'], text: 'Needed to absorb calcium and protect bone.', evidence: 'strong', sources: ['ods_vitD', 'nams_bone'] },
+      { goal: 'bones', conditions: ['osteoporosis'], text: 'With osteoporosis, the Bone Health & Osteoporosis Foundation advises 800–1,000 IU a day from age 50, alongside enough calcium, keeping your blood level at 30 ng/mL or above.', evidence: 'strong', sources: ['bhof_2022', 'ods_vitD'] },
     ],
     cautions: [
       { text: 'Get a 25-hydroxyvitamin D blood test to know your level before taking high doses.', sources: ['ods_vitD'] },
@@ -157,6 +158,7 @@ export const SUPPLEMENTS: Supplement[] = [
     dose: { text: 'Only to fill the gap between your food and your target, in doses of 500 mg or less (absorption is best then).', sources: ['ods_calcium', 'nams_bone'] },
     uses: [
       { goal: 'bones', conditions: ['menopause'], nutrient: 'calcium', text: 'Protects bone when food falls short; NAMS advises food first.', evidence: 'strong', sources: ['nams_bone', 'ods_calcium'] },
+      { goal: 'bones', conditions: ['osteoporosis'], nutrient: 'calcium', text: 'Only if food falls short of your calcium target (1,000–1,200 mg a day); food comes first, and more calcium than you need didn’t prevent fractures in trials.', evidence: 'strong', sources: ['bhof_2022', 'bolland_calcium', 'ods_calcium'] },
       { goal: 'bones', diets: ['vegan', 'paleo', 'aip'], nutrient: 'calcium', text: 'Diets without dairy often fall short on calcium. Calcium-set tofu, fortified soy milk, sardines and greens help; a supplement can fill the rest.', evidence: 'strong', sources: ['ods_calcium', 'melina'] },
     ],
     cautions: [

@@ -120,11 +120,19 @@ export function placesOf(f: FitnessSettings): TrainingPlace[] {
 export const activePlace = (f: FitnessSettings): TrainingPlace => placesOf(f).find((x) => x.id === f.place) ?? placesOf(f)[0]
 export const equipmentOf = (f: FitnessSettings): EquipmentId[] => activePlace(f).equipment
 
-export const limitationsOf = (f: FitnessSettings): Limitation[] => (f.limitations ?? []).map((id) => LIMITATION_BY_ID[id]).filter(Boolean)
+/**
+ * Limitations in force: the ones ticked on the Train tab, plus osteoporosis when it's a health
+ * condition in the profile (so the diet and the training always agree).
+ */
+export function limitationsOf(f: FitnessSettings, p?: Profile): Limitation[] {
+  const ids = new Set(f.limitations ?? [])
+  if (p && hasCondition(p, 'osteoporosis')) ids.add('osteoporosis')
+  return [...ids].map((id) => LIMITATION_BY_ID[id]).filter(Boolean)
+}
 
 /** Joint stresses to avoid: from limitations, plus lying face down in pregnancy. */
 function avoidedStress(f: FitnessSettings, p: Profile): Set<Stress> {
-  const out = new Set<Stress>(limitationsOf(f).flatMap((l) => l.avoid))
+  const out = new Set<Stress>(limitationsOf(f, p).flatMap((l) => l.avoid))
   if (p.meds.pregnant) out.add('prone')
   return out
 }
@@ -133,7 +141,7 @@ function avoidedStress(f: FitnessSettings, p: Profile): Set<Stress> {
 export function whyNot(e: Exercise, f: FitnessSettings, p: Profile): string | null {
   if (!canDo(e, gearOf(equipmentOf(f)))) return `Needs equipment you haven’t ticked for ${activePlace(f).name}`
   const avoid = avoidedStress(f, p)
-  const hit = limitationsOf(f).find((l) => (e.stress ?? []).some((s) => l.avoid.includes(s)))
+  const hit = limitationsOf(f, p).find((l) => (e.stress ?? []).some((s) => l.avoid.includes(s)))
   if (hit) return `Not with ${hit.label.toLowerCase()}`
   if ((e.stress ?? []).some((s) => avoid.has(s)) || (p.meds.pregnant && e.supine)) return 'Not in pregnancy'
   if (f.avoid?.includes(e.id)) return 'You chose not to do this one'
@@ -164,7 +172,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
   const days = Math.max(2, Math.min(6, Math.round(f.days)))
   const split = SPLITS[days]
   const rules = activeConditionTraining(p)
-  const limits = limitationsOf(f)
+  const limits = limitationsOf(f, p)
   const minRir = Math.max(0, ...rules.map((r) => r.minRir ?? 0), ...limits.map((l) => l.minRir ?? 0))
   const noSupine = rules.some((r) => r.noSupine)
   const targets = weeklyTargets(f)

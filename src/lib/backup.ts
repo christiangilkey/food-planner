@@ -74,7 +74,7 @@ const hhmm = (v: unknown, fallback: string) => (typeof v === 'string' && /^\d{2}
 export const SEXES: readonly Sex[] = ['male', 'female']
 export const ACTIVITIES: readonly Activity[] = ['sedentary', 'light', 'moderate', 'very', 'athlete']
 export const GOALS: readonly Goal[] = ['lose', 'maintain', 'gain']
-export const CONDITION_IDS: readonly ConditionId[] = ['adhd', 'anxiety', 'depression', 'migraine', 'menopause', 'hypertension', 'cholesterol', 'gerd', 't1d', 't2d', 'ckd', 'hashimotos', 'looks']
+export const CONDITION_IDS: readonly ConditionId[] = ['adhd', 'anxiety', 'depression', 'migraine', 'menopause', 'hypertension', 'cholesterol', 'gerd', 't1d', 't2d', 'ckd', 'hashimotos', 'osteoporosis', 'looks']
 export const DIET_IDS: readonly DietId[] = ['vegetarian', 'vegan', 'pescatarian', 'keto', 'paleo', 'aip']
 const STAGES: readonly MenopauseStage[] = ['peri', 'meno', 'post']
 export const EQUIPMENT_IDS: readonly Equipment[] = ['stove', 'oven', 'microwave', 'airfryer', 'blender', 'ricecooker', 'slowcooker', 'toaster', 'sheetpan', 'skillet', 'pot']

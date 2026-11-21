@@ -280,3 +280,22 @@ describe('muscles worked', () => {
     expect(Object.keys(HEADS).filter((id) => !EXERCISES.some((e) => e.id === id))).toEqual([])
   })
 })
+
+describe('osteoporosis as a health condition', () => {
+  it('raises calcium and vitamin D the way the bone foundation advises', async () => {
+    const { nutrientTarget } = await import('./conditions')
+    expect(nutrientTarget('calcium', person(['osteoporosis'], { sex: 'female', age: 60 }), 2000)).toBe(1200)
+    expect(nutrientTarget('calcium', person(['osteoporosis'], { sex: 'male', age: 60 }), 2000)).toBe(1000)
+    expect(nutrientTarget('calcium', person(['osteoporosis'], { sex: 'male', age: 75 }), 2000)).toBe(1200)
+    expect(nutrientTarget('vitD', person(['osteoporosis'], { age: 55 }), 2000)).toBe(20)
+    expect(nutrientTarget('vitD', person([], { age: 55 }), 2000)).toBe(15)
+  })
+  it('switches on the training limitation by itself: no crunches or twists, back extensions added', () => {
+    const f = fit({ access: 'gym', days: 4, sessionMin: 75, priorities: ['abs'] })
+    const prog = buildProgram(f, person(['osteoporosis'], { sex: 'female', age: 62 }))
+    const all = prog.sessions.flatMap((s) => s.exercises.map((x) => x.exercise))
+    expect(all.some((e) => e.stress?.some((s) => s === 'spine_flexion' || s === 'spine_twist'))).toBe(false)
+    expect(all.some((e) => e.id === 'superman')).toBe(true)
+    expect(prog.conditionNotes.some((c) => c.sources.includes('tftf_2014'))).toBe(true)
+  })
+})

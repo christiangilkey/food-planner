@@ -145,6 +145,13 @@ export const CONDITION_TRAINING: ConditionTraining[] = [
     ],
   },
   {
+    condition: 'osteoporosis',
+    claims: [
+      { text: 'Experts advise strength training at least twice a week plus balance work, and avoiding repeated or loaded bending forward and twisting of the spine. Your plan already swaps crunches and twists for planks, Pallof presses and back extensions.', evidence: 'moderate', sources: ['tftf_2014', 'ssst_2022'] },
+      { text: 'In postmenopausal women with low bone mass, supervised heavy resistance and impact training improved bone density in a trial (LIFTMOR). Get coached form first, and skip jumping if you’ve had a spine fracture.', evidence: 'moderate', sources: ['liftmor', 'ssst_2022'] },
+    ],
+  },
+  {
     condition: 'ckd',
     claims: [
       { text: 'Exercise improved fitness, blood pressure and quality of life in kidney disease trials. Your protein stays capped for your kidneys, even while training.', evidence: 'moderate', sources: ['heiwe', 'kdoqi'] },

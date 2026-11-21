@@ -20,6 +20,7 @@ export type ConditionId =
   | 't2d'
   | 'ckd'
   | 'hashimotos'
+  | 'osteoporosis'
   /** A goal rather than a condition: skin and appearance through food. */
   | 'looks'
 

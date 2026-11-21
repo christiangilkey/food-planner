@@ -355,6 +355,38 @@ export const CONDITIONS: Condition[] = [
     suppressTips: [],
   },
   {
+    id: 'osteoporosis', label: 'Osteoporosis / low bone density', icon: 'bone', domains: ['bones'],
+    blurb: 'More calcium and vitamin D from food, enough protein, fish twice a week, and less salt and alcohol. The Train tab swaps out crunches and twisting.',
+    limits: { sodiumGoalMg: 2300 },
+    limitReasons: {
+      sodiumGoalMg: { text: 'High-salt diets raised the calcium lost in urine in trials in postmenopausal women, so the plan aims for no more than 2,300 mg of sodium a day. Whether salt itself causes fractures hasn’t been shown.', evidence: 'emerging', sources: ['imash_sodium'] },
+    },
+    avoid: [],
+    rules: [
+      rule('osteo_calcium', 'Calcium-rich foods (bones)', ['dairy'], { min: 14 }, 'strong', ['bhof_2022', 'ods_calcium'],
+        'The Bone Health & Osteoporosis Foundation advises 1,200 mg of calcium a day for women from 51 and everyone from 71 (1,000 mg for men 50–70), from food first.', ['greek_yogurt', 'milk', 'soy_milk', 'cottage_cheese', 'sardines', 'tofu'],
+        { convention: 'Two servings a day of dairy or fortified soy milk is this app’s way of reaching the calcium target; calcium-set tofu, sardines and canned salmon with bones also count toward calcium.' }),
+      rule('osteo_fish', 'Fatty fish (vitamin D)', ['fatty_fish'], { min: 2 }, 'moderate', ['ods_vitD', 'bhof_2022'],
+        'Fatty fish is one of the few foods rich in vitamin D, which you need to absorb calcium.', ['salmon', 'sardines', 'canned_salmon', 'trout'],
+        { convention: 'Two servings a week is this app’s food-first way of adding vitamin D; most people with osteoporosis still need a supplement to reach 800–1,000 IU.' }),
+    ],
+    helps: [
+      { text: 'Calcium target raised to 1,000–1,200 mg a day and vitamin D to 800 IU (20 µg) from age 50, as the Bone Health & Osteoporosis Foundation advises. Dairy, fortified soy milk, calcium-set tofu, sardines and canned salmon with bones lead the way.', evidence: 'strong', sources: ['bhof_2022'] },
+      { text: 'Calcium is absorbed best in amounts of about 500 mg or less at a time, so the plan spreads calcium-rich foods across the day.', evidence: 'strong', sources: ['bhof_2022'] },
+      { text: 'Higher protein was linked to slightly better spine bone density, with no harm to bone, in a meta-analysis. Your protein target is already above the amounts studied.', evidence: 'moderate', sources: ['shams_white'] },
+      { text: 'Eating about 50 g of prunes a day (5–6 prunes) kept hip bone density steady over a year in postmenopausal women, while the control group lost 1.1%. Add them as a snack if you like them.', evidence: 'emerging', sources: ['prune_study'] },
+      { text: 'Getting enough calcium matters, but more than you need doesn’t add protection: higher calcium intake from food wasn’t linked to fewer fractures, and the benefit of supplements was weak and inconsistent.', evidence: 'moderate', sources: ['bolland_calcium'] },
+    ],
+    guidance: [
+      { text: 'Keep alcohol to 2 drinks a day or fewer: above that, fracture risk rose, including a 68% higher risk of hip fracture.', evidence: 'moderate', sources: ['kanis_alcohol', 'bhof_2022'] },
+      { text: 'Avoid high-dose vitamin A (retinol) supplements and regular liver: 2,000 µg or more of retinol a day was linked to nearly twice the risk of hip fracture. Beta-carotene from vegetables wasn’t.', evidence: 'moderate', sources: ['feskanich_vita'] },
+      { text: 'If you take alendronate (Fosamax) or a similar weekly bone tablet: swallow it with a full glass of plain water at least 30 minutes before any food, drink or other medicine, and stay upright until after you’ve eaten. Keep calcium-rich foods and calcium supplements until later.', evidence: 'strong', sources: ['alendronate_label'] },
+      { text: 'Ask your doctor about a vitamin D blood test: the bone foundation advises keeping it at 30 ng/mL or above, which usually takes a supplement.', evidence: 'strong', sources: ['bhof_2022'] },
+      { text: 'Strength and balance training matter as much as food. Your training plan avoids crunches and twisting and adds back-strengthening work.', evidence: 'moderate', sources: ['tftf_2014', 'ssst_2022'] },
+    ],
+    suppressTips: [],
+  },
+  {
     id: 'ckd', label: 'Chronic kidney disease', icon: 'bean', domains: [],
     blurb: 'Safety mode: lower protein, no creatine, no extra potassium or magnesium pushes. Work with a renal dietitian.',
     limits: { proteinMaxPerKg: 0.8 },

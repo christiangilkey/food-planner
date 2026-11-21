@@ -253,18 +253,31 @@ export function caffeineLimit(p: Profile): number {
 /** Caffeinated drinks the planner may use: none if the person doesn't drink caffeine. */
 export const CAFFEINATED_DRINKS = ['coffee', 'green_tea']
 
-/** Menopause stage and age adjust iron and calcium targets. */
-export function targetOverrides(p: Profile): { iron?: number; calcium?: number } {
-  if (p.sex !== 'female' || !hasCondition(p, 'menopause')) return {}
-  if (p.menopauseStage === 'peri') return { iron: 18 }
-  return { iron: 8, calcium: 1200 }
+/**
+ * Menopause stage adjusts iron and calcium; osteoporosis raises calcium to 1,200 mg and vitamin D
+ * to 20 µg (800 IU), the BHOF clinician's guide amounts for adults over 50.
+ */
+export function targetOverrides(p: Profile): { iron?: number; calcium?: number; vitD?: number } {
+  const out: { iron?: number; calcium?: number; vitD?: number } = {}
+  if (p.sex === 'female' && hasCondition(p, 'menopause')) {
+    if (p.menopauseStage === 'peri') out.iron = 18
+    else Object.assign(out, { iron: 8, calcium: 1200 })
+  }
+  if (hasCondition(p, 'osteoporosis')) {
+    // BHOF: 1,200 mg for women 51+ and men 71+, 1,000 mg for men 50–70; 800–1,000 IU vitamin D from 50.
+    out.calcium = Math.max(out.calcium ?? 0, (p.sex === 'female' && p.age >= 51) || p.age >= 71 ? 1200 : 1000)
+    if (p.age >= 50) out.vitD = 20
+  }
+  return out
 }
 
-/** Daily target for a nutrient, after any condition-specific adjustments. */
+/** Daily target for a nutrient, after any condition-specific adjustments (they only ever raise it). */
 export function nutrientTarget(key: NutrientKey, p: Profile, kcal: number): number {
   const o = targetOverrides(p)
   const base = dailyTarget(key, p.sex, p.age, kcal, o.iron)
-  return key === 'calcium' && o.calcium ? Math.max(base, o.calcium) : base
+  if (key === 'calcium' && o.calcium) return Math.max(base, o.calcium)
+  if (key === 'vitD' && o.vitD) return Math.max(base, o.vitD)
+  return base
 }
 
 export { CONDITION_BY_ID, CONDITIONS, DIET_BY_ID, DIETS }
