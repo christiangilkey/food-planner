@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FORM, FORM_RULES, STRETCHES } from '../data/form'
 import { SOURCES } from '../data/sources'
-import { EXERCISES } from '../data/training'
+import { EXERCISES, isLift } from '../data/training'
 
 describe('exercise form guides', () => {
   it('every exercise in the app has a full guide', () => {
@@ -13,7 +13,8 @@ describe('exercise form guides', () => {
       expect(g.mistakes.length, `${e.id} mistakes`).toBeGreaterThanOrEqual(2)
       expect(g.breathing.length, `${e.id} breathing`).toBeGreaterThan(5)
       expect(g.easier && g.harder, `${e.id} variations`).toBeTruthy()
-      expect(g.stretches.length, `${e.id} stretches`).toBeGreaterThanOrEqual(1)
+      // Lifts point to stretches for afterwards; stretches, poses and balance drills don’t need one.
+      if (isLift(e)) expect(g.stretches.length, `${e.id} stretches`).toBeGreaterThanOrEqual(1)
     }
     // No guides for exercises the app doesn't have.
     for (const id of Object.keys(FORM)) expect(EXERCISES.some((e) => e.id === id), id).toBe(true)

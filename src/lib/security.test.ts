@@ -6,6 +6,7 @@ import { DIETS } from '../data/diets'
 import { LEGAL_DOCS, LEGAL_VERSION, PRIVACY } from '../data/legal'
 import licences from '../data/licenses.json'
 import { EQUIPMENT } from '../data/recipes'
+import { VTAPER } from '../data/training'
 import { ACTIVITIES, CONDITION_IDS, DIET_IDS, EQUIPMENT_IDS, httpUrl, MAX_BACKUP_CHARS, safeId } from './backup'
 import { CSP, cspString } from './csp'
 import { ACTIVITY } from './energy'
@@ -39,7 +40,7 @@ function buildFullState(): AppState {
   s.sleepLog = [{ date: '2026-11-05', bed: '23:10', wake: '07:00' }]
   s.exportTarget = 'onyx'
   s.onyx = { url: 'http://192.168.1.20:4747', token: 'secret-onyx-token' }
-  s.fitness = { ...s.fitness, enabled: true, days: 4, priorities: ['glutes'], weightUnit: 'kg', preset: 'vtaper', addOns: ['tendon'], places: [{ id: 'gym', name: 'Gym', equipment: ['dumbbells', 'cable_station'] }, { id: 'home', name: 'Home', equipment: ['suspension'] }], place: 'home', limitations: ['shoulder', 'knee'], avoid: ['dip'], swaps: { bench: 'db_bench' } }
+  s.fitness = { ...s.fitness, enabled: true, days: 4, priorities: [...VTAPER.priorities], weightUnit: 'kg', preset: 'vtaper', addOns: ['tendon'], places: [{ id: 'gym', name: 'Gym', equipment: ['dumbbells', 'cable_station'] }, { id: 'home', name: 'Home', equipment: ['suspension'] }], place: 'home', limitations: ['shoulder', 'knee'], avoid: ['dip'], swaps: { bench: 'db_bench' }, layout: 'custom', week: [['push', 'balance'], [], ['pull'], [], ['legs'], ['stretch'], ['yoga']], extraDays: { stretch: 1 }, stretchRegions: ['hip_flexors', 'neck'], postureGoals: ['pelvic_tilt'], extraMin: 20, dayEdits: { 0: { add: ['down_dog'], remove: ['db_bench'] } } }
   s.bodyLog = [{ date: '2026-11-02', weightLb: 182, waistIn: 34 }]
   s.liftLog = [{ date: '2026-11-03', exercise: 'bench', unit: 'kg', sets: [{ weight: 60, reps: 8 }, { reps: 7 }] }]
   s.plan = generatePlan(s, 42)
@@ -70,6 +71,32 @@ describe('a real backup comes back exactly', () => {
     const s = fullState()
     const back = importState(exportState(s), s)
     expect(back).toEqual(s)
+  })
+})
+
+describe('older saved settings', () => {
+  it('the old posture routine becomes posture goals', () => {
+    const s = fullState()
+    s.fitness = { ...s.fitness, addOns: ['posture'], postureGoals: undefined }
+    expect(importState(exportState(s), s).fitness.postureGoals).toEqual(['forward_head', 'rounded_shoulders', 'upper_back'])
+  })
+  it('drops unknown days, regions, goals and exercises from a week', () => {
+    const s = fullState()
+    const evil = JSON.parse(exportState(s))
+    evil.fitness.week[0] = ['push', 'hack']
+    evil.fitness.stretchRegions = ['neck', '__proto__']
+    evil.fitness.postureGoals = ['pelvic_tilt', 'nope']
+    evil.fitness.dayEdits = { 0: { add: ['down_dog', 'rm -rf'] }, 9: { add: ['down_dog'] } }
+    const back = importState(JSON.stringify(evil), s).fitness
+    expect(back.week![0]).toEqual(['push'])
+    expect(back.stretchRegions).toEqual(['neck'])
+    expect(back.postureGoals).toEqual(['pelvic_tilt'])
+    expect(back.dayEdits).toEqual({ 0: { add: ['down_dog'] } })
+  })
+  it('a saved V-taper preset picks up muscles added to it later', () => {
+    const s = fullState()
+    s.fitness = { ...s.fitness, priorities: ['shoulders', 'back', 'chest', 'biceps', 'abs'] }
+    expect(importState(exportState(s), s).fitness.priorities).toContain('triceps')
   })
 })
 

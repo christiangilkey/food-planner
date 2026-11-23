@@ -1,5 +1,6 @@
 import { CONDITION_BY_ID, CONDITIONS, FLAG_AVOIDS, type AvoidEntry, type AvoidFlag, type Claim, type Condition, type Limits } from '../data/conditions'
-import { DIET_BY_ID, DIETS, dietAllowsFood, type Diet } from '../data/diets'
+import { DIET_BY_ID, DIETS, dietAllowsFood, SPICE_TAGS, type Diet, type DietTag } from '../data/diets'
+import { METHODS } from '../data/methods'
 import { FOOD_BY_ID, FOODS } from '../data/foods'
 import { RECIPE_BY_ID } from '../data/recipes'
 import { ROTATION_RULES, type RotationRule } from '../data/rotation'
@@ -149,8 +150,23 @@ export function suppressedTips(p: Profile): Set<string> {
 }
 
 /** Is this recipe allowed at all under the active conditions? */
+const spiceCache = new Map<string, Set<DietTag>>()
+/** Diet tags of the pantry spices a recipe's method calls for (chili is a nightshade, cumin a seed…). */
+export function spiceTags(recipeId: string): Set<DietTag> {
+  let tags = spiceCache.get(recipeId)
+  if (!tags) {
+    const text = (METHODS[recipeId] ?? []).join(' ')
+    tags = new Set(SPICE_TAGS.filter(([re]) => re.test(text)).map(([, t]) => t))
+    spiceCache.set(recipeId, tags)
+  }
+  return tags
+}
+
 export function recipeAllowed(r: Recipe, p: Profile, avoided = avoidedFoods(p), limits = mergedLimits(p), blocked = dietBlocked(p)): boolean {
   if (r.items.some((i) => avoided.has(i.food) || blocked.has(i.food))) return false
+  // Spices aren't ingredients, but AIP excludes chili-based and seed spices too.
+  const spices = spiceTags(r.id)
+  if (spices.size && activeDiets(p).some((d) => d.excludes.some((t) => spices.has(t)))) return false
   if (limits.noCrashMeals && crashRisk(servingTotals(r))) return false
   const carbs = netCarbLimits(p)
   if (carbs && netCarbs(servingTotals(r)) > carbs.perServing) return false

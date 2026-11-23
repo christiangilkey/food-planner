@@ -24,6 +24,40 @@ export const EXPERIENCE: { id: Experience; label: string; detail: string }[] = [
   { id: 'advanced', label: 'Experienced', detail: 'More than 2 years of consistent training' },
 ]
 
+// ── How the week is laid out ───────────────────────────────
+
+/** A lifting day type. */
+export type LiftDay = 'full' | 'upper' | 'lower' | 'push' | 'pull' | 'legs'
+/** A non-lifting day type; it can stand alone or be added to a lifting day. */
+export type ExtraDay = 'stretch' | 'yoga' | 'balance'
+export type DayPart = LiftDay | ExtraDay
+
+export const LIFT_DAYS: { id: LiftDay; label: string; detail: string }[] = [
+  { id: 'full', label: 'Full body', detail: 'Every muscle group' },
+  { id: 'upper', label: 'Upper body', detail: 'Chest, back, shoulders, arms' },
+  { id: 'lower', label: 'Lower body', detail: 'Legs, glutes and abs' },
+  { id: 'push', label: 'Push', detail: 'Chest, shoulders, triceps' },
+  { id: 'pull', label: 'Pull', detail: 'Back, rear shoulders, biceps, abs' },
+  { id: 'legs', label: 'Legs', detail: 'Quads, hamstrings, glutes, calves' },
+]
+export const EXTRA_DAYS: { id: ExtraDay; label: string; detail: string }[] = [
+  { id: 'stretch', label: 'Stretch', detail: 'Stretches for the regions you pick' },
+  { id: 'yoga', label: 'Yoga', detail: 'A gentle flow of poses' },
+  { id: 'balance', label: 'Balance', detail: 'Steadiness drills, near a counter' },
+]
+export const isLiftDay = (p: DayPart): p is LiftDay => LIFT_DAYS.some((d) => d.id === p)
+export const DAY_PART_LABEL = Object.fromEntries([...LIFT_DAYS, ...EXTRA_DAYS].map((d) => [d.id, d.label])) as Record<DayPart, string>
+
+/** Week layouts: the recommended split for your days, a fixed style, or your own days. */
+export type Layout = 'auto' | 'full' | 'upper_lower' | 'ppl' | 'custom'
+export const LAYOUTS: { id: Layout; label: string; detail: string }[] = [
+  { id: 'auto', label: 'Recommended', detail: 'The split that trains every muscle twice a week for your number of days' },
+  { id: 'full', label: 'Full body', detail: 'Everything, every session' },
+  { id: 'upper_lower', label: 'Upper / lower', detail: 'Alternate upper-body and lower-body days' },
+  { id: 'ppl', label: 'Push / pull / legs', detail: 'Pushing, pulling and leg days in turn' },
+  { id: 'custom', label: 'My own days', detail: 'Choose what each day holds, and mix in stretch, yoga or balance' },
+]
+
 /** The evidence behind how programs are built. Shown on the Train tab. */
 export const PRINCIPLES: (Claim & { id: string; title: string; convention?: string })[] = [
   {
@@ -179,23 +213,24 @@ export const TRAINING_SOURCES: SourceId[] = ['schoenfeld_volume', 'schoenfeld_fr
 
 // ── Looks, longevity and posture ───────────────────────────
 
-/** The "V-taper" look: broad shoulders and lats, upper chest, arms and abs. */
+/** The "V-taper" look: broad shoulders and lats, upper chest, both sides of the arms and abs. */
 export const VTAPER: {
   priorities: Muscle[]
   /** Exercises picked first for each muscle when the preset is on. */
   prefer: Partial<Record<Muscle, string[]>>
   claim: Claim & { convention: string }
 } = {
-  priorities: ['shoulders', 'back', 'chest', 'biceps', 'abs'],
+  priorities: ['shoulders', 'back', 'chest', 'biceps', 'triceps', 'abs'],
   prefer: {
     shoulders: ['cable_lateral', 'lateral'],
     back: ['pulldown', 'pullup', 'straight_arm'],
     chest: ['incline_db', 'low_high_fly'],
     biceps: ['preacher', 'incline_curl'],
+    triceps: ['overhead_ext', 'cable_overhead', 'pressdown'],
     abs: ['cable_crunch', 'hanging_raise', 'leg_raise'],
   },
   claim: {
-    text: 'More weekly sets grow a muscle more, so the preset gives extra sets to the side delts, lats, upper chest, biceps and abs, each trained twice a week.',
+    text: 'More weekly sets grow a muscle more, so the preset gives extra sets to the side delts, lats, upper chest, biceps, triceps and abs, each trained twice a week.',
     evidence: 'moderate', sources: ['schoenfeld_volume', 'schoenfeld_freq'],
     convention: 'Which muscles make a “V-taper” look is a matter of taste, not science; the choice of muscles and exercises is this app’s.',
   },

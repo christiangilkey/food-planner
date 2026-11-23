@@ -10,7 +10,7 @@ import { RECIPES } from '../data/recipes'
 import { ROTATION_RULES } from '../data/rotation'
 import { SOURCES } from '../data/sources'
 import { analyzeWeek } from './analysis'
-import { activeRules, avoidedFoods, planViolations } from './conditions'
+import { activeRules, avoidedFoods, planViolations, spiceTags } from './conditions'
 import { computeTargets, lbToKg } from './energy'
 import { dayEntries, eligibleRecipes, generatePlan, rankCandidates } from './planner'
 import { servingTotals } from './nutrition'
@@ -153,6 +153,8 @@ describe('condition safety', () => {
         expect(t, d).toBeGreaterThan(target * 0.75)
         for (const { entry } of dayEntries(day)) {
           for (const i of RECIPES.find((r) => r.id === entry.recipe)!.items) expect(dietAllowsFood(diet, i.food), `${d}: ${entry.recipe} → ${i.food}`).toBe(true)
+          // Pantry spices count too: no chili, paprika, cumin or other seed spices on AIP.
+          if (d === 'aip') expect([...spiceTags(entry.recipe)], `aip: ${entry.recipe} spices`).toEqual([])
         }
       }
     }

@@ -23,6 +23,25 @@ describe('data integrity', () => {
     for (const r of RECIPES) expect(METHODS[r.id]?.length ?? 0, r.id).toBeGreaterThanOrEqual(2)
     for (const id of Object.keys(METHODS)) expect(RECIPES.some((r) => r.id === id), `method for unknown recipe ${id}`).toBe(true)
   })
+  it('recipe ids and names are unique', () => {
+    const ids = RECIPES.map((r) => r.id)
+    const names = RECIPES.map((r) => r.name.toLowerCase())
+    expect(ids.filter((x, i) => ids.indexOf(x) !== i)).toEqual([])
+    expect(names.filter((x, i) => names.indexOf(x) !== i)).toEqual([])
+  })
+  it('every method states a safe cooking temperature for its meat or fish (USDA FSIS)', () => {
+    const rules: [string[], RegExp][] = [
+      [['chicken_breast', 'chicken_thigh', 'ground_turkey'], /165\s?°F/],
+      [['ground_beef'], /160\s?°F/],
+      [['pork_loin', 'sirloin'], /145\s?°F/],
+      [['salmon', 'cod', 'tilapia', 'trout'], /145\s?°F|flakes/],
+      [['shrimp'], /opaque|145\s?°F/],
+    ]
+    for (const r of RECIPES) {
+      const text = (METHODS[r.id] ?? []).join(' ')
+      for (const [foods, re] of rules) if (r.items.some((i) => foods.includes(i.food))) expect(text, `${r.id}: ${foods.join('/')}`).toMatch(re)
+    }
+  })
   it('food macros roughly add up to calories', () => {
     for (const f of FOODS) {
       // Fiber yields about 2 kcal/g rather than 4; food-specific Atwater factors (and organic acids in

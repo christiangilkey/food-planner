@@ -1,10 +1,40 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  clock, elapsed, remaining, restAdd, restReset, restStart, restToggle, setTab, useTimer, watchLap, watchReset, watchToggle,
+  clock, elapsed, parseRest, remaining, restAdd, restReset, restStart, restToggle, setTab, useTimer, watchLap, watchReset, watchToggle,
 } from '../lib/timer'
 import { Icon } from './Icon'
 
 const PRESETS = [60, 90, 120, 180]
+
+/**
+ * The rest timer in one line, for the top of an exercise: start this exercise's rest, pause,
+ * add 15 seconds or reset. It's the same timer as the Train tab's, so it keeps counting anywhere.
+ */
+export function RestBar({ rest }: { rest?: string }) {
+  const { t, now } = useTimer()
+  const left = remaining(t.rest, now)
+  const on = t.rest.endsAt !== null
+  const paused = !on && !t.rest.done && left > 0 && left < t.rest.total
+  const sec = rest ? parseRest(rest) : null
+  const pct = t.rest.total > 0 ? (left / t.rest.total) * 100 : 0
+  return (
+    <section className={`rest-bar ${on ? 'running' : ''} ${t.rest.done ? 'done' : ''}`} aria-label="Rest timer">
+      <div className="rest-bar-row">
+        <span className="rest-bar-time" aria-live="polite">
+          <Icon name="timer" size={16} /> {t.rest.done ? 'Time’s up' : on || paused ? clock(left) : sec ? `Rest ${rest}` : 'Rest timer'}
+        </span>
+        <div className="rest-bar-actions">
+          {on || paused
+            ? <button className="secondary small with-icon" onClick={() => restToggle()}><Icon name={on ? 'pause' : 'play'} size={15} /> {on ? 'Pause' : 'Resume'}</button>
+            : <button className="primary small with-icon" onClick={() => restStart(sec ?? 90)}><Icon name="play" size={15} /> Start {clock((sec ?? 90) * 1000)}</button>}
+          <button className="secondary small" onClick={() => restAdd(15)} aria-label="Add 15 seconds">+15 s</button>
+          <button className="ghost small icon-only" onClick={restReset} aria-label="Reset the rest timer"><Icon name="reset" size={16} /></button>
+        </div>
+      </div>
+      <div className="timer-bar" aria-hidden="true"><span style={{ width: `${t.rest.done || (!on && !paused) ? 0 : pct}%` }} /></div>
+    </section>
+  )
+}
 
 /** Rest timer and stopwatch for the gym. A small pill follows you down the page while one is running. */
 export function WorkoutTimer() {

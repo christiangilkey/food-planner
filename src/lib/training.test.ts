@@ -173,7 +173,7 @@ describe('looks, tendons, posture and check-ins', () => {
   it('the V-taper preset picks its exercises for the priority muscles', () => {
     const prog = buildProgram(fit({ days: 4, sessionMin: 90, experience: 'some', preset: 'vtaper', priorities: VTAPER.priorities }), person())
     const ids = prog.sessions.flatMap((s) => s.exercises.map((x) => x.exercise.id))
-    expect(ids).toEqual(expect.arrayContaining(['cable_lateral', 'preacher', 'pulldown', 'incline_db']))
+    expect(ids).toEqual(expect.arrayContaining(['cable_lateral', 'preacher', 'overhead_ext', 'pulldown', 'incline_db']))
     expect(prog.weekly.shoulders.sets).toBeGreaterThan(prog.weekly.quads.sets)
   })
 
@@ -297,5 +297,146 @@ describe('osteoporosis as a health condition', () => {
     expect(all.some((e) => e.stress?.some((s) => s === 'spine_flexion' || s === 'spine_twist'))).toBe(false)
     expect(all.some((e) => e.id === 'superman')).toBe(true)
     expect(prog.conditionNotes.some((c) => c.sources.includes('tftf_2014'))).toBe(true)
+  })
+})
+
+describe('custom weeks, stretch, yoga and balance', () => {
+  const items = (s: { exercises: { exercise: { id: string } }[]; blocks: { items: { exercise: { id: string } }[] }[] }) => [...s.exercises, ...s.blocks.flatMap((b) => b.items)].map((x) => x.exercise.id)
+
+  it('builds your own week day by day, mixing lifting with stretch, yoga and balance', () => {
+    const week: FitnessSettings['week'] = [['push', 'balance'], [], ['pull'], [], ['legs'], ['stretch'], ['yoga']]
+    const prog = buildProgram(fit({ layout: 'custom', week, access: 'gym', sessionMin: 60 }), person())
+    expect(prog.sessions.map((s) => s.weekday)).toEqual([0, 2, 4, 5, 6])
+    expect(prog.sessions[0].name).toBe('Push + Balance')
+    expect(prog.sessions[0].blocks.map((b) => b.kind)).toEqual(['balance'])
+    expect(prog.sessions[0].exercises.every((x) => ['chest', 'shoulders', 'triceps'].includes(x.for!))).toBe(true)
+    expect(prog.sessions[3].exercises).toHaveLength(0)
+    expect(prog.sessions[3].blocks[0].kind).toBe('stretch')
+    expect(prog.sessions[4].blocks[0].items.every((x) => x.exercise.kind === 'yoga')).toBe(true)
+    // Push, pull and legs once each: the week says so.
+    expect(prog.notes.join(' ')).toMatch(/once a week/)
+    expect(prog.split).toBe('Your own week + stretch, yoga, balance')
+  })
+
+  it('warns when your own week leaves muscles out', () => {
+    const week: FitnessSettings['week'] = [['upper'], [], ['upper'], [], [], [], []]
+    const prog = buildProgram(fit({ layout: 'custom', week }), person())
+    expect(prog.warnings.join(' ')).toMatch(/doesn’t train your quads, hamstrings, glutes, calves/)
+  })
+
+  it('fixed layouts and added sessions land on the right days', () => {
+    const ul = buildProgram(fit({ layout: 'upper_lower', days: 4 }), person())
+    expect(ul.sessions.map((s) => s.name)).toEqual(['Upper body', 'Lower body', 'Upper body', 'Lower body'])
+    const ppl = buildProgram(fit({ layout: 'ppl', days: 3, extraDays: { stretch: 1, balance: 1 } }), person())
+    expect(ppl.sessions.map((s) => s.name)).toEqual(['Push', 'Pull', 'Legs', 'Balance', 'Stretch'])
+    expect(ppl.sessions.find((s) => s.name === 'Stretch')!.weekday).toBe(6)
+    // Six lifting days and two extras: both share the one free day.
+    const six = buildProgram(fit({ days: 6, extraDays: { stretch: 1, yoga: 1 } }), person())
+    expect(six.sessions).toHaveLength(7)
+    expect(six.sessions.find((s) => s.weekday === 6)!.name).toBe('Stretch + Yoga')
+  })
+
+  it('stretch sessions start with your regions and posture goals', () => {
+    const prog = buildProgram(fit({ extraDays: { stretch: 1 }, stretchRegions: ['hip_flexors', 'calves'], extraMin: 15 }), person())
+    const block = prog.sessions.flatMap((s) => s.blocks).find((b) => b.kind === 'stretch')!
+    const regions = block.items.slice(0, 2).flatMap((x) => x.exercise.regions ?? [])
+    expect(regions).toEqual(expect.arrayContaining(['hip_flexors', 'calves']))
+    expect(block.items.length).toBeGreaterThanOrEqual(4)
+  })
+
+  it('without a stretch day, chosen regions become cool-down stretches after lifting', () => {
+    const prog = buildProgram(fit({ days: 3, stretchRegions: ['chest'] }), person())
+    for (const s of prog.sessions) {
+      const cool = s.blocks.find((b) => b.kind === 'cooldown')!
+      expect(cool.items.length).toBeGreaterThan(0)
+      expect(cool.items[0].exercise.regions).toContain('chest')
+    }
+  })
+
+  it('posture goals add strength work to two lifting days and drills to the stretching', () => {
+    const prog = buildProgram(fit({ days: 4, access: 'gym', postureGoals: ['pelvic_tilt', 'forward_head'] }), person())
+    for (const s of prog.sessions.slice(0, 2)) {
+      expect(s.exercises.some((x) => x.exercise.id === 'glute_bridge')).toBe(true)
+      expect(items(s)).toContain('pelvic_tilt')
+      expect(items(s)).toContain('chin_tucks')
+    }
+    expect(items(prog.sessions[2])).not.toContain('chin_tucks')
+    expect(prog.focus).toEqual(expect.arrayContaining(['hip_flexors', 'quads', 'neck', 'chest']))
+  })
+
+  it('limitations and pregnancy shape the stretch, yoga and balance parts too', () => {
+    const week: FitnessSettings['week'] = [['stretch'], ['yoga'], ['balance'], [], [], [], []]
+    const floor = buildProgram(fit({ layout: 'custom', week, limitations: ['floor'] }), person())
+    for (const s of floor.sessions) for (const x of s.blocks.flatMap((b) => b.items)) {
+      expect(x.exercise.stress ?? [], x.exercise.id).not.toContain('floor')
+      expect(x.exercise.stress ?? [], x.exercise.id).not.toContain('kneeling')
+    }
+    const steady = buildProgram(fit({ layout: 'custom', week, limitations: ['balance'] }), person())
+    const drills = steady.sessions.flatMap((s) => s.blocks).filter((b) => b.kind === 'balance').flatMap((b) => b.items)
+    expect(drills.length).toBeGreaterThan(0)
+    for (const x of drills) {
+      expect(x.exercise.support, x.exercise.id).toBe(true)
+      expect(x.note).toMatch(/counter/)
+    }
+    const pregnant = buildProgram(fit({ layout: 'custom', week }), person([], { meds: { ...defaultState().profile.meds, pregnant: true } }))
+    for (const s of pregnant.sessions) for (const x of s.blocks.flatMap((b) => b.items)) {
+      expect(x.exercise.supine, x.exercise.id).toBeFalsy()
+      expect(x.exercise.stress ?? [], x.exercise.id).not.toContain('prone')
+    }
+  })
+
+  it('applies your changes to single days', () => {
+    const base = buildProgram(fit({ days: 3, access: 'gym' }), person())
+    const gone = base.sessions[0].exercises[1].exercise.id
+    const prog = buildProgram(fit({ days: 3, access: 'gym', dayEdits: { 0: { remove: [gone], add: ['hammer_curl', 'down_dog'] } } }), person())
+    const monday = prog.sessions[0]
+    expect(items(monday)).not.toContain(gone)
+    expect(monday.exercises.find((x) => x.exercise.id === 'hammer_curl')!.added).toBe(true)
+    expect(monday.blocks.flatMap((b) => b.items).some((x) => x.exercise.id === 'down_dog' && x.added)).toBe(true)
+    expect(items(prog.sessions[1])).not.toContain('down_dog')
+  })
+
+  it('swaps work for stretches and poses too', () => {
+    const f = fit({ extraDays: { stretch: 1 }, stretchRegions: ['hip_flexors'] })
+    const first = buildProgram(f, person()).sessions.flatMap((s) => s.blocks).find((b) => b.kind === 'stretch')!.items[0].exercise
+    const alt = alternativesFor(first, f, person())[0]
+    expect(alt.regions).toContain('hip_flexors')
+    const swapped = buildProgram(fit({ ...f, swaps: { [first.id]: alt.id } }), person()).sessions.flatMap((s) => s.blocks).find((b) => b.kind === 'stretch')!.items[0]
+    expect(swapped.exercise.id).toBe(alt.id)
+    expect(swapped.swappedFrom).toBe(first.id)
+  })
+
+  it('counts lifting days, not extra sessions, for the activity level', () => {
+    expect(activityFor(fit({ days: 3, sessionMin: 45, extraDays: { yoga: 3 } }))).toBe('light')
+    expect(activityFor(fit({ layout: 'custom', week: [['full'], ['full'], ['full'], ['full'], [], ['yoga'], []] }))).toBe('moderate')
+  })
+})
+
+describe('what a swap changes', () => {
+  const ex = (id: string) => EXERCISES.find((e) => e.id === id)!
+  it('explains stretch-position loading, equipment and joint stress, with sources', async () => {
+    const { compareExercises } = await import('./compare')
+    const tri = compareExercises(ex('pressdown'), ex('overhead_ext'))
+    expect(tri.summary).toMatch(/Same main muscle/)
+    expect(tri.points.some((p) => p.tone === 'gain' && p.claim?.sources.includes('pm_35819335'))).toBe(true)
+    expect(tri.points.some((p) => p.tone === 'lose' && /arms overhead/.test(p.text))).toBe(true)
+    const chest = compareExercises(ex('bench'), ex('machine_press'))
+    expect(chest.points.some((p) => p.claim?.sources.includes('pm_37582807'))).toBe(true)
+    expect(chest.points.some((p) => /lying on your back/.test(p.text))).toBe(true)
+    const legs = compareExercises(ex('squat'), ex('leg_ext'))
+    expect(legs.points.some((p) => /isolation/i.test(p.text))).toBe(true)
+    expect(legs.points.some((p) => p.tone === 'gain' && /heavy load through the spine/.test(p.text))).toBe(true)
+    const stretch = compareExercises(ex('hip_flexor_stretch'), ex('low_lunge'))
+    expect(stretch.claim?.sources).toContain('konrad_stretch')
+    expect(stretch.points.some((p) => /yoga pose/.test(p.text))).toBe(true)
+    // Every claim in an explanation cites real sources.
+    for (const c of [tri, chest, legs, stretch]) for (const p of c.points) for (const s of p.claim?.sources ?? []) expect(SOURCES[s], s).toBeDefined()
+  })
+
+  it('every posture goal and day-type claim cites real sources, and every option exists', async () => {
+    const { POSTURE_GOALS, DAY_TYPE_CLAIMS } = await import('../data/mobility')
+    const claims = [...POSTURE_GOALS.flatMap((g) => g.claims), ...Object.values(DAY_TYPE_CLAIMS).flat()]
+    for (const c of claims) for (const s of c.sources) expect(SOURCES[s], `${c.text.slice(0, 30)}: ${s}`).toBeDefined()
+    for (const g of POSTURE_GOALS) for (const w of g.strengthen) for (const id of w.options) expect(EXERCISES.some((e) => e.id === id), `${g.id}: ${id}`).toBe(true)
   })
 })

@@ -40,6 +40,9 @@ export function inUnit(e: LiftEntry, unit: WeightUnit): LiftEntry {
 
 export const hasValue = (s: LoggedSet) => s.weight !== undefined || s.reps !== undefined || s.sec !== undefined
 
+/** Logged on that day: the exercise has an entry with at least one set filled in. */
+export const loggedOn = (log: LiftEntry[], id: string, date: string) => log.some((e) => e.exercise === id && e.date === date && e.sets.some(hasValue))
+
 /** One exercise's entries, oldest first, skipping empty ones. */
 export function history(log: LiftEntry[], id: string): LiftEntry[] {
   return log.filter((e) => e.exercise === id && e.sets.some(hasValue)).sort((a, b) => a.date.localeCompare(b.date))

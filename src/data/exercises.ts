@@ -12,6 +12,10 @@ import { DIAGRAMS_CHEST, FORM_CHEST, HEADS_CHEST } from './extra/chest'
 import { DIAGRAMS_CORE, FORM_CORE, HEADS_CORE } from './extra/core'
 import { DIAGRAMS_LEGS, FORM_LEGS, HEADS_LEGS } from './extra/legs'
 import { DIAGRAMS_SHOULDERS, FORM_SHOULDERS, HEADS_SHOULDERS } from './extra/shoulders'
+import { DIAGRAMS_BALANCE, EX_BALANCE, FORM_BALANCE, HEADS_BALANCE } from './extra/balance'
+import { DIAGRAMS_MOBILITY_LOWER, EX_MOBILITY_LOWER, FORM_MOBILITY_LOWER, HEADS_MOBILITY_LOWER } from './extra/mobility_lower'
+import { DIAGRAMS_MOBILITY_UPPER, EX_MOBILITY_UPPER, FORM_MOBILITY_UPPER, HEADS_MOBILITY_UPPER } from './extra/mobility_upper'
+import { DIAGRAMS_YOGA, EX_YOGA, FORM_YOGA, HEADS_YOGA } from './extra/yoga'
 import type { Diagram } from '../lib/pose'
 import type { FormGuide } from './form'
 
@@ -137,6 +141,31 @@ export type Stress =
   | 'floor' // getting down onto the floor
   | 'prone' // lying face down
 
+/** What an exercise is for: lifting builds muscle; the rest are planned on stretch, yoga and balance days. */
+export type ExerciseKind = 'strength' | 'mobility' | 'yoga' | 'balance'
+
+/** Body regions people can ask to stretch more. */
+export type Region =
+  | 'neck' | 'chest' | 'shoulders' | 'upper_back' | 'lats' | 'lower_back' | 'wrists'
+  | 'hip_flexors' | 'glutes' | 'adductors' | 'hamstrings' | 'quads' | 'calves'
+
+export const REGIONS: { id: Region; label: string; detail: string }[] = [
+  { id: 'neck', label: 'Neck', detail: 'Sides and back of the neck' },
+  { id: 'chest', label: 'Chest', detail: 'Chest and the front of the shoulders' },
+  { id: 'shoulders', label: 'Back of the shoulders', detail: 'Rear shoulder and rotator cuff' },
+  { id: 'upper_back', label: 'Upper back', detail: 'Between and around the shoulder blades' },
+  { id: 'lats', label: 'Lats and sides', detail: 'Sides of the back, for reaching overhead' },
+  { id: 'lower_back', label: 'Lower back', detail: 'Lower back and the sides of the waist' },
+  { id: 'wrists', label: 'Wrists and forearms', detail: 'For push-ups, typing and grip' },
+  { id: 'hip_flexors', label: 'Hip flexors', detail: 'Front of the hips, tight from sitting' },
+  { id: 'glutes', label: 'Glutes and outer hips', detail: 'Buttocks and the deep hip rotators' },
+  { id: 'adductors', label: 'Inner thighs', detail: 'Adductors, for wide stances and squats' },
+  { id: 'hamstrings', label: 'Hamstrings', detail: 'Back of the thighs' },
+  { id: 'quads', label: 'Quads', detail: 'Front of the thighs' },
+  { id: 'calves', label: 'Calves and ankles', detail: 'For squat depth and walking' },
+]
+export const REGION_LABEL = Object.fromEntries(REGIONS.map((r) => [r.id, r.label])) as Record<Region, string>
+
 export interface Exercise {
   id: string
   name: string
@@ -155,13 +184,28 @@ export interface Exercise {
   stress?: Stress[]
   /** Only planned as a specific add-on (blood pressure, injury-proofing, a limitation), never for volume. */
   addOnOnly?: boolean
+  /** Missing means strength (lifting). */
+  kind?: ExerciseKind
+  /** Regions a stretch, mobility drill or yoga pose works on. */
+  regions?: Region[]
+  /** The dose for a stretch, pose or balance drill, e.g. "2 × 30–60 s each side". */
+  hold?: string
+  /** Can be done holding a counter or wall, so it stays in the plan with balance problems. */
+  support?: boolean
+  /** Loads the target muscle hardest where it is stretched (deep in the range). */
+  long?: boolean
+  /** One arm or leg at a time. */
+  unilateral?: boolean
 }
+
+export const kindOf = (e: Exercise): ExerciseKind => e.kind ?? 'strength'
+export const isLift = (e: Exercise) => kindOf(e) === 'strength'
 
 const ex = (id: string, name: string, gear: GearNeed[], primary: Muscle[], secondary: Muscle[], compound: boolean, cue: string, extra: Partial<Exercise> = {}): Exercise =>
   ({ id, name, gear, primary, secondary, compound, cue, ...extra })
 
 // Cues are this app's own short reminders; full-range, controlled reps are the common thread.
-export const EXERCISES: Exercise[] = [
+const LIFTS: Exercise[] = [
   // ── Chest ──
   ex('bench', 'Barbell bench press', ['barbell', 'bench'], ['chest'], ['triceps', 'shoulders'], true, 'Shoulder blades pulled back, bar touches the lower chest, press up and slightly back.', { supine: true }),
   ex('incline_db', 'Incline dumbbell press', ['dumbbell', 'incline_bench'], ['chest'], ['shoulders', 'triceps'], true, 'Bench at about 30° (45° at most), lower until you feel a stretch across the chest.'),
@@ -287,6 +331,17 @@ export const EXERCISES: Exercise[] = [
   ex('leg_raise', 'Lying leg raise', ['bodyweight'], ['abs'], [], false, 'Lower back pressed down; bend the knees to make it easier, lower slowly to make it harder.', { supine: true, stress: ['floor'] }),
 ]
 
+/** Lifts that load the target muscle hardest where it is stretched (see the long-length trials in compare.ts). */
+const LONG_LENGTH = ['overhead_ext', 'cable_overhead', 'incline_curl', 'bayesian_curl', 'rdl', 'db_rdl', 'single_rdl', 'split_squat', 'bw_split_squat', 'reverse_lunge', 'db_fly', 'cable_fly', 'dip', 'calf_raise', 'machine_calf', 'leg_press_calf', 'squat', 'goblet', 'pullup']
+/** Lifts done one arm or one leg at a time. */
+const ONE_SIDE = ['db_row', 'split_squat', 'bw_split_squat', 'reverse_lunge', 'step_up', 'single_rdl', 'concentration_curl', 'kickback', 'cable_lateral', 'bayesian_curl', 'cable_kickback', 'band_leg_curl']
+for (const e of LIFTS) {
+  if (LONG_LENGTH.includes(e.id)) e.long = true
+  if (ONE_SIDE.includes(e.id)) e.unilateral = true
+}
+
+export const EXERCISES: Exercise[] = [...LIFTS, ...EX_MOBILITY_UPPER, ...EX_MOBILITY_LOWER, ...EX_YOGA, ...EX_BALANCE]
+
 export const EXERCISE_BY_ID = Object.fromEntries(EXERCISES.map((e) => [e.id, e])) as Record<string, Exercise>
 
 // ── Muscles and muscle heads ────────────────────────────────────
@@ -302,6 +357,7 @@ export type HeadId =
   | 'glute_max' | 'glute_med' | 'adductors' | 'hip_flexors'
   | 'gastrocnemius' | 'soleus'
   | 'rectus_abdominis' | 'obliques' | 'transverse_abdominis'
+  | 'pec_minor' | 'neck_flexors' | 'levator' | 'hip_rotators' | 'tfl' | 'quadratus_lumborum' | 'tibialis' | 'foot_ankle' | 'wrist_extensors'
 
 export const HEAD_INFO: Record<HeadId, { label: string; area: string; note: string }> = {
   pec_upper: { label: 'Upper chest', area: 'Pectoralis major, clavicular head', note: 'Works most when the arms press or sweep up and in (incline work).' },
@@ -342,13 +398,35 @@ export const HEAD_INFO: Record<HeadId, { label: string; area: string; note: stri
   rectus_abdominis: { label: 'Rectus abdominis', area: 'The “six-pack”', note: 'Curls the spine and resists arching.' },
   obliques: { label: 'Obliques', area: 'Sides of the waist', note: 'Turn and side-bend the trunk and resist rotation.' },
   transverse_abdominis: { label: 'Transverse abdominis', area: 'Deep, wraps the waist', note: 'Braces the trunk like a belt.' },
+  pec_minor: { label: 'Pec minor', area: 'Under the chest, from the ribs to the front of the shoulder blade', note: 'When short or stiff it tips the shoulder blade forward.' },
+  neck_flexors: { label: 'Deep neck flexors', area: 'Front of the neck, along the spine', note: 'Tuck the chin and hold the head over the shoulders.' },
+  levator: { label: 'Levator scapulae', area: 'Side and back of the neck', note: 'Lifts the shoulder blade; often feels tight with desk work.' },
+  hip_rotators: { label: 'Deep hip rotators', area: 'Piriformis and its neighbours, under the glutes', note: 'Turn the thigh outward and steady the hip.' },
+  tfl: { label: 'TFL and IT band', area: 'Outside of the hip and thigh', note: 'Helps lift and turn the thigh inward; steadies the knee.' },
+  quadratus_lumborum: { label: 'Quadratus lumborum', area: 'Deep, low back beside the spine', note: 'Side-bends the trunk and hitches the hip.' },
+  tibialis: { label: 'Tibialis anterior', area: 'Front of the shin', note: 'Lifts the toes and controls the foot as it lands.' },
+  foot_ankle: { label: 'Foot and ankle stabilisers', area: 'Small foot muscles and the peroneals', note: 'Make the constant small corrections that keep you upright.' },
+  wrist_extensors: { label: 'Wrist extensors', area: 'Top of the forearm', note: 'Bend the wrist back; sore in tennis elbow.' },
 }
 
-/** Who does the work: main movers, helpers and stabilisers. */
+/**
+ * Who does the work: main movers, helpers and stabilisers. For stretches and yoga poses, prime is
+ * what gets stretched most and assist what works to hold the position; for balance drills, prime is
+ * what works hardest to keep you steady.
+ */
 export interface HeadSpec { prime: HeadId[]; assist: HeadId[]; stabilize?: HeadId[]; note?: string }
 
-export const HEADS: Record<string, HeadSpec> = { ...HEADS_CHEST, ...HEADS_BACK, ...HEADS_SHOULDERS, ...HEADS_LEGS, ...HEADS_CORE }
+export const HEADS: Record<string, HeadSpec> = {
+  ...HEADS_CHEST, ...HEADS_BACK, ...HEADS_SHOULDERS, ...HEADS_LEGS, ...HEADS_CORE,
+  ...HEADS_MOBILITY_UPPER, ...HEADS_MOBILITY_LOWER, ...HEADS_YOGA, ...HEADS_BALANCE,
+}
 
 /** Diagrams and form guides for exercises added with equipment choice; merged into DIAGRAMS and FORM. */
-export const EXTRA_DIAGRAMS: Record<string, Diagram> = { ...DIAGRAMS_CHEST, ...DIAGRAMS_BACK, ...DIAGRAMS_SHOULDERS, ...DIAGRAMS_LEGS, ...DIAGRAMS_CORE }
-export const EXTRA_FORM: Record<string, FormGuide> = { ...FORM_CHEST, ...FORM_BACK, ...FORM_SHOULDERS, ...FORM_LEGS, ...FORM_CORE }
+export const EXTRA_DIAGRAMS: Record<string, Diagram> = {
+  ...DIAGRAMS_CHEST, ...DIAGRAMS_BACK, ...DIAGRAMS_SHOULDERS, ...DIAGRAMS_LEGS, ...DIAGRAMS_CORE,
+  ...DIAGRAMS_MOBILITY_UPPER, ...DIAGRAMS_MOBILITY_LOWER, ...DIAGRAMS_YOGA, ...DIAGRAMS_BALANCE,
+}
+export const EXTRA_FORM: Record<string, FormGuide> = {
+  ...FORM_CHEST, ...FORM_BACK, ...FORM_SHOULDERS, ...FORM_LEGS, ...FORM_CORE,
+  ...FORM_MOBILITY_UPPER, ...FORM_MOBILITY_LOWER, ...FORM_YOGA, ...FORM_BALANCE,
+}

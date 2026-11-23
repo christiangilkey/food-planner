@@ -1,4 +1,9 @@
 import type { Equipment, Recipe } from '../types'
+import { RECIPES_BREAKFAST } from './recipes_more/breakfast'
+import { RECIPES_MEAT } from './recipes_more/meat'
+import { RECIPES_PLANTS } from './recipes_more/plants'
+import { RECIPES_SEAFOOD } from './recipes_more/seafood'
+import { RECIPES_SNACKS } from './recipes_more/snacks'
 
 export const EQUIPMENT: { id: Equipment; label: string }[] = [
   { id: 'stove', label: 'Stovetop' },
@@ -17,7 +22,7 @@ export const EQUIPMENT: { id: Equipment; label: string }[] = [
 const d = (crunch: number, flavor: number, novelty: number, fun: number) => ({ crunch, flavor, novelty, fun })
 
 // Ingredient grams are for the whole recipe; one plan entry is one serving.
-export const RECIPES: Recipe[] = [
+const BASE_RECIPES: Recipe[] = [
   // ── Breakfast ─────────────────────────────────────────────
   {
     id: 'overnight_oats', name: 'Overnight protein oats', slots: ['breakfast'], servings: 1,
@@ -936,5 +941,8 @@ export const RECIPES: Recipe[] = [
     equipment: [], activeMin: 1, totalMin: 1, steps: 1, dopamine: d(3, 2, 1, 2),
   },
 ]
+
+/** Every recipe: the originals plus the collections in ./recipes_more. */
+export const RECIPES: Recipe[] = [...BASE_RECIPES, ...RECIPES_BREAKFAST, ...RECIPES_MEAT, ...RECIPES_SEAFOOD, ...RECIPES_PLANTS, ...RECIPES_SNACKS]
 
 export const RECIPE_BY_ID: Record<string, Recipe> = Object.fromEntries(RECIPES.map((r) => [r.id, r]))

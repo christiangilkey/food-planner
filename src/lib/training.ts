@@ -1,7 +1,11 @@
 import type { Claim } from '../data/conditions'
 import { RECIPE_BY_ID } from '../data/recipes'
 import { LIMITATION_BY_ID, type Limitation } from '../data/limitations'
-import { ACCESS, canDo, CONDITION_TRAINING, EXERCISE_BY_ID, EXERCISES, FUEL, gearOf, MUSCLE_LABEL, MUSCLES, VTAPER, type EquipmentId, type Exercise, type Muscle, type Stress, type TrainingGoal } from '../data/training'
+import { POSTURE_GOAL_BY_ID, type PostureGoal } from '../data/mobility'
+import {
+  ACCESS, canDo, CONDITION_TRAINING, DAY_PART_LABEL, EXERCISE_BY_ID, EXERCISES, EXTRA_DAYS, FUEL, gearOf, isLift, isLiftDay, kindOf, MUSCLE_LABEL, MUSCLES, VTAPER,
+  type DayPart, type EquipmentId, type Exercise, type ExerciseKind, type ExtraDay, type LiftDay, type Muscle, type Region, type Stress, type TrainingGoal,
+} from '../data/training'
 import type { Activity, AppState, BodyCheckIn, FitnessSettings, Profile, TrainingPlace } from '../types'
 import { hasCondition } from './conditions'
 import { computeTargets, lbToKg } from './energy'
@@ -10,9 +14,7 @@ import { DAYS } from './plan-utils'
 import { formatTime, parseTime } from './schedule'
 import { analyzeSleep } from './sleep'
 
-type DayKind = 'full' | 'upper' | 'lower' | 'push' | 'pull' | 'legs'
-
-const DAY_MUSCLES: Record<DayKind, Muscle[]> = {
+const DAY_MUSCLES: Record<LiftDay, Muscle[]> = {
   full: ['quads', 'back', 'chest', 'hamstrings', 'glutes', 'shoulders', 'triceps', 'biceps', 'calves', 'abs'],
   upper: ['back', 'chest', 'shoulders', 'triceps', 'biceps'],
   lower: ['quads', 'hamstrings', 'glutes', 'calves', 'abs'],
@@ -20,15 +22,69 @@ const DAY_MUSCLES: Record<DayKind, Muscle[]> = {
   pull: ['back', 'shoulders', 'biceps', 'abs'],
   legs: ['quads', 'hamstrings', 'glutes', 'calves'],
 }
-const DAY_NAME: Record<DayKind, string> = { full: 'Full body', upper: 'Upper body', lower: 'Lower body', push: 'Push', pull: 'Pull', legs: 'Legs' }
+
+/** Muscles a lifting day trains: everything on a full-body day, else every part's muscles, in a sensible order. */
+function dayMuscles(parts: LiftDay[]): Muscle[] {
+  if (!parts.length) return []
+  if (parts.includes('full')) return DAY_MUSCLES.full
+  const set = new Set(parts.flatMap((p) => DAY_MUSCLES[p]))
+  return DAY_MUSCLES.full.filter((m) => set.has(m))
+}
 
 /** Splits that train every muscle at least twice a week for 2–6 days. */
-const SPLITS: Record<number, { kinds: DayKind[]; weekdays: number[]; name: string; why: string }> = {
+const SPLITS: Record<number, { kinds: LiftDay[]; weekdays: number[]; name: string; why: string }> = {
   2: { kinds: ['full', 'full'], weekdays: [0, 3], name: 'Full body, twice a week', why: 'With two days, training everything each day is the only way to hit each muscle twice.' },
   3: { kinds: ['full', 'full', 'full'], weekdays: [0, 2, 4], name: 'Full body, three days', why: 'Every muscle three times a week, with a rest day between sessions.' },
   4: { kinds: ['upper', 'lower', 'upper', 'lower'], weekdays: [0, 1, 3, 4], name: 'Upper / lower', why: 'Each half of the body twice a week, with shorter sessions than full body.' },
   5: { kinds: ['upper', 'lower', 'push', 'pull', 'legs'], weekdays: [0, 1, 2, 3, 4], name: 'Upper / lower + push / pull / legs', why: 'Every muscle twice a week across five shorter sessions.' },
   6: { kinds: ['push', 'pull', 'legs', 'push', 'pull', 'legs'], weekdays: [0, 1, 2, 3, 4, 5], name: 'Push / pull / legs, twice', why: 'Each muscle twice a week with lots of room for extra sets.' },
+}
+
+const clampDays = (n: number) => Math.max(2, Math.min(6, Math.round(n)))
+
+/** Fixed styles, for any number of days. */
+const FIXED: Record<'full' | 'upper_lower' | 'ppl', (n: number) => LiftDay[]> = {
+  full: (n) => Array.from({ length: n }, () => 'full'),
+  upper_lower: (n) => Array.from({ length: n }, (_, i) => (i % 2 ? 'lower' : 'upper')),
+  ppl: (n) => Array.from({ length: n }, (_, i) => (['push', 'pull', 'legs'] as const)[i % 3]),
+}
+
+/** Where added stretch, yoga or balance sessions go, best first: the weekend, then midweek gaps. */
+const FREE_ORDER = [6, 5, 2, 3, 1, 4, 0]
+
+/** Monday to Sunday, what each day holds (an empty day is rest). */
+export function weekLayout(f: FitnessSettings): DayPart[][] {
+  if (f.layout === 'custom' && Array.isArray(f.week) && f.week.length === 7) return f.week.map((d) => [...d])
+  const n = clampDays(f.days)
+  const split = SPLITS[n]
+  const kinds = f.layout === 'full' || f.layout === 'upper_lower' || f.layout === 'ppl' ? FIXED[f.layout](n) : split.kinds
+  const week: DayPart[][] = Array.from({ length: 7 }, () => [])
+  split.weekdays.forEach((wd, i) => week[wd].push(kinds[i]))
+  for (const { id } of EXTRA_DAYS) {
+    for (let k = 0; k < Math.min(7, f.extraDays?.[id] ?? 0); k++) {
+      // A free day if there is one; otherwise added to the least busy day that doesn't have it yet.
+      const d = FREE_ORDER.find((x) => !week[x].length) ?? FREE_ORDER.filter((x) => !week[x].includes(id)).sort((a, b) => week[a].length - week[b].length)[0]
+      if (d === undefined) break
+      week[d].push(id)
+    }
+  }
+  return week
+}
+
+/** How many days a week include lifting. */
+export const liftDayCount = (f: FitnessSettings) => weekLayout(f).filter((d) => d.some(isLiftDay)).length
+
+function layoutText(f: FitnessSettings, week: DayPart[][]): { name: string; why: string } {
+  const n = clampDays(f.days)
+  const extras = EXTRA_DAYS.map((d) => [d, week.filter((x) => x.includes(d.id)).length] as const).filter(([, c]) => c > 0)
+  const tail = extras.length ? ` + ${extras.map(([d, c]) => `${c > 1 ? `${c} ` : ''}${d.label.toLowerCase()}`).join(', ')}` : ''
+  const base =
+    f.layout === 'custom' ? { name: 'Your own week', why: 'Built day by day by you. Each lifting day gets the exercises for the muscles it covers.' }
+      : f.layout === 'full' ? { name: `Full body, ${n} days`, why: 'Every muscle each session, so each one is trained as often as you lift.' }
+        : f.layout === 'upper_lower' ? { name: 'Upper / lower', why: n % 2 ? 'Upper and lower days alternate; with an odd number of days, the upper body gets the extra day.' : 'Each half of the body twice a week.' }
+          : f.layout === 'ppl' ? { name: 'Push / pull / legs', why: n < 6 ? 'Pushing, pulling and legs in turn; with fewer than 6 days some muscles are trained only once a week.' : 'Each muscle twice a week.' }
+            : SPLITS[n]
+  return { name: base.name + tail, why: base.why }
 }
 
 /** Hard sets per muscle per week. Priorities get more; the rest get enough to keep growing (Bickel 2011). */
@@ -58,17 +114,34 @@ export interface PlannedExercise {
   /** Reps to leave in the tank. */
   rir: string
   rest: string
-  /** Main target of this pick. */
-  for: Muscle
+  /** Main target of this pick (lifts). */
+  for?: Muscle
+  /** For stretches, poses and balance drills: the whole dose, e.g. "2 × 30–60 s each side". */
+  hold?: string
   /** The exercise the plan chose before your swap. */
   swappedFrom?: string
+  /** You added it to this day yourself. */
+  added?: boolean
   note?: string
+}
+
+/** A stretch, yoga or balance part of a day, or a short cool-down after lifting. */
+export interface Block {
+  kind: ExtraDay | 'cooldown'
+  title: string
+  minutes: number
+  items: PlannedExercise[]
 }
 
 export interface Session {
   weekday: number
   name: string
+  /** What the day holds, as chosen (or from the layout). */
+  parts: DayPart[]
+  /** Lifting. */
   exercises: PlannedExercise[]
+  /** Stretch, yoga, balance or cool-down parts, after the lifting. */
+  blocks: Block[]
   minutes: number
 }
 
@@ -82,12 +155,21 @@ export interface Program {
   conditionNotes: Claim[]
   /** Limitations that shaped this week. */
   limits: Limitation[]
+  /** Posture goals that shaped this week. */
+  posture: PostureGoal[]
+  /** Regions the stretches focus on: yours, then your posture goals'. */
+  focus: Region[]
   cardio: string
   warnings: string[]
+  /** Softer notes about the week (a muscle trained only once, say). */
+  notes: string[]
 }
 
 const SET_MIN = { compound: 3, isolation: 2 } // minutes per working set including rest (app convention)
 const WARMUP_MIN = 8
+/** Minutes per stretch, pose or balance drill, both sides (app convention). */
+const ITEM_MIN: Record<ExerciseKind, number> = { strength: 3, mobility: 3, yoga: 2, balance: 3 }
+export const DEFAULT_EXTRA_MIN = 15
 
 const isPregnant = (p: Profile) => p.meds.pregnant
 const activeConditionTraining = (p: Profile) =>
@@ -108,6 +190,10 @@ function prescription(e: Exercise, f: FitnessSettings, minRir: number, firstComp
 }
 
 const HOLDS: Record<string, string> = { plank: '30–60 s hold', side_plank: '20–45 s each side', farmer_carry: '30–45 s walk', wall_sit: '2 min hold' }
+
+/** A stretch, pose or balance drill as a plan line. */
+const holdLine = (e: Exercise, extra: Partial<PlannedExercise> = {}): PlannedExercise =>
+  ({ exercise: e, sets: 1, reps: e.hold ?? '', hold: e.hold ?? '', rir: '—', rest: '—', ...extra })
 
 // ── Where you train, what you have, and what your body needs ─────────────
 
@@ -137,61 +223,181 @@ function avoidedStress(f: FitnessSettings, p: Profile): Set<Stress> {
   return out
 }
 
+/** The stresses that count: a balance drill done holding a counter doesn't count as unsupported balance. */
+const stressOf = (e: Exercise): Stress[] => (e.stress ?? []).filter((s) => !(s === 'balance' && e.support))
+
 /** Why an exercise can't be planned right now, or null if it can. */
 export function whyNot(e: Exercise, f: FitnessSettings, p: Profile): string | null {
   if (!canDo(e, gearOf(equipmentOf(f)))) return `Needs equipment you haven’t ticked for ${activePlace(f).name}`
   const avoid = avoidedStress(f, p)
-  const hit = limitationsOf(f, p).find((l) => (e.stress ?? []).some((s) => l.avoid.includes(s)))
+  const hit = limitationsOf(f, p).find((l) => stressOf(e).some((s) => l.avoid.includes(s)))
   if (hit) return `Not with ${hit.label.toLowerCase()}`
-  if ((e.stress ?? []).some((s) => avoid.has(s)) || (p.meds.pregnant && e.supine)) return 'Not in pregnancy'
+  if (stressOf(e).some((s) => avoid.has(s)) || (p.meds.pregnant && e.supine)) return 'Not in pregnancy'
   if (f.avoid?.includes(e.id)) return 'You chose not to do this one'
   return null
 }
 
-/** Exercises the planner may use for volume right now. */
+/** Exercises the planner may use right now (lifts for volume, plus stretches, poses and balance drills). */
 export function usableExercises(f: FitnessSettings, p: Profile): Exercise[] {
   return EXERCISES.filter((e) => !e.addOnOnly && !whyNot(e, f, p))
 }
 
-/** Other exercises for the same main muscle that fit your equipment and body, best match first. */
+const regionOverlap = (a: Exercise, b: Exercise) => (a.regions ?? []).filter((r) => b.regions?.includes(r)).length
+
+/**
+ * Other exercises that do the same job and fit your equipment and body, best match first: lifts for
+ * the same main muscle, stretches and poses for the same regions, or other balance drills.
+ */
 export function alternativesFor(e: Exercise, f: FitnessSettings, p: Profile): Exercise[] {
-  const same = (x: Exercise) => x.primary[0] === e.primary[0]
-  return usableExercises(f, p)
-    .filter((x) => x.id !== e.id && same(x))
-    .sort((a, b) => Number(b.compound === e.compound) - Number(a.compound === e.compound) || a.name.localeCompare(b.name))
+  const pool = usableExercises(f, p).filter((x) => x.id !== e.id)
+  const k = kindOf(e)
+  if (k === 'strength') {
+    return pool
+      .filter((x) => isLift(x) && x.primary[0] === e.primary[0])
+      .sort((a, b) => Number(b.compound === e.compound) - Number(a.compound === e.compound) || a.name.localeCompare(b.name))
+  }
+  if (k === 'balance') {
+    return pool.filter((x) => kindOf(x) === 'balance' || (!isLift(x) && x.stress?.includes('balance')))
+  }
+  return pool
+    .filter((x) => (kindOf(x) === 'mobility' || kindOf(x) === 'yoga') && regionOverlap(x, e) > 0)
+    .sort((a, b) => regionOverlap(b, e) - regionOverlap(a, e) || Number(kindOf(b) === k) - Number(kindOf(a) === k) || a.name.localeCompare(b.name))
+}
+
+/** Everything you could add to a day, by kind, leaving out what's already on it. */
+export function addableFor(s: Session, f: FitnessSettings, p: Profile): Record<ExerciseKind, Exercise[]> {
+  const on = new Set([...s.exercises, ...s.blocks.flatMap((b) => b.items)].map((x) => x.exercise.id))
+  const out: Record<ExerciseKind, Exercise[]> = { strength: [], mobility: [], yoga: [], balance: [] }
+  for (const e of usableExercises(f, p)) if (!on.has(e.id)) out[kindOf(e)].push(e)
+  out.strength.sort((a, b) => MUSCLES.findIndex((m) => m.id === a.primary[0]) - MUSCLES.findIndex((m) => m.id === b.primary[0]) || a.name.localeCompare(b.name))
+  return out
 }
 
 /** Lifting time for a session. Blood-pressure wall sits are extra (they can be done at home, any time). */
-const minutesOf = (list: PlannedExercise[]) =>
-  WARMUP_MIN + list.reduce((m, x) => m + (x.exercise.id === 'wall_sit' ? 0 : x.sets * (x.exercise.compound ? SET_MIN.compound : SET_MIN.isolation)), 0)
+const minutesOf = (list: PlannedExercise[]) => {
+  const lifts = list.filter((x) => isLift(x.exercise) && x.exercise.id !== 'wall_sit')
+  if (!lifts.length) return list.length * 3
+  return WARMUP_MIN + lifts.reduce((m, x) => m + x.sets * (x.exercise.compound ? SET_MIN.compound : SET_MIN.isolation), 0) + (list.length - lifts.length - list.filter((x) => x.exercise.id === 'wall_sit').length) * 3
+}
+const blockMinutes = (items: PlannedExercise[]) => items.reduce((m, x) => m + ITEM_MIN[kindOf(x.exercise)], 0)
 /** 4 × 2-minute holds with 2 minutes between. */
 export const WALL_SIT_MIN = 16
 
-/** Build the week: split, exercises, sets, reps, effort and rest, fitted to the session length. */
+/** What each lifting muscle stretches best afterwards, for cool-downs. */
+const MUSCLE_REGIONS: Record<Muscle, Region[]> = {
+  chest: ['chest'], back: ['lats', 'upper_back'], shoulders: ['shoulders'], biceps: ['chest'], triceps: ['lats'],
+  quads: ['quads', 'hip_flexors'], hamstrings: ['hamstrings'], glutes: ['glutes'], calves: ['calves'], abs: ['lower_back'],
+}
+/** Regions a general stretch session covers when you haven't picked any. */
+const DEFAULT_REGIONS: Region[] = ['hip_flexors', 'hamstrings', 'chest', 'upper_back', 'glutes', 'calves', 'lats', 'quads', 'adductors', 'lower_back']
+
+const unique = <T,>(xs: T[]) => [...new Set(xs)]
+
+/** Build the week: layout, exercises, sets, reps, effort and rest, stretches, poses and balance work. */
 export function buildProgram(f: FitnessSettings, p: Profile): Program {
-  const days = Math.max(2, Math.min(6, Math.round(f.days)))
-  const split = SPLITS[days]
+  const week = weekLayout(f)
+  const layout = layoutText(f, week)
   const rules = activeConditionTraining(p)
   const limits = limitationsOf(f, p)
   const minRir = Math.max(0, ...rules.map((r) => r.minRir ?? 0), ...limits.map((l) => l.minRir ?? 0))
   const noSupine = rules.some((r) => r.noSupine)
   const targets = weeklyTargets(f)
-  const usable = usableExercises(f, p).filter((e) => !(noSupine && e.supine))
-  const usableIds = new Set(usable.map((e) => e.id))
+  const usableAll = usableExercises(f, p).filter((e) => !(noSupine && e.supine))
+  const usable = usableAll.filter(isLift)
+  const usableIds = new Set(usableAll.map((e) => e.id))
   const gear = gearOf(equipmentOf(f))
   const prefer = f.preset === 'vtaper' ? VTAPER.prefer : {}
+  const fits = (e: Exercise | undefined): e is Exercise => !!e && !whyNot(e, f, p) && !(noSupine && e.supine)
+  const extraMin = Math.max(5, f.extraMin ?? DEFAULT_EXTRA_MIN)
 
+  const posture = (f.postureGoals ?? []).map((id) => POSTURE_GOAL_BY_ID[id]).filter(Boolean)
+  const focus = unique<Region>([...(f.stretchRegions ?? []), ...posture.flatMap((g) => g.stretch)])
+  const hasStretchDay = week.some((d) => d.includes('stretch') || d.includes('yoga'))
+
+  const liftParts = week.map((d) => d.filter(isLiftDay))
   const hits = {} as Record<Muscle, number>
-  for (const { id } of MUSCLES) hits[id] = split.kinds.filter((k) => DAY_MUSCLES[k].includes(id)).length
+  for (const { id } of MUSCLES) hits[id] = liftParts.filter((d) => dayMuscles(d).includes(id)).length
   const seen = {} as Record<Muscle, number>
+  const blockSeen: Record<string, number> = {}
 
-  const sessions: Session[] = split.kinds.map((kind, si) => {
+  // Your swap wins when it still fits your equipment and body and isn't already in the list.
+  const swapped = (picked: Exercise, taken: PlannedExercise[]) => {
+    const mine = f.swaps?.[picked.id]
+    return mine && usableIds.has(mine) && !taken.some((x) => x.exercise.id === mine) ? EXERCISE_BY_ID[mine] : picked
+  }
+
+  /** Stretches (or poses) for regions, focus first; rotates through the rest across the week. */
+  const stretchPick = (regions: Region[], n: number, occ: number, kinds: ExerciseKind[], taken: PlannedExercise[]): PlannedExercise[] => {
+    const out: PlannedExercise[] = []
+    const pool = usableAll.filter((e) => kinds.includes(kindOf(e)))
+    for (const r of regions) {
+      if (out.length >= n) break
+      const options = pool.filter((e) => e.regions?.includes(r) && ![...out, ...taken].some((x) => x.exercise.id === e.id || x.swappedFrom === e.id))
+      const picked = options[occ % Math.max(1, options.length)]
+      if (!picked) continue
+      const e = swapped(picked, [...out, ...taken])
+      out.push(holdLine(e, e !== picked ? { swappedFrom: picked.id } : {}))
+    }
+    return out
+  }
+  const regionOrder = (occ: number, n: number, extra: Region[] = []) => {
+    const rest = unique([...extra, ...DEFAULT_REGIONS]).filter((r) => !focus.includes(r))
+    // Your regions every time when they fit; otherwise they take turns, like the rest.
+    const mine = focus.length <= n ? focus : [...focus.slice((occ * n) % focus.length), ...focus.slice(0, (occ * n) % focus.length)]
+    const shift = rest.length ? (occ * Math.max(1, n - focus.length)) % rest.length : 0
+    return [...mine, ...rest.slice(shift), ...rest.slice(0, shift)]
+  }
+
+  const extraBlock = (kind: ExtraDay, dayMusclesList: Muscle[], taken: PlannedExercise[]): Block => {
+    const occ = (blockSeen[kind] = (blockSeen[kind] ?? 0) + 1) - 1
+    if (kind === 'stretch') {
+      const n = Math.max(2, Math.floor(extraMin / ITEM_MIN.mobility))
+      const items = stretchPick(regionOrder(occ, n, dayMusclesList.flatMap((m) => MUSCLE_REGIONS[m])), n, occ, ['mobility', 'yoga'], taken)
+      return { kind, title: 'Stretch', minutes: blockMinutes(items), items }
+    }
+    if (kind === 'yoga') {
+      const n = Math.max(3, Math.floor(extraMin / ITEM_MIN.yoga))
+      const poses = usableAll.filter((e) => kindOf(e) === 'yoga')
+      const order = (e: Exercise) => poses.indexOf(e)
+      // One balance pose, then poses for your regions, then the rest taking turns across the week.
+      const balancePose = poses.filter((e) => e.stress?.includes('balance'))[occ % Math.max(1, poses.filter((e) => e.stress?.includes('balance')).length)]
+      const forFocus = poses.filter((e) => e.regions?.some((r) => focus.includes(r)) && e !== balancePose)
+      const others = poses.filter((e) => e !== balancePose && !forFocus.includes(e))
+      const rotated = [...others.slice(occ % Math.max(1, others.length)), ...others.slice(0, occ % Math.max(1, others.length))]
+      const chosen = unique([...(balancePose ? [balancePose] : []), ...forFocus, ...rotated]).slice(0, n).sort((a, b) => order(a) - order(b))
+      const items: PlannedExercise[] = []
+      for (const picked of chosen) {
+        const e = swapped(picked, [...items, ...taken])
+        items.push(holdLine(e, e !== picked ? { swappedFrom: picked.id } : {}))
+      }
+      return { kind, title: 'Yoga', minutes: blockMinutes(items), items }
+    }
+    const n = Math.max(3, Math.floor(extraMin / ITEM_MIN.balance))
+    const drills = usableAll.filter((e) => kindOf(e) === 'balance')
+    // New lifters and anyone with balance problems start with the easiest drills; others rotate.
+    const easy = f.experience === 'new' || limits.some((l) => l.id === 'balance')
+    const start = easy ? 0 : occ % Math.max(1, drills.length)
+    const chosen = easy ? drills.slice(0, n) : [...drills.slice(start), ...drills.slice(0, start)].slice(0, n)
+    const items: PlannedExercise[] = []
+    for (const picked of chosen) {
+      const e = swapped(picked, [...items, ...taken])
+      items.push(holdLine(e, e !== picked ? { swappedFrom: picked.id } : {}))
+    }
+    const steady = limits.some((l) => l.id === 'balance')
+    if (steady) for (const x of items) x.note = 'Stand next to a counter or sturdy chair and hold it whenever you need to.'
+    return { kind, title: 'Balance', minutes: blockMinutes(items), items }
+  }
+
+  const sessions: Session[] = []
+  week.forEach((parts, weekday) => {
+    if (!parts.length) return
+    const lifts = parts.filter(isLiftDay)
+    const extras = parts.filter((x): x is ExtraDay => !isLiftDay(x))
+    const muscles = dayMuscles(lifts)
     const list: PlannedExercise[] = []
     const credit = {} as Record<Muscle, number>
     const add = (picked: Exercise, sets: number, m: Muscle) => {
-      // Your own swap wins when it still fits your equipment and body and isn't already in the session.
-      const mine = f.swaps?.[picked.id]
-      const e = mine && usableIds.has(mine) && !list.some((x) => x.exercise.id === mine) ? EXERCISE_BY_ID[mine] : picked
+      const e = swapped(picked, list)
       const firstCompound = e.compound && !list.some((x) => x.exercise.compound)
       list.push({ exercise: e, sets, for: m, ...(e !== picked ? { swappedFrom: picked.id } : {}), ...prescription(e, f, e.compound ? minRir : 0, firstCompound) })
       for (const q of e.primary) credit[q] = (credit[q] ?? 0) + sets
@@ -200,7 +406,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
     // Priorities first, so they get the session's freshest effort; abs and calves always last,
     // so a tired core or calves never comes before squats and deadlifts.
     const rank = (m: Muscle) => (m === 'abs' || m === 'calves' ? 2 : f.priorities.includes(m) ? 0 : 1)
-    const order = [...DAY_MUSCLES[kind]].sort((a, b) => rank(a) - rank(b))
+    const order = [...muscles].sort((a, b) => rank(a) - rank(b))
     for (const m of order) {
       const want = targets[m] / Math.max(1, hits[m])
       let remaining = want - (credit[m] ?? 0)
@@ -218,6 +424,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       const first = liked[occurrence % Math.max(1, liked.length)]
         ?? (big ? compounds : isolations)[occurrence % Math.max(1, (big ? compounds : isolations).length)] ?? pool[occurrence % Math.max(1, pool.length)]
       if (!first) continue
+      // Per-day ceiling of 4 sets per pick; a muscle trained once a week still gets at most two picks.
       const s1 = Math.max(2, Math.min(4, Math.round(remaining > 4.5 ? remaining / 2 : remaining)))
       add(first, s1, m)
       remaining -= s1
@@ -230,17 +437,29 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
         if (second) add(second, Math.max(2, Math.min(4, Math.round(remaining))), m)
       }
     }
-    return { weekday: split.weekdays[si], name: DAY_NAME[kind], exercises: list, minutes: 0 }
+    const blocks: Block[] = []
+    for (const kind of extras) blocks.push(extraBlock(kind, muscles, blocks.flatMap((b) => b.items)))
+    // Regions or posture goals but no stretch or yoga day: a short cool-down after lifting.
+    if (lifts.length && focus.length && !hasStretchDay) {
+      const occ = (blockSeen.cooldown = (blockSeen.cooldown ?? 0) + 1) - 1
+      const items = stretchPick(regionOrder(occ, 2), 2, occ, ['mobility'], blocks.flatMap((b) => b.items))
+      if (items.length) blocks.push({ kind: 'cooldown', title: 'Cool-down stretches', minutes: blockMinutes(items), items })
+    }
+    const name = [...(lifts.includes('full') ? (['full'] as DayPart[]) : lifts), ...extras].map((x) => DAY_PART_LABEL[x]).join(' + ')
+    sessions.push({ weekday, name, parts, exercises: list, blocks, minutes: 0 })
   })
 
-  // Blood pressure: isometric wall sits (4 × 2 min) on up to three days.
+  const liftSessions = sessions.filter((s) => s.parts.some(isLiftDay))
+  const firstTwo = (liftSessions.length ? liftSessions : sessions).slice(0, 2)
+
+  // Blood pressure: isometric wall sits (4 × 2 min) on up to three lifting days.
   if (rules.some((r) => r.adds === 'isometric')) {
-    for (const s of sessions.slice(0, 3)) s.exercises.push({ exercise: EXERCISE_BY_ID.wall_sit, sets: 4, reps: '2 min hold', rir: '—', rest: '2 min', for: 'quads', note: `For blood pressure, about ${WALL_SIT_MIN} minutes on top of the session (or at home on another day): hold at an effort you could just keep up for 2 minutes. Breathe throughout.` })
+    for (const s of (liftSessions.length ? liftSessions : sessions).slice(0, 3)) s.exercises.push({ exercise: EXERCISE_BY_ID.wall_sit, sets: 4, reps: '2 min hold', rir: '—', rest: '2 min', for: 'quads', note: `For blood pressure, about ${WALL_SIT_MIN} minutes on top of the session (or at home on another day): hold at an effort you could just keep up for 2 minutes. Breathe throughout.` })
   }
 
   // Tendon add-on: Nordic hamstring curls once a week, on the first day that trains hamstrings.
   if (f.addOns?.includes('tendon') && !whyNot(EXERCISE_BY_ID.nordic, f, p)) {
-    const day = sessions[split.kinds.findIndex((k) => DAY_MUSCLES[k].includes('hamstrings'))]
+    const day = sessions.find((s) => dayMuscles(s.parts.filter(isLiftDay)).includes('hamstrings'))
     day?.exercises.push({ exercise: EXERCISE_BY_ID.nordic, sets: 2, reps: '4–6 slow', rir: '1–3', rest: '2 min', for: 'hamstrings', note: 'For injury-proofing: lower as slowly as you can. Expect sore hamstrings for the first two weeks.' })
   }
 
@@ -250,45 +469,98 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
     const options = [a.exercise, a.exercise.replace(/^band_/, 'cable_'), a.exercise.replace(/^cable_/, 'band_')]
     const e = options.map((id) => EXERCISE_BY_ID[id]).find((x) => x && canDo(x, gear) && !whyNot(x, f, p))
     if (!e) continue
-    for (const s of sessions.slice(0, 2)) {
+    for (const s of firstTwo) {
       if (s.exercises.some((x) => x.exercise.id === e.id)) continue
       s.exercises.push({ exercise: e, sets: a.sets, reps: a.reps, rir: '2–3', rest: '1 min', for: e.primary[0], note: `For your ${l.label.toLowerCase()}: ${a.note}` })
     }
   }
 
-  // Fit each session into the time available: trim non-priority sets first, then priority, never below 2.
+  // Posture goals: their strength work goes with the lifting, their drills into a stretch part of the day.
+  for (const g of posture) for (const w of g.strengthen) {
+    const e = w.options.map((id) => EXERCISE_BY_ID[id]).find(fits)
+    if (!e) continue
+    for (const s of firstTwo) {
+      const all = [...s.exercises, ...s.blocks.flatMap((b) => b.items)]
+      if (all.some((x) => x.exercise.id === e.id)) continue
+      const note = `For ${g.label.replace(/ \(.*\)$/, '').toLowerCase()}: ${w.note}`
+      if (isLift(e)) {
+        s.exercises.push({ exercise: e, sets: w.sets, reps: w.reps, rir: '2–3', rest: '1 min', for: e.primary[0], note })
+      } else {
+        const block = s.blocks.find((b) => b.kind === 'stretch' || b.kind === 'cooldown')
+          ?? (s.blocks[s.blocks.push({ kind: 'cooldown', title: 'Posture work', minutes: 0, items: [] }) - 1])
+        block.items.push(holdLine(e, { reps: `${w.sets} × ${w.reps}`, hold: `${w.sets} × ${w.reps}`, note }))
+      }
+    }
+  }
+
+  // Your own changes to single days: taken out, then added.
+  for (const s of sessions) {
+    const edit = f.dayEdits?.[String(s.weekday)]
+    if (!edit) continue
+    const gone = new Set(edit.remove ?? [])
+    const keep = (x: PlannedExercise) => !gone.has(x.exercise.id) && !(x.swappedFrom && gone.has(x.swappedFrom))
+    s.exercises = s.exercises.filter(keep)
+    for (const b of s.blocks) b.items = b.items.filter(keep)
+    for (const id of edit.add ?? []) {
+      const e = EXERCISE_BY_ID[id]
+      if (!e || gone.has(id) || !fits(e)) continue
+      const all = [...s.exercises, ...s.blocks.flatMap((b) => b.items)]
+      if (all.some((x) => x.exercise.id === id)) continue
+      if (isLift(e)) {
+        s.exercises.push({ exercise: e, sets: e.compound ? 3 : 2, for: e.primary[0], added: true, ...prescription(e, f, e.compound ? minRir : 0, false) })
+      } else {
+        const kind: Block['kind'] = kindOf(e) === 'yoga' ? 'yoga' : kindOf(e) === 'balance' ? 'balance' : 'stretch'
+        const block = s.blocks.find((b) => b.kind === kind) ?? s.blocks.find((b) => b.kind === 'cooldown')
+          ?? (s.blocks[s.blocks.push({ kind, title: 'Added by you', minutes: 0, items: [] }) - 1])
+        block.items.push(holdLine(e, { added: true }))
+      }
+    }
+    s.blocks = s.blocks.filter((b) => b.items.length)
+  }
+
+  // Fit the lifting into the time available: trim non-priority sets first, then priority, never below 2.
   let trimmed = false
   for (const s of sessions) {
     const limit = Math.max(25, f.sessionMin)
-    const pri = (x: PlannedExercise) => f.priorities.includes(x.for)
+    const pri = (x: PlannedExercise) => !!x.for && f.priorities.includes(x.for)
+    // Add-ons (wall sits, Nordic curls, work for a limitation or posture goal, which all carry a note)
+    // and your own additions are kept: you asked for them.
+    const keep = (x: PlannedExercise) => !!x.exercise.isometric || !!x.exercise.addOnOnly || !!x.added || !!x.note || !isLift(x.exercise)
     for (let guard = 0; minutesOf(s.exercises) > limit && guard < 200; guard++) {
-      const cut = [...s.exercises].filter((x) => x.sets > 2 && !x.exercise.isometric).sort((a, b) => Number(pri(a)) - Number(pri(b)) || b.sets - a.sets)[0]
+      const cut = [...s.exercises].filter((x) => x.sets > 2 && !keep(x)).sort((a, b) => Number(pri(a)) - Number(pri(b)) || b.sets - a.sets)[0]
       if (cut) { cut.sets--; trimmed = true; continue }
       // Everything at 2 sets: drop the last non-priority extra exercise for a muscle that has two.
-      // Add-ons (wall sits, Nordic curls) are kept: the user asked for them.
-      const keep = (x: PlannedExercise) => x.exercise.isometric || !!x.exercise.addOnOnly
       const extras = s.exercises.filter((x, i) => !keep(x) && s.exercises.findIndex((y) => y.for === x.for) !== i)
       const drop = extras.sort((a, b) => Number(pri(a)) - Number(pri(b)))[0] ?? [...s.exercises].reverse().find((x) => !pri(x) && !keep(x))
       if (!drop) break
       s.exercises.splice(s.exercises.indexOf(drop), 1)
       trimmed = true
     }
-    s.minutes = minutesOf(s.exercises)
+    for (const b of s.blocks) b.minutes = blockMinutes(b.items)
+    s.minutes = (s.exercises.length ? minutesOf(s.exercises) : 0) + s.blocks.reduce((m, b) => m + b.minutes, 0)
   }
 
   const weekly = {} as Program['weekly']
   for (const { id } of MUSCLES) weekly[id] = { target: targets[id], sets: 0 }
   for (const s of sessions) for (const x of s.exercises) {
-    if (x.exercise.addOnOnly) continue
+    if (x.exercise.addOnOnly || !isLift(x.exercise)) continue
     for (const q of x.exercise.primary) weekly[q].sets += x.sets
     for (const q of x.exercise.secondary) weekly[q].sets += x.sets / 2
   }
 
   const warnings: string[] = []
-  // Muscles nothing fits for: say so rather than silently leaving them out.
-  const missing = MUSCLES.filter(({ id }) => !usable.some((e) => e.primary[0] === id)).map((m) => m.label.toLowerCase())
-  if (missing.length) warnings.push(`Nothing for your ${missing.join(', ')} fits ${activePlace(f).name}’s equipment and your limitations. Tick more equipment, or try another place.`)
-  if (!equipmentOf(f).length) warnings.push('Without equipment, progress by doing harder variations (feet raised, slower lowering, one leg) once you pass the top of the rep range.')
+  const notes: string[] = []
+  if (liftSessions.length) {
+    const trained = MUSCLES.filter(({ id }) => hits[id] > 0)
+    // Muscles nothing fits for: say so rather than silently leaving them out.
+    const missing = trained.filter(({ id }) => !usable.some((e) => e.primary[0] === id)).map((m) => m.label.toLowerCase())
+    if (missing.length) warnings.push(`Nothing for your ${missing.join(', ')} fits ${activePlace(f).name}’s equipment and your limitations. Tick more equipment, or try another place.`)
+    const never = MUSCLES.filter(({ id }) => !hits[id]).map((m) => m.label.toLowerCase())
+    if (never.length) warnings.push(`Your week doesn’t train your ${never.join(', ')}. Add a day that covers ${never.length > 1 ? 'them' : 'it'}, or switch a day to full body.`)
+    const once = MUSCLES.filter(({ id }) => hits[id] === 1).map((m) => m.label.toLowerCase())
+    if (once.length && f.goal !== 'health') notes.push(`Your ${once.join(', ')} ${once.length > 1 ? 'are' : 'is'} trained once a week; twice a week grows muscle more.`)
+  }
+  if (!equipmentOf(f).length && liftSessions.length) warnings.push('Without equipment, progress by doing harder variations (feet raised, slower lowering, one leg) once you pass the top of the rep range.')
   if (trimmed) warnings.push(`Sets were cut to fit ${f.sessionMin}-minute sessions. Longer sessions or another training day would let every muscle reach its target.`)
   const migraine = hasCondition(p, 'migraine')
   const cardio = migraine
@@ -297,7 +569,7 @@ export function buildProgram(f: FitnessSettings, p: Profile): Program {
       ? '150–300 minutes a week of moderate cardio. Your two 10-minute walks after lunch and dinner give about 140; add a couple of longer sessions.'
       : 'Keep the after-meal walks on your schedule; together with lifting they work toward the WHO weekly activity target.'
 
-  return { split: split.name, splitWhy: split.why, sessions, weekly, trimmed, conditionNotes: rules.flatMap((r) => r.claims), limits, cardio, warnings }
+  return { split: layout.name, splitWhy: layout.why, sessions, weekly, trimmed, conditionNotes: rules.flatMap((r) => r.claims), limits, posture, focus, cardio, warnings, notes }
 }
 
 // ── What training changes in the meal plan ─────────────────────────
@@ -320,8 +592,9 @@ const ACTIVITY_LABEL: Record<Activity, string> = { sedentary: 'Sedentary', light
 
 /** The activity level that matches the training plan (the app's activity definitions). */
 export function activityFor(f: FitnessSettings): Activity {
-  if (f.days >= 6) return 'very'
-  if (f.days >= 4 || (f.days === 3 && f.sessionMin >= 60)) return 'moderate'
+  const days = liftDayCount(f)
+  if (days >= 6) return 'very'
+  if (days >= 4 || (days === 3 && f.sessionMin >= 60)) return 'moderate'
   return 'light'
 }
 
@@ -347,7 +620,7 @@ export function fuelAdvice(state: AppState): FuelAdvice[] {
   if (ACTIVITY_RANK.indexOf(p.activity) < ACTIVITY_RANK.indexOf(want)) {
     out.push({
       id: 'activity', title: 'Count the training in your calories',
-      text: `${f.days} sessions of ${f.sessionMin} minutes a week fits “${ACTIVITY_LABEL[want]}”, but your profile says “${ACTIVITY_LABEL[p.activity]}”, so your calorie target is too low for this training.`,
+      text: `${liftDayCount(f)} sessions of ${f.sessionMin} minutes a week fits “${ACTIVITY_LABEL[want]}”, but your profile says “${ACTIVITY_LABEL[p.activity]}”, so your calorie target is too low for this training.`,
       claim: { text: 'Calorie needs are estimated from your resting burn times an activity factor; more training means a higher factor.', evidence: 'moderate', sources: ['mifflin', 'nasem_macros'] },
       apply: { label: `Set to ${ACTIVITY_LABEL[want]}`, patch: { activity: want } },
     })

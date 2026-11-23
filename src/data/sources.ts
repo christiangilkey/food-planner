@@ -359,6 +359,16 @@ export const SOURCES = {
   steuri_2017: s('Steuri 2017', 'Effectiveness of conservative interventions including exercise, manual therapy and medical management in adults with shoulder impingement: systematic review and meta-analysis', 'Br J Sports Med', 2017, pm(28630217), 'meta-analysis'),
   sherrington_falls: s('Sherrington 2019', 'Exercise for preventing falls in older people living in the community (Cochrane review)', 'Cochrane Database Syst Rev', 2019, pm(30703272), 'meta-analysis'),
   riebe_screening: s('Riebe 2015', 'Updating ACSM’s recommendations for exercise preparticipation health screening', 'Med Sci Sports Exerc', 2015, pm(26473759), 'guideline'),
+  // Custom weeks, swaps, stretching, yoga, balance and posture (checked against PubMed, November 2026).
+  lesinski_balance: s('Lesinski 2015', 'Effects of balance training on balance performance in healthy older adults: systematic review and meta-analysis', 'Sports Med', 2015, pm(26325622), 'meta-analysis'),
+  youkhana_yoga: s('Youkhana 2016', 'Yoga-based exercise improves balance and mobility in people aged 60 and over: systematic review and meta-analysis', 'Age Ageing', 2016, pm(26707903), 'meta-analysis'),
+  wieland_yoga: s('Wieland 2022', 'Yoga for chronic non-specific low back pain (Cochrane review)', 'Cochrane Database Syst Rev', 2022, pm(36398843), 'meta-analysis'),
+  maeo_hamstring: s('Maeo 2021', 'Greater hamstrings muscle hypertrophy after training at long versus short muscle lengths', 'Med Sci Sports Exerc', 2021, pm(33009197), 'trial'),
+  pedrosa_long: s('Pedrosa 2022', 'Partial range of motion training elicits favorable improvements in muscular adaptations when carried out at long muscle lengths', 'Eur J Sport Sci', 2022, pm(33977835), 'trial'),
+  kassiano_rom: s('Kassiano 2023', 'Which ROMs lead to Rome? A systematic review of the effects of range of motion on muscle hypertrophy', 'J Strength Cond Res', 2023, pm(36662126), 'review'),
+  herrington_tilt: s('Herrington 2011', 'Assessment of the degree of pelvic tilt within a normal asymptomatic population', 'Man Ther', 2011, pm(21658988), 'cohort'),
+  chun_lordosis: s('Chun 2017', 'The relationships between low back pain and lumbar lordosis: systematic review and meta-analysis', 'Spine J', 2017, pm(28476690), 'meta-analysis'),
+  slater_posture: s('Slater 2019', '“Sit up straight”: time to re-evaluate', 'J Orthop Sports Phys Ther', 2019, pm(31366294), 'review'),
   // Osteoporosis diet (checked against PubMed and DailyMed, November 2026).
   bhof_2022: s('BHOF 2022', 'The clinician’s guide to prevention and treatment of osteoporosis (Bone Health & Osteoporosis Foundation)', 'Osteoporos Int', 2022, pm(35478046), 'guideline'),
   prune_study: s('De Souza 2022', 'Prunes preserve hip bone mineral density in a 12-month randomized controlled trial in postmenopausal women: the Prune Study', 'Am J Clin Nutr', 2022, pm(35798020), 'trial'),

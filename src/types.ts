@@ -1,5 +1,6 @@
 import type { DietTag } from './data/diets'
-import type { Access, EquipmentId, Experience, Muscle, TrainingGoal } from './data/training'
+import type { Access, DayPart, EquipmentId, Experience, ExtraDay, Layout, Muscle, Region, TrainingGoal } from './data/training'
+import type { PostureGoalId } from './data/mobility'
 import type { LimitationId } from './data/limitations'
 
 export type Sex = 'male' | 'female'
@@ -393,7 +394,7 @@ export interface FitnessSettings {
   priorities: Muscle[]
   /** Let the training plan raise protein and set activity in the meal plan. */
   feedMealPlan: boolean
-  /** "V-taper": picks exercises for shoulders, lats, upper chest, biceps and abs. */
+  /** "V-taper": picks exercises for shoulders, lats, upper chest, biceps, triceps and abs. */
   preset?: 'vtaper'
   addOns?: TrainingAddOn[]
   /** Unit for logged weights; pounds unless switched. */
@@ -408,6 +409,25 @@ export interface FitnessSettings {
   avoid?: string[]
   /** Your own swaps: planned exercise id → the one you'd rather do. */
   swaps?: Record<string, string>
+  /** How the week is laid out; missing means the recommended split. */
+  layout?: Layout
+  /** Your own week (layout "custom"): Monday to Sunday, what each day holds; an empty day is rest. */
+  week?: DayPart[][]
+  /** Stretch, yoga or balance sessions added to a fixed layout, per week. */
+  extraDays?: Partial<Record<ExtraDay, number>>
+  /** Regions to stretch more. */
+  stretchRegions?: Region[]
+  /** Posture and mobility goals. */
+  postureGoals?: PostureGoalId[]
+  /** Minutes for each stretch, yoga or balance session. */
+  extraMin?: number
+  /** Changes to single days, keyed by weekday (0 = Monday): exercises added or taken out. */
+  dayEdits?: Record<string, DayEdit>
+}
+
+export interface DayEdit {
+  add?: string[]
+  remove?: string[]
 }
 
 export interface TrainingPlace {

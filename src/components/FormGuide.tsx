@@ -1,9 +1,11 @@
 import { DIAGRAMS, DRILL_DIAGRAMS } from '../data/diagrams'
 import { FORM, FORM_RULES, STRETCHES, type FormEvidence, type FormRule, type Stretch } from '../data/form'
 import { useState } from 'react'
-import { EXERCISE_BY_ID, HEAD_INFO, HEADS, type Drill } from '../data/training'
+import { EXERCISE_BY_ID, HEAD_INFO, HEADS, isLift, kindOf, REGION_LABEL, type Drill, type Exercise } from '../data/training'
 import { ExerciseDiagram } from './ExerciseDiagram'
 import { LiftLog } from './LiftLog'
+import { RestBar } from './WorkoutTimer'
+import { compareExercises, headline, swapTag, type SwapPoint } from '../lib/compare'
 import { activePlace, alternativesFor, type PlannedExercise } from '../lib/training'
 import type { FitnessSettings } from '../types'
 import { Icon } from './Icon'
@@ -32,22 +34,25 @@ export function RuleLine({ id }: { id: string }) {
  */
 export function FormSheet({ id, careful, onClose, log }: {
   id: string; careful: boolean; onClose: () => void
-  /** Show set logging at the top, with the plan's sets, reps and rest for this exercise. */
-  log?: ViewProps & { dose?: PlannedExercise }
+  /** Show the rest timer and logging at the top, with the plan's dose for this exercise and the day it's on. */
+  log?: ViewProps & { dose?: PlannedExercise; weekday?: number }
 }) {
   const ex = EXERCISE_BY_ID[id]
   const g = FORM[id]
   if (!ex || !g) return null
+  const lift = isLift(ex)
   return (
     <Sheet title={ex.name} onClose={onClose}>
       <div className="form-guide">
-        {log && <LiftLog exercise={ex} dose={log.dose} state={log.state} update={log.update} />}
-        {log?.dose && <SwapPanel x={log.dose} state={log.state} update={log.update} onDone={onClose} />}
+        {log && <RestBar rest={log.dose && lift ? log.dose.rest : undefined} />}
+        {log && <LiftLog exercise={ex} dose={log.dose} state={log.state} update={log.update} onLogged={onClose} />}
+        {log?.dose && <SwapPanel x={log.dose} weekday={log.weekday} state={log.state} update={log.update} onDone={onClose} />}
         {log && <h3>How to do it</h3>}
         {DIAGRAMS[id] && <ExerciseDiagram d={DIAGRAMS[id]} name={ex.name} />}
         <p className="muted small form-cue">{ex.cue}</p>
+        {!lift && ex.hold && <p className="small"><strong>How much:</strong> {ex.hold}{ex.regions?.length ? ` · for your ${ex.regions.map((r) => REGION_LABEL[r].toLowerCase()).join(', ')}` : ''}</p>}
 
-        <MusclesUsed id={id} />
+        <MusclesUsed e={ex} />
 
         <h3>Set up</h3>
         <ol className="form-steps">{g.setup.map((s) => <li key={s}>{s}</li>)}</ol>
@@ -57,7 +62,7 @@ export function FormSheet({ id, careful, onClose, log }: {
 
         <h3>Breathe</h3>
         <p className="small">{g.breathing}</p>
-        {careful && (
+        {careful && lift && (
           <p className="small warn-text"><RuleLine id="breath_avoid_hold" /></p>
         )}
 
@@ -73,9 +78,14 @@ export function FormSheet({ id, careful, onClose, log }: {
           <div><span className="eyebrow">Harder</span><span className="small">{g.harder}</span></div>
         </div>
 
-        <h3>Stretch afterwards</h3>
-        {g.stretches.map((sid) => <StretchCard key={sid} s={STRETCHES[sid]} />)}
-        <p className="muted small"><RuleLine id="stretch_weekly" /> <RuleLine id="stretch_pre_short" /></p>
+        {g.stretches.length > 0 && (
+          <>
+            <h3>Stretch afterwards</h3>
+            {g.stretches.map((sid) => <StretchCard key={sid} s={STRETCHES[sid]} />)}
+            <p className="muted small"><RuleLine id="stretch_weekly" /> <RuleLine id="stretch_pre_short" /></p>
+          </>
+        )}
+        {!lift && kindOf(ex) !== 'balance' && <p className="muted small"><RuleLine id="stretch_weekly" /></p>}
 
         <p className="muted small">Setup and movement cues are coaching guidance (ACE and common practice), not tested one by one in trials.</p>
       </div>
@@ -83,20 +93,23 @@ export function FormSheet({ id, careful, onClose, log }: {
   )
 }
 
-const ROLES: { key: 'prime' | 'assist' | 'stabilize'; title: string }[] = [
-  { key: 'prime', title: 'Main movers' },
-  { key: 'assist', title: 'Helpers' },
-  { key: 'stabilize', title: 'Steadying' },
-]
+/** Labels for who does the work, by kind of exercise. */
+function roles(e: Exercise): { key: 'prime' | 'assist' | 'stabilize'; title: string }[] {
+  const k = kindOf(e)
+  if (k === 'mobility' || k === 'yoga') return [{ key: 'prime', title: 'Stretched most' }, { key: 'assist', title: 'Working to hold it' }, { key: 'stabilize', title: 'Steadying' }]
+  if (k === 'balance') return [{ key: 'prime', title: 'Keeping you steady' }, { key: 'assist', title: 'Helpers' }, { key: 'stabilize', title: 'Also working' }]
+  return [{ key: 'prime', title: 'Main movers' }, { key: 'assist', title: 'Helpers' }, { key: 'stabilize', title: 'Steadying' }]
+}
 
 /** The muscles and muscle heads an exercise works, by how much. */
-function MusclesUsed({ id }: { id: string }) {
-  const h = HEADS[id]
+function MusclesUsed({ e }: { e: Exercise }) {
+  const h = HEADS[e.id]
   if (!h) return null
+  const lift = isLift(e)
   return (
     <section className="muscles-used" aria-label="Muscles worked">
-      <h3>Muscles worked</h3>
-      {ROLES.map(({ key, title }) => {
+      <h3>{lift ? 'Muscles worked' : kindOf(e) === 'balance' ? 'Muscles that keep you steady' : 'Muscles stretched and working'}</h3>
+      {roles(e).map(({ key, title }) => {
         const list = h[key] ?? []
         if (!list.length) return null
         return (
@@ -114,14 +127,41 @@ function MusclesUsed({ id }: { id: string }) {
         )
       })}
       {h.note && <p className="small muted">{h.note}</p>}
-      <p className="muted small">From anatomy and muscle-activity studies; which head works hardest varies a little from person to person. <Why sources={['pm_26214739']} label="Note" convention="Muscle activity in a lift doesn’t always predict which muscle grows most." /></p>
+      {lift && <p className="muted small">From anatomy and muscle-activity studies; which head works hardest varies a little from person to person. <Why sources={['pm_26214739']} label="Note" convention="Muscle activity in a lift doesn’t always predict which muscle grows most." /></p>}
     </section>
   )
 }
 
-/** Swap a planned exercise for one that fits your equipment and body, or stop it being planned. */
-function SwapPanel({ x, state, update, onDone }: ViewProps & { x: PlannedExercise; onDone: () => void }) {
-  const [open, setOpen] = useState(false)
+
+const TONE_ICON = { gain: 'plus', lose: 'minus', info: 'info' } as const
+
+function PointLine({ p }: { p: SwapPoint }) {
+  return (
+    <li className={`swap-point tone-${p.tone}`}>
+      <Icon name={TONE_ICON[p.tone]} size={14} />
+      <span className="small">{p.text} {p.claim ? <Why claims={[p.claim]} /> : p.convention ? <Why convention={p.convention} /> : null}</span>
+    </li>
+  )
+}
+
+/** What swapping changes, then the button to do it. */
+function SwapDetail({ from, to, onSwap }: { from: Exercise; to: Exercise; onSwap: () => void }) {
+  const c = compareExercises(from, to)
+  return (
+    <div className="swap-detail">
+      <p className="small">{c.summary} {c.claim && <Why claims={[c.claim]} />}</p>
+      <ul className="swap-points">{c.points.map((p) => <PointLine key={p.text} p={p} />)}</ul>
+      <button className="primary small" onClick={onSwap}><Icon name="reset" size={14} /> Swap to {to.name}</button>
+    </div>
+  )
+}
+
+/**
+ * Choose a replacement for a planned exercise: every option that fits your equipment and body,
+ * each with what it changes and why. Swaps apply wherever the plan uses that exercise.
+ */
+export function SwapChooser({ x, weekday, state, update, onDone }: ViewProps & { x: PlannedExercise; weekday?: number; onDone: () => void }) {
+  const [open, setOpen] = useState<string | null>(null)
   const f = state.fitness
   const original = x.swappedFrom ?? x.exercise.id
   const alts = alternativesFor(x.exercise, f, state.profile).filter((e) => e.id !== original)
@@ -133,29 +173,60 @@ function SwapPanel({ x, state, update, onDone }: ViewProps & { x: PlannedExercis
     setFit({ swaps })
     onDone()
   }
+  const removeFromDay = () => {
+    if (weekday === undefined) return
+    const key = String(weekday)
+    const edit = f.dayEdits?.[key] ?? {}
+    const next = x.added
+      ? { ...edit, add: (edit.add ?? []).filter((id) => id !== x.exercise.id) }
+      : { ...edit, remove: [...new Set([...(edit.remove ?? []), original])] }
+    setFit({ dayEdits: { ...f.dayEdits, [key]: next } })
+    onDone()
+  }
   return (
-    <div className="swap-panel">
-      <div className="add-row">
-        <button type="button" className="secondary small with-icon" aria-expanded={open} onClick={() => setOpen(!open)}><Icon name="reset" size={14} /> Swap this exercise</button>
-        <button type="button" className="ghost small" onClick={() => { setFit({ avoid: [...new Set([...(f.avoid ?? []), x.exercise.id])] }); onDone() }}>Don’t plan this</button>
-      </div>
+    <div className="swap-chooser">
       {x.swappedFrom && EXERCISE_BY_ID[x.swappedFrom] && (
         <p className="muted small">Your swap for {EXERCISE_BY_ID[x.swappedFrom].name}. <button type="button" className="link small" onClick={() => swapTo(original)}>Go back to it</button></p>
       )}
-      {open && (
-        alts.length ? (
+      {alts.length ? (
+        <>
+          <p className="muted small">{alts.length} option{alts.length > 1 ? 's' : ''} that fit {activePlace(f).name}’s equipment and your body. Tap one to see what changes compared with {x.exercise.name}.</p>
           <ul className="swap-list">
-            {alts.map((e) => (
-              <li key={e.id}>
-                <button type="button" className="swap-option" onClick={() => swapTo(e.id)}>
-                  <strong>{e.name}</strong>
-                  <span className="muted small">{e.compound ? 'Compound' : 'Isolation'} · {e.cue}</span>
-                </button>
-              </li>
-            ))}
+            {alts.map((e) => {
+              const c = compareExercises(x.exercise, e)
+              const top = headline(c)
+              return (
+                <li key={e.id} className={open === e.id ? 'open' : ''}>
+                  <button type="button" className="swap-option" aria-expanded={open === e.id} onClick={() => setOpen(open === e.id ? null : e.id)}>
+                    <span className="row-between"><strong>{e.name}</strong><Icon name={open === e.id ? 'chevronDown' : 'chevronRight'} size={16} /></span>
+                    <span className="muted small">{swapTag(e)}</span>
+                    {open !== e.id && top.length > 0 && <span className="small swap-teaser">{top.map((p) => p.text.replace(/\.$/, '')).slice(0, 2).join(' · ')}</span>}
+                  </button>
+                  {open === e.id && <SwapDetail from={x.exercise} to={e} onSwap={() => swapTo(e.id)} />}
+                </li>
+              )
+            })}
           </ul>
-        ) : <p className="muted small">Nothing else for this muscle fits {activePlace(f).name}’s equipment and your limitations. Tick more equipment to see options.</p>
-      )}
+          <p className="muted small">A swap applies wherever the plan uses {EXERCISE_BY_ID[original]?.name ?? x.exercise.name}.</p>
+        </>
+      ) : <p className="muted small">Nothing else for this fits {activePlace(f).name}’s equipment and your limitations. Tick more equipment to see options.</p>}
+      <div className="add-row">
+        {weekday !== undefined && <button type="button" className="ghost small" onClick={removeFromDay}>Remove from this day</button>}
+        {!x.added && <button type="button" className="ghost small" onClick={() => { setFit({ avoid: [...new Set([...(f.avoid ?? []), x.exercise.id])] }); onDone() }}>Never plan this</button>}
+      </div>
+    </div>
+  )
+}
+
+/** In the exercise sheet: a button that opens the swap options in place. */
+function SwapPanel({ x, weekday, state, update, onDone }: ViewProps & { x: PlannedExercise; weekday?: number; onDone: () => void }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="swap-panel">
+      <button type="button" className="secondary small with-icon" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <Icon name="reset" size={14} /> {open ? 'Hide swap options' : 'Swap or remove this exercise'}
+      </button>
+      {open && <SwapChooser x={x} weekday={weekday} state={state} update={update} onDone={onDone} />}
     </div>
   )
 }

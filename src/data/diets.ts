@@ -151,6 +151,15 @@ export const DIETS: Diet[] = [
 
 export const DIET_BY_ID = Object.fromEntries(DIETS.map((d) => [d.id, d])) as Record<DietId, Diet>
 
+/**
+ * Pantry spices named in a method (they aren't ingredients) that some diets exclude: chili-based
+ * spices are nightshades, and seed spices are seeds (both out on AIP). Matched on the method text.
+ */
+export const SPICE_TAGS: [RegExp, DietTag][] = [
+  [/paprika|chil[ie]|cayenne|red pepper flakes|hot sauce|sriracha|curry powder|taco seasoning|jerk|cajun|blackening/i, 'nightshade'],
+  [/cumin|coriander|mustard|fennel|nutmeg|garam masala|curry powder|five-spice|caraway|celery seed|dill seed|everything[- ]bagel|sesame/i, 'seed'],
+]
+
 /** Does this diet allow this food? */
 export function dietAllowsFood(diet: Diet, food: string): boolean {
   if (diet.allows?.includes(food)) return true

@@ -1,10 +1,16 @@
+import { METHODS_BREAKFAST } from './recipes_more/breakfast'
+import { METHODS_MEAT } from './recipes_more/meat'
+import { METHODS_PLANTS } from './recipes_more/plants'
+import { METHODS_SEAFOOD } from './recipes_more/seafood'
+import { METHODS_SNACKS } from './recipes_more/snacks'
+
 /**
  * Step-by-step instructions for every recipe, keyed by recipe id. Amounts are in each recipe's
  * ingredient list; steps say what to do with them. Cooking temperatures follow the USDA FSIS
  * safe minimum internal temperatures (poultry 165°F, ground meat 160°F, steaks/roasts/chops
  * 145°F + 3 min rest, fish 145°F, egg dishes 160°F, leftovers 165°F).
  */
-export const METHODS: Record<string, string[]> = {
+const BASE_METHODS: Record<string, string[]> = {
   // ── Breakfast ───────────────────────────────────────────
   overnight_oats: [
     'Add the oats, chia seeds and honey to a jar or container.',
@@ -830,3 +836,6 @@ export const METHODS: Record<string, string[]> = {
   avocado_hemp_snack: ['Halve the avocado and remove the pit.', 'Drizzle with the olive oil, sprinkle with hemp seeds and a pinch of salt, and eat with a spoon.'],
   pecan_dark_choc: ['Break the chocolate into squares.', 'Portion with the pecans into a small bowl.'],
 }
+
+/** Every method: the originals plus the collections in ./recipes_more. */
+export const METHODS: Record<string, string[]> = { ...BASE_METHODS, ...METHODS_BREAKFAST, ...METHODS_MEAT, ...METHODS_SEAFOOD, ...METHODS_PLANTS, ...METHODS_SNACKS }

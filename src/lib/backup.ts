@@ -1,7 +1,8 @@
 import { EQUIPMENT, EXERCISES, type EquipmentId } from '../data/exercises'
 import { LIMITATIONS, type LimitationId } from '../data/limitations'
-import type { Access, Experience, Muscle, TrainingGoal } from '../data/training'
-import type { TrainingAddOn, TrainingPlace } from '../types'
+import { DAY_PART_LABEL, EXTRA_DAYS, LAYOUTS, REGIONS, VTAPER, type Access, type DayPart, type Experience, type ExtraDay, type Layout, type Muscle, type Region, type TrainingGoal } from '../data/training'
+import { POSTURE_GOALS, type PostureGoalId } from '../data/mobility'
+import type { DayEdit, TrainingAddOn, TrainingPlace } from '../types'
 import type {
   Activity, AppState, BodyCheckIn, ConditionId, DayPlan, DietId, Equipment, ExportTarget, Goal, LabelFacts, LabelKey,
   LiftEntry, LoggedSet, MealSlot, MenopauseStage, PantryItem, PlanEntry, Product, Sex, SleepEntry, Store, WeightUnit,
@@ -91,6 +92,13 @@ const LIMITATION_IDS: readonly LimitationId[] = LIMITATIONS.map((l) => l.id)
 const EQUIPMENT_IDS_ALL: readonly EquipmentId[] = EQUIPMENT.map((e) => e.id)
 const EXERCISE_IDS = new Set(EXERCISES.map((e) => e.id))
 const MUSCLES: readonly Muscle[] = ['chest', 'back', 'shoulders', 'biceps', 'triceps', 'quads', 'hamstrings', 'glutes', 'calves', 'abs']
+const LAYOUT_IDS: readonly Layout[] = LAYOUTS.map((l) => l.id)
+const DAY_PARTS: readonly DayPart[] = Object.keys(DAY_PART_LABEL) as DayPart[]
+const EXTRA_IDS: readonly ExtraDay[] = EXTRA_DAYS.map((d) => d.id)
+const REGION_IDS: readonly Region[] = REGIONS.map((x) => x.id)
+const POSTURE_IDS: readonly PostureGoalId[] = POSTURE_GOALS.map((g) => g.id)
+/** The old "posture routine" add-on became these posture goals. */
+const OLD_POSTURE: PostureGoalId[] = ['forward_head', 'rounded_shoulders', 'upper_back']
 
 // ── Each part of the state ──────────────────────────────────────────
 
@@ -222,7 +230,8 @@ function fitness(v: unknown, base: AppState['fitness']): AppState['fitness'] {
     sessionMin: num(f.sessionMin, base.sessionMin, 15, 180),
     experience: oneOf(f.experience, EXPERIENCE, base.experience),
     access: oneOf(f.access, ACCESS, base.access),
-    priorities: enums(f.priorities, MUSCLES),
+    // The preset owns its muscle list, so a saved preset picks up later changes to it.
+    priorities: f.preset === 'vtaper' ? [...VTAPER.priorities] : enums(f.priorities, MUSCLES),
     feedMealPlan: bool(f.feedMealPlan, base.feedMealPlan),
     ...(unit ? { weightUnit: unit } : {}),
     ...(f.preset === 'vtaper' ? { preset: 'vtaper' as const } : {}),
@@ -232,7 +241,36 @@ function fitness(v: unknown, base: AppState['fitness']): AppState['fitness'] {
     ...(Array.isArray(f.limitations) ? { limitations: enums(f.limitations, LIMITATION_IDS) } : {}),
     ...(Array.isArray(f.avoid) ? { avoid: ids(f.avoid).filter((id) => EXERCISE_IDS.has(id)) } : {}),
     ...(isObj(f.swaps) ? { swaps: record(f.swaps, (x) => (safeId(x) && EXERCISE_IDS.has(x) ? x : undefined)) } : {}),
+    ...(LAYOUT_IDS.includes(f.layout as Layout) ? { layout: f.layout as Layout } : {}),
+    ...(Array.isArray(f.week) && f.week.length === 7 ? { week: f.week.map((d) => enums(d, DAY_PARTS)) } : {}),
+    ...(isObj(f.extraDays) ? { extraDays: extraDays(f.extraDays) } : {}),
+    ...(Array.isArray(f.stretchRegions) ? { stretchRegions: enums(f.stretchRegions, REGION_IDS) } : {}),
+    ...(Array.isArray(f.postureGoals) ? { postureGoals: enums(f.postureGoals, POSTURE_IDS) }
+      : Array.isArray(f.addOns) && f.addOns.includes('posture') ? { postureGoals: [...OLD_POSTURE] } : {}),
+    ...(optNum(f.extraMin, 5, 60) !== undefined ? { extraMin: optNum(f.extraMin, 5, 60) } : {}),
+    ...(isObj(f.dayEdits) ? { dayEdits: dayEdits(f.dayEdits) } : {}),
   }
+}
+
+function extraDays(v: Record<string, unknown>): Partial<Record<ExtraDay, number>> {
+  const out: Partial<Record<ExtraDay, number>> = {}
+  for (const id of EXTRA_IDS) {
+    const n = optNum(v[id], 0, 7)
+    if (n !== undefined) out[id] = Math.round(n)
+  }
+  return out
+}
+
+/** Changes to single days: weekday keys 0–6, known exercise ids only. */
+function dayEdits(v: Record<string, unknown>): Record<string, DayEdit> {
+  const out: Record<string, DayEdit> = {}
+  const known = (x: unknown) => ids(x).filter((id) => EXERCISE_IDS.has(id)).slice(0, 40)
+  for (const k of ['0', '1', '2', '3', '4', '5', '6']) {
+    const e = v[k]
+    if (!isObj(e)) continue
+    out[k] = { ...(Array.isArray(e.add) ? { add: known(e.add) } : {}), ...(Array.isArray(e.remove) ? { remove: known(e.remove) } : {}) }
+  }
+  return out
 }
 
 const place = (v: unknown): TrainingPlace | null =>

@@ -11,6 +11,7 @@ import { Clock } from 'lucide-react'
 import { BookOpen, CircleAlert, CircleCheck, FlaskConical } from 'lucide-react'
 import { Ban, HardDrive, Search } from 'lucide-react'
 import { Flag, Pause, Play, Plus, RotateCcw, Timer } from 'lucide-react'
+import { CalendarCog, Minus, PersonStanding } from 'lucide-react'
 
 const ICONS = {
   activity: Activity, swap: ArrowLeftRight, bean: Bean, bone: Bone, brain: Brain, calendar: CalendarDays, check: Check,
@@ -34,6 +35,7 @@ const ICONS = {
   ban: Ban, hardDrive: HardDrive, search: Search,
   // Train timer
   play: Play, pause: Pause, reset: RotateCcw, timer: Timer, plus: Plus, flag: Flag,
+  minus: Minus, stretch: PersonStanding, week: CalendarCog,
 } satisfies Record<string, LucideIcon>
 
 export type IconName = keyof typeof ICONS
